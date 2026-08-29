@@ -1,0 +1,8 @@
+{
+  "_meta": {
+    "description": "Recalibrated historical average speeds per tunnel zone. Updated via exponential moving average on each signal return event.",
+    "alpha": 0.3,
+    "lastUpdated": null
+  },
+  "zones": {}
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "railsync-api",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["/tmp/claude-501/railsync_launch/boot.py", "8000"],
+      "port": 8000
+    }
+  ]
+}

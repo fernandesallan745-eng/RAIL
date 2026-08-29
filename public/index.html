@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RailRadar - Live Indian Railways Map & Radar</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+
+  <!-- Fullscreen Map Canvas -->
+  <div id="map"></div>
+
+  <!-- Top Floating Search Bar (RailRadar UI) -->
+  <div class="top-search-container">
+    <div class="search-bar">
+      <div class="logo-badge" onclick="map.flyTo([21.7679, 78.8718], 5)">
+        <div class="logo-icon-svg">🚄</div>
+        <span class="logo-text">RailRadar</span>
+      </div>
+      <input 
+        type="text" 
+        id="searchInput" 
+        class="search-input" 
+        placeholder="Search train, station, or route..." 
+        autocomplete="off" 
+        spellcheck="false"
+      />
+      <button class="search-action-btn" title="Search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Autocomplete Results Dropdown -->
+    <div id="searchDropdown" class="search-dropdown"></div>
+  </div>
+
+  <!-- Top Right Satellite Switcher Button (Matching Reference Screenshot) -->
+  <div class="map-layer-switch">
+    <div id="layerToggleBtn" class="layer-toggle-btn" title="Toggle Map Layer">
+      <span id="layerToggleLabel" class="layer-toggle-label">Satellite</span>
+    </div>
+  </div>
+
+  <!-- Bottom Left Fleet Status Badge -->
+  <div class="fleet-status-pill">
+    <div class="pulsing-green-dot"></div>
+    <span id="fleetStatusText">Connecting to Radar...</span>
+  </div>
+
+  <!-- Bottom Right Map Control Action Buttons -->
+  <div class="map-controls-group">
+    <button id="recenterBtn" class="ctrl-btn" title="Center India">⌖</button>
+    <button id="zoomInBtn" class="ctrl-btn" title="Zoom In">+</button>
+    <button id="zoomOutBtn" class="ctrl-btn" title="Zoom Out">&minus;</button>
+    <button id="fullscreenBtn" class="ctrl-btn" title="Toggle Fullscreen">⛶</button>
+  </div>
+
+  <!-- Slide-Out Train Telemetry Drawer -->
+  <div id="trainDrawer" class="train-drawer">
+    <div class="drawer-header">
+      <button id="drawerCloseBtn" class="drawer-close-btn" title="Close Drawer">&times;</button>
+      <div class="drawer-title-row">
+        <span id="drawerTrainNum" class="drawer-train-number">#12002</span>
+        <span id="drawerTrainType" class="drawer-train-type">Shatabdi Express</span>
+      </div>
+      <h2 id="drawerTrainName" class="drawer-train-name">Bhopal Shatabdi</h2>
+      
+      <!-- Route Origin & Destination -->
+      <div class="drawer-route-banner">
+        <div class="drawer-station-node">
+          <span id="drawerSourceCode" class="station-node-code">NDLS</span>
+          <span id="drawerSourceName" class="station-node-time">New Delhi</span>
+        </div>
+        <div style="color: var(--text-dim); font-size: 1rem;">&rarr;</div>
+        <div class="drawer-station-node" style="text-align: right;">
+          <span id="drawerDestCode" class="station-node-code">RKMP</span>
+          <span id="drawerDestName" class="station-node-time">Rani Kamalapati</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable Drawer Body -->
+    <div class="drawer-content-scroll">
+      <!-- Live Status Card -->
+      <div class="live-status-card">
+        <div id="drawerDelayBadge" class="delay-badge-pill ontime">🟢 On Time</div>
+        <div id="drawerCurrentPos" class="current-pos-text">Departed New Delhi</div>
+        <div id="drawerNextHalt" class="next-halt-text">Next halt: Mathura Jn</div>
+        
+        <!-- Progress Bar -->
+        <div class="progress-bar-wrap">
+          <div id="drawerProgressFill" class="progress-bar-fill" style="width: 40%;"></div>
+        </div>
+        <div class="progress-stats-row">
+          <span id="drawerCoveredKm">280 km covered (40%)</span>
+          <span id="drawerTotalKm">707 km total</span>
+        </div>
+      </div>
+
+      <!-- Coach Composition Visualizer -->
+      <div>
+        <div class="section-heading">
+          <span>Coach Composition</span>
+        </div>
+        <div id="coachRakeContainer" class="coach-rake-container"></div>
+      </div>
+
+      <!-- Journey Halts & Timeline -->
+      <div>
+        <div class="section-heading">
+          <span>Journey Timeline & Halts</span>
+        </div>
+        <div id="timelineHaltsList" class="timeline-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- App JS -->
+  <script src="/app.js"></script>
+</body>
+</html>

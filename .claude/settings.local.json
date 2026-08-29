@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c ' *)",
+      "Bash(python3 report_eta.py)",
+      "Bash(echo \"report_eta.py exit=$?\")",
+      "Bash(python3 -)",
+      "Bash(timeout 25 python3 -c ' *)",
+      "Bash([ -f \"$F\" ])",
+      "Read(//private/tmp/claude-501/railsync_launch/**)",
+      "Read(//private/tmp/claude-501/railsync_serve/**)",
+      "Read(//private/tmp/claude-501/railsync_serve/.cache/**)",
+      "Bash(echo \"exit=$?\")",
+      "Read(//private/tmp/claude-501/**)",
+      "Bash(sed -n '/TWO DIFFERENT TARGETS/,/timetable does not already have/p' /tmp/claude-501/rep2.txt)"
+    ]
+  },
+  "sandbox": {
+    "network": {
+      "allowedDomains": [
+        "api.railradar.in",
+        "api.openweathermap.org"
+      ]
+    }
+  }
+}

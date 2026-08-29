@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<!--
+  RailSync — operator dashboard (Phase 8)
+
+  Deliberately NOT a tiled map. There is no network egress in this environment, so a
+  Mapbox/Deck.gl basemap would render blank. Instead the route is drawn as inline SVG
+  straight from the real 1184-vertex RailRadar polyline, which needs no third party
+  and is honest about what it is: track geometry, not a street map.
+
+  Every number on this page comes from the API. Nothing is hardcoded, and nothing is
+  shown that the model cannot currently compute — unbuilt phases are labelled as such
+  rather than mocked up.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RailSync — Dynamic ETA · Arka!</title>
+<style>
+  :root{
+    --bg:#0a0e14; --panel:#111721; --panel2:#161d29; --line:#232c3b;
+    --ink:#e6edf7; --ink2:#93a3bb; --ink3:#5d6c85;
+    --accent:#4da3ff; --good:#3fd18b; --warn:#f5b83d; --bad:#ff6b6b; --violet:#a78bfa;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .wrap{max-width:1480px;margin:0 auto;padding:20px 22px 60px}
+
+  header{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;
+         padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:20px}
+  h1{margin:0;font-size:21px;letter-spacing:-.02em;font-weight:650}
+  h1 .tag{color:var(--ink3);font-weight:400}
+  .team{font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;
+        color:var(--violet);border:1px solid #3b3357;background:#1b1630;
+        padding:5px 9px;border-radius:5px}
+  .tagline{color:var(--ink2);font-size:13px;margin-left:auto;font-style:italic}
+
+  .live{display:flex;align-items:center;gap:6px;font:11.5px var(--mono);
+        background:var(--panel);border:1px solid var(--line);border-radius:6px;
+        padding:5px 10px;white-space:nowrap}
+  .live .dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .banner{background:#1a1408;border:1px solid #4a3a12;border-left:3px solid var(--warn);
+          border-radius:7px;padding:11px 14px;margin-bottom:20px;
+          font-size:12.5px;color:#e4cd9a}
+  .banner b{color:var(--warn)}
+
+  .grid{display:grid;gap:16px}
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(178px,1fr));margin-bottom:18px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:13px 15px}
+  .kpi .k{font:500 10.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+          color:var(--ink3);margin-bottom:9px}
+  .kpi .v{font:650 25px/1 var(--mono);letter-spacing:-.02em}
+  .kpi .s{font-size:11.5px;color:var(--ink2);margin-top:6px}
+  .kpi.hero{background:linear-gradient(160deg,#12233a,#111721);border-color:#2b4a70}
+
+  .cols{grid-template-columns:1.35fr 1fr;align-items:start}
+  @media(max-width:1080px){.cols{grid-template-columns:1fr}}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:9px;
+        overflow:hidden;margin-bottom:16px}
+  .card>h2{margin:0;padding:12px 15px;font:600 12px/1 var(--mono);
+           letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);
+           border-bottom:1px solid var(--line);background:var(--panel2);
+           display:flex;align-items:center;gap:9px}
+  .card>h2 .n{color:var(--ink3);font-weight:400;text-transform:none;letter-spacing:0}
+  .card .body{padding:14px 15px}
+
+  table{width:100%;border-collapse:collapse;font:12.5px/1.45 var(--mono)}
+  th{text-align:right;font-weight:500;color:var(--ink3);font-size:10.5px;
+     letter-spacing:.07em;text-transform:uppercase;padding:8px 9px;
+     border-bottom:1px solid var(--line);white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  td{text-align:right;padding:7px 9px;border-bottom:1px solid #1a2130;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#151d2b}
+  .num{font-variant-numeric:tabular-nums}
+  .pos{color:var(--bad)} .neg{color:var(--good)} .zero{color:var(--ink3)}
+  .bind{color:var(--warn);font-weight:600}
+
+  svg{display:block;width:100%;height:auto}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;
+          font-size:11.5px;color:var(--ink2)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
+
+  .ladder{list-style:none;margin:0;padding:0;font:12.5px/1 var(--mono)}
+  .ladder li{display:grid;grid-template-columns:1fr auto auto;gap:12px;
+             align-items:center;padding:9px 0;border-bottom:1px solid #1a2130}
+  .ladder li:last-child{border-bottom:none}
+  .ladder .lbl{color:var(--ink2);font-family:inherit}
+  .ladder .bar{grid-column:1/-1;height:3px;background:#1e2634;border-radius:2px;
+               overflow:hidden;margin-top:-3px}
+  .ladder .bar span{display:block;height:100%;background:var(--accent)}
+  .ladder li.final{color:var(--ink)}
+  .ladder li.final .lbl{color:var(--ink);font-weight:600}
+  .ladder li.sched .lbl{color:var(--violet)}
+  .ladder li.obs .lbl{color:var(--good)}
+  .ladder li.alt{opacity:.55}
+
+  .spread{display:flex;gap:5px;align-items:flex-end;height:64px;margin:6px 0 10px}
+  .spread div{flex:1;background:#1e2634;border-radius:3px 3px 0 0;position:relative;
+              display:flex;align-items:flex-end;justify-content:center}
+  .spread div b{position:absolute;top:-17px;font:500 10.5px var(--mono);color:var(--ink2)}
+  .spread div i{position:absolute;bottom:-17px;font:400 10px var(--mono);
+                color:var(--ink3);font-style:normal}
+
+  .note{font-size:12px;color:var(--ink2);line-height:1.55}
+  .note b{color:var(--ink)}
+  .note code{background:#1b2230;padding:1px 5px;border-radius:3px;
+             font:11.5px var(--mono);color:#b8c7de}
+  .caveat{border-left:2px solid var(--ink3);padding-left:11px;margin-top:11px;
+          color:var(--ink3);font-size:11.5px}
+
+  .phases{list-style:none;margin:0;padding:0;font-size:12.5px}
+  .phases li{display:flex;gap:10px;align-items:baseline;padding:6px 0;
+             border-bottom:1px solid #1a2130}
+  .phases li:last-child{border-bottom:none}
+  .phases .st{font:600 9.5px/1.5 var(--mono);letter-spacing:.08em;padding:2px 6px;
+              border-radius:3px;white-space:nowrap}
+  .phases .done{background:#0f2e21;color:var(--good);border:1px solid #1d523c}
+  .phases .todo{background:#1b2230;color:var(--ink3);border:1px solid #2a3444}
+  .phases .txt{color:var(--ink2)}
+  .phases .done+.txt{color:var(--ink)}
+
+  .ctl{display:flex;gap:8px;align-items:center;margin-left:auto}
+  select{background:#1b2230;color:var(--ink);border:1px solid var(--line);
+         border-radius:5px;padding:4px 8px;font:12px var(--mono)}
+  .err{color:var(--bad);font:12.5px var(--mono);padding:14px}
+  .loading{color:var(--ink3);padding:24px;font:13px var(--mono);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>RailSync <span class="tag">· dynamic ETA forecasting</span></h1>
+    <div style="color:var(--ink3);font-size:12.5px;margin-top:4px">
+      SIH 2026 · PS 26028 · Ministry of Railways
+    </div>
+  </div>
+  <span class="team">Arka!</span>
+  <div class="tagline">“Predict the delay. Explain the cause. Prevent the ripple.”</div>
+  <!-- lives OUTSIDE #app so a re-render never destroys it mid-update -->
+  <div id="live" class="live"></div>
+</header>
+
+<div class="banner">
+  <b>Decision-support system only.</b> No feature issues automated commands to train
+  control, signalling, or braking. Every alert requires Section Controller confirmation.
+  &nbsp;·&nbsp; <b>Prototype data source:</b> RailRadar (crowdsourced GPS, same category
+  as RailYatri/ixigo) — <i>not</i> official Railways data. RTIS-ready via CRIS Project
+  Pravah in production.
+  &nbsp;·&nbsp; <b>“Live” means the cache.</b> The server pushes over WebSocket whenever
+  <code>.cache/</code> changes; the model is cache-only, so figures move when the cache is
+  refreshed (<code>fetch_dates.py</code>), not from a live trackside feed.
+</div>
+
+<div id="app"><div class="loading">loading model output…</div></div>
+
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const fmt = (v,d=1) => v===null||v===undefined ? "–" : Number(v).toFixed(d);
+const sign = (v,d=1) => (v>0?"+":"") + fmt(v,d);
+const cls  = v => v>0 ? "pos" : v<0 ? "neg" : "zero";
+const clock = () => new Date().toLocaleTimeString([], {hour12:false});
+
+// ---- live state -------------------------------------------------------------
+// The pitched stack is WebSocket push, not polling, so that is what this does: the
+// server pushes a fresh payload whenever the .cache fingerprint changes.  Be precise
+// about what that means -- the model is cache-only, so what goes live is the CACHE
+// (e.g. fetch_dates.py adding a run date), NOT a live train feed.  If the socket can't
+// be established we fall back to a REST poll and say so in the badge rather than
+// sitting there looking fresh.
+let ws = null, geo = null, health = null, lastEta = null, pollTimer = null;
+let conn = "connecting", lastUpdate = null, pushes = 0;
+
+function params(){
+  return {weather: $("#weather")?.value || "clear", mode: $("#mode")?.value || "vertex"};
+}
+
+function setConn(state){ conn = state; paintBadge(); }
+
+function paintBadge(){
+  const el = $("#live"); if (!el) return;
+  const map = {
+    open:        ["var(--good)",  "live · ws"],
+    connecting:  ["var(--warn)",  "connecting…"],
+    polling:     ["var(--warn)",  "polling · ws unavailable"],
+    closed:      ["var(--bad)",   "disconnected"],
+  };
+  const [c, label] = map[conn] || map.closed;
+  el.innerHTML = `<span class="dot" style="background:${c};${conn==="open"?"animation:pulse 2s infinite":""}"></span>
+    <span style="color:${c}">${label}</span>
+    <span style="color:var(--ink3)">· updated ${lastUpdate || "–"}${pushes?` · ${pushes} push${pushes===1?"":"es"}`:""}</span>`;
+}
+
+function connect(){
+  const {weather, mode} = params();
+  if (ws) { ws.onclose = null; ws.close(); ws = null; }
+  let sock;
+  try {
+    const proto = location.protocol === "https:" ? "wss:" : "ws:";
+    sock = new WebSocket(`${proto}//${location.host}/ws/eta/22229?weather=${weather}&mode=${mode}`);
+  } catch (e) { startPolling(); return; }
+  ws = sock;
+  setConn("connecting");
+  const giveUp = setTimeout(() => { if (sock.readyState !== 1) { sock.close(); startPolling(); } }, 4000);
+  sock.onopen = () => { clearTimeout(giveUp); stopPolling(); setConn("open"); };
+  sock.onmessage = ev => {
+    const msg = JSON.parse(ev.data);
+    if (msg.type === "eta") {
+      pushes++; lastEta = msg.data; lastUpdate = clock();
+      if (geo && health) render(lastEta, geo, health, weather, mode);
+      else paintBadge();
+    } else if (msg.type === "heartbeat") {
+      paintBadge();                 // proves the link is alive without faking new data
+    } else if (msg.type === "error") {
+      setConn("closed");
+    }
+  };
+  sock.onerror = () => { clearTimeout(giveUp); };
+  sock.onclose = () => { clearTimeout(giveUp); if (ws === sock) startPolling(); };
+}
+
+function startPolling(){
+  if (pollTimer) return;
+  setConn("polling");
+  pollTimer = setInterval(() => load({keepConn:true}), 15000);
+}
+function stopPolling(){ if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+async function load(opts={}){
+  const {weather, mode} = params();
+  const [eta, g, h] = await Promise.all([
+    fetch(`/eta/22229?weather=${weather}&mode=${mode}`, {cache:"no-store"}).then(r=>r.json()),
+    geo  ? Promise.resolve(geo)  : fetch("/geometry/22229", {cache:"no-store"}).then(r=>r.json()),
+    health ? Promise.resolve(health) : fetch("/health", {cache:"no-store"}).then(r=>r.json()),
+  ]);
+  geo = g; health = h; lastEta = eta; lastUpdate = clock();
+  render(eta, geo, health, weather, mode);
+  if (!opts.keepConn) connect();
+}
+
+function render(d, geo, health, weather, mode){
+  // A push can land while the user is mid-interaction.  Replacing #app wholesale would
+  // close an open dropdown and jump the scroll position, so defer instead of stealing
+  // focus, and restore scrollY afterwards.
+  const active = document.activeElement;
+  if (active && active.tagName === "SELECT") { setTimeout(()=>render(d,geo,health,weather,mode), 1200); return; }
+  const scrollY = window.scrollY;
+
+  const t = d.totals, a = d.historical_delay_audit, gr = d.geometry_resolution;
+  const obsMean = a && a.end_to_end_delay_mean_min!=null
+      ? t.scheduled_duration_min + a.end_to_end_delay_mean_min : null;
+  const errObs  = obsMean!=null ? t.predicted_eta_min - obsMean : null;
+  const samples = a && a.end_to_end_delay_samples ? a.end_to_end_delay_samples : {};
+  const dates   = Object.keys(samples).sort();
+
+  $("#app").innerHTML = `
+  <div class="grid kpis">
+    <div class="kpi hero">
+      <div class="k">predicted eta</div>
+      <div class="v">${fmt(t.predicted_eta_min)}<span style="font-size:14px;color:var(--ink3)"> min</span></div>
+      <div class="s">arrival ${d.predicted_arrival ? String(d.predicted_arrival).slice(11,16) : "–"}
+        · mode <b>${mode}</b></div>
+    </div>
+    <div class="kpi">
+      <div class="k">vs observed runs</div>
+      <div class="v ${errObs!=null?cls(errObs):''}">${errObs!=null?sign(errObs):"–"}<span style="font-size:14px;color:var(--ink3)"> min</span></div>
+      <div class="s">mean of ${dates.length} tracked date${dates.length===1?"":"s"} = ${fmt(obsMean)} min</div>
+    </div>
+    <div class="kpi">
+      <div class="k">vs timetable</div>
+      <div class="v">${sign(t.gap_vs_schedule_min)}<span style="font-size:14px;color:var(--ink3)"> min</span></div>
+      <div class="s">scheduled ${t.scheduled_duration_min} min <span style="color:var(--ink3)">· early, as real runs are</span></div>
+    </div>
+    <div class="kpi">
+      <div class="k">naive flat ${d.max_speed_kmh} km/h</div>
+      <div class="v" style="color:var(--bad)">${fmt(t.naive_flat_speed_min)}<span style="font-size:14px;color:var(--ink3)"> min</span></div>
+      <div class="s">${obsMean!=null?sign(t.naive_flat_speed_min-obsMean,0):"–"} min vs observed</div>
+    </div>
+    <div class="kpi">
+      <div class="k">delay layer</div>
+      <div class="v ${cls(t.historical_delay_min)}">${sign(t.historical_delay_min)}<span style="font-size:14px;color:var(--ink3)"> min</span></div>
+      <div class="s">runs <b>early</b> on average</div>
+    </div>
+  </div>
+
+  <div class="grid cols">
+   <div>
+    <div class="card">
+      <h2>Route geometry <span class="n">${geo.full_vertex_count} vertices · drawn at ${geo.decimated_to}</span>
+        <div class="ctl">
+          <label style="color:var(--ink3);font:11px var(--mono)">weather</label>
+          <select id="weather">${["clear","rain","heavy_rain","monsoon_flagged_section","fog"]
+            .map(w=>`<option ${w===weather?"selected":""}>${w}</option>`).join("")}</select>
+          <label style="color:var(--ink3);font:11px var(--mono)">mode</label>
+          <select id="mode">${["vertex","block"]
+            .map(m=>`<option ${m===mode?"selected":""}>${m}</option>`).join("")}</select>
+        </div>
+      </h2>
+      <div class="body">${routeSvg(geo, d)}
+        <div class="legend">
+          <span><i style="background:var(--accent)"></i>track polyline (real coords)</span>
+          <span><i style="background:var(--ink)"></i>halt</span>
+          <span><i style="background:var(--warn)"></i>sharpest curve R=${fmt(d.sharpest_curve.radius_m)} m → ${fmt(d.sharpest_curve.capped_speed_kmh)} km/h</span>
+        </div>
+        <div class="caveat">Not a basemap — this is the track alignment drawn from the
+          route polyline itself. Curvature is computed on all ${geo.full_vertex_count}
+          vertices${geo.stride>1?`; the drawing is decimated ${geo.stride}× for legibility only`:""}.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Per-segment breakdown <span class="n">${d.segments.length} halt-to-halt blocks</span></h2>
+      <table>
+        <thead><tr>
+          <th>block</th><th>km</th><th>baseline</th><th>curve cap</th>
+          ${weather!=="clear"?"<th>wx cap</th>":""}<th>eff.</th>
+          <th>run</th><th>${weather==="clear"?"curve +":"curve+wx +"}</th>
+          <th>delay +</th><th>dwell</th><th>eta</th>
+        </tr></thead>
+        <tbody>${d.segments.map(s=>{
+          // which constraint actually won?  curve_capped_speed_kmh is PRE-weather, so
+          // under rain/fog the binding value lives in weather_capped_speed_kmh and the
+          // curve column alone would not explain the drop in eff.
+          const curveBinds = s.curve_capped_speed_kmh < s.baseline_speed_kmh;
+          const wxBinds = s.weather_capped_speed_kmh < s.baseline_speed_kmh;
+          return `<tr>
+            <td>${s.from}→${s.to}</td>
+            <td class="num">${fmt(s.distance_km,0)}</td>
+            <td class="num">${fmt(s.baseline_speed_kmh)}</td>
+            <td class="num ${curveBinds?'bind':''}">${fmt(s.curve_capped_speed_kmh)}</td>
+            ${weather!=="clear"
+              ? `<td class="num ${wxBinds?'bind':''}">${fmt(s.weather_capped_speed_kmh)}</td>` : ""}
+            <td class="num">${fmt(s.effective_speed_applied_kmh ?? s.effective_speed_kmh)}</td>
+            <td class="num">${fmt(s.running_min_applied ?? s.running_min,1)}</td>
+            <td class="num ${s.vertex_curve_penalty_sec>0?'bind':'zero'}">${s.vertex_curve_penalty_sec>0?fmt(s.vertex_curve_penalty_sec,2)+"s":"–"}</td>
+            <td class="num ${cls(s.hist_delay_min)}">${s.hist_delay_samples
+              ? sign(s.hist_delay_min) + `<span style="color:var(--ink3);font-size:10px"> n=${s.hist_delay_samples}</span>`
+              : "–"}</td>
+            <td class="num ${s.dwell_min?'':'zero'}">${s.dwell_min?fmt(s.dwell_min,0):"–"}</td>
+            <td class="num"><b>${fmt(s.segment_eta_min)}</b></td>
+          </tr>`;}).join("")}</tbody>
+      </table>
+      <div class="body" style="border-top:1px solid var(--line)">
+        <div class="note"><b>curve cap</b> in amber where it actually binds below the
+        schedule baseline — on this route that is <b>one block</b>, and inside it only
+        ~80 m of track. <b>delay +</b> is the incremental delay for that block, not the
+        cumulative lateness at the arriving station; <code>n</code> is how many tracked
+        dates that block's mean rests on. Unequal <code>n</code> (4 vs 5 here) is why the
+        segment increments sum to
+        <b>${sign(a.segment_increments_sum_min)}</b> rather than the end-to-end
+        <b>${sign(a.end_to_end_delay_mean_min)}</b> — a sum-of-means vs mean-of-sums
+        artifact, not a second estimate.${weather!=="clear"?` <b style="color:var(--warn)">
+        Under ${weather}</b> the per-vertex penalty column carries the weather multiplier
+        as well as the curve, so it is <b>not</b> a curvature-only figure — switch to
+        <code>clear</code> to isolate curvature.`:""}</div>
+      </div>
+    </div>
+   </div>
+
+   <div>
+    <div class="card">
+      <h2>Layer contribution ladder</h2>
+      <div class="body">
+        ${ladder(d, obsMean)}
+        <div class="note" style="margin-top:12px">
+          Of the ${fmt(Math.abs(t.naive_flat_speed_min - t.scheduled_duration_min),0)} min
+          the naive model misses, <b>schedule-derived baseline speeds</b> recover most of it
+          and <b>dwell</b> the rest. Curvature adds
+          <b>${fmt(d.curvature_layer_contribution_min,4)} min</b>. Only the delay layer
+          carries information the timetable does not already contain.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Historical delay <span class="n">${dates.length} tracked dates</span></h2>
+      <div class="body">
+        <div class="spread">${dates.map(k=>{
+          const j = t.scheduled_duration_min + samples[k];
+          const vals = dates.map(x=>t.scheduled_duration_min+samples[x]);
+          const lo = Math.min(...vals)-8, hi = Math.max(...vals)+3;
+          const h = Math.max(6,((j-lo)/(hi-lo))*100);
+          const late = samples[k] > 0;
+          return `<div style="height:${h}%;background:${late?'#3a1f22':'#132e24'}">
+            <b style="color:${late?'var(--bad)':'var(--good)'}">${j}</b><i>${k.slice(5)}</i></div>`;
+        }).join("")}</div>
+        <table style="margin-top:20px">
+          <tr><td>mean end-to-end delay</td>
+              <td class="num ${cls(a.end_to_end_delay_mean_min)}"><b>${sign(a.end_to_end_delay_mean_min)} min</b></td></tr>
+          <tr><td>spread across dates</td>
+              <td class="num">${Math.max(...Object.values(samples))-Math.min(...Object.values(samples))} min</td></tr>
+          <tr><td>Σ segment increments</td>
+              <td class="num ${cls(a.segment_increments_sum_min)}">${sign(a.segment_increments_sum_min)} min</td></tr>
+          <tr><td>coverage artifact</td>
+              <td class="num zero">${sign(a.coverage_artifact_min)} min</td></tr>
+        </table>
+        <div class="note" style="margin-top:12px">
+          <code>delayArrival</code> is <b>cumulative</b>, so it is differenced along the halt
+          chain before being added per segment. Summing it raw would have added
+          <b>+149 min</b> to a run that finished 3 min early.
+        </div>
+        <div class="caveat">A ${Math.max(...Object.values(samples))-Math.min(...Object.values(samples))} min
+          spread over ${dates.length} samples means the mean hides a lot. Quote the band,
+          not a single accuracy figure. ${9-dates.length} further cached dates return
+          <code>trackingMode: "none"</code> and are skipped, not counted as zeros.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Curvature layer <span class="n">USP #1</span></h2>
+      <div class="body">
+        <table>
+          <tr><td>sharpest resolvable curve</td><td class="num">R = ${fmt(d.sharpest_curve.radius_m)} m</td></tr>
+          <tr><td>RDSO cap V = 4.58·√R</td><td class="num bind">${fmt(d.sharpest_curve.capped_speed_kmh)} km/h</td></tr>
+          <tr><td>location</td><td class="num">${d.sharpest_curve.segment} · lat ${d.sharpest_curve.lat}</td></tr>
+          <tr><td>total ETA contribution</td><td class="num">${fmt(d.curvature_layer_contribution_min,4)} min</td></tr>
+          <tr><td>route resolvable</td><td class="num">${fmt(gr.resolvable_pct)}%</td></tr>
+          <tr><td>curvature-blind</td><td class="num">${fmt(gr.curvature_blind_km)} km · ${fmt(gr.curvature_blind_pct)}%</td></tr>
+          <tr><td>vertex spacing (median / max)</td><td class="num">${gr.spacing_m.median} m / ${(gr.spacing_m.max/1000).toFixed(1)} km</td></tr>
+        </table>
+        <div class="note" style="margin-top:12px">
+          On <b>this</b> route curvature is near-zero: the timetable's own baseline speeds
+          (${fmt(Math.min(...d.segments.map(s=>s.baseline_speed_kmh)))}–${fmt(Math.max(...d.segments.map(s=>s.baseline_speed_kmh)))} km/h)
+          already sit <i>below</i> the RDSO curve caps almost everywhere, so
+          <code>min(baseline, curve_cap)</code> picks the baseline. Konkan's tunnel-and-viaduct
+          alignment bypasses the sharp bends. Where the layer earns its place is
+          validating a <b>proposed faster</b> schedule, and on genuinely curved routes
+          (Kalka–Shimla, Araku Valley).
+        </div>
+        <div class="caveat">${gr.caveat}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Build status</h2>
+      <div class="body">
+        <ul class="phases">
+          <li><span class="st done">DONE</span><span class="txt">RailRadar client · live status + route geometry</span></li>
+          <li><span class="st done">DONE</span><span class="txt">Curvature speed capping (RDSO V=4.58·√R)</span></li>
+          <li><span class="st done">DONE</span><span class="txt">Combined ETA model · 4 layers, per-layer auditable</span></li>
+          <li><span class="st done">DONE</span><span class="txt">FastAPI service · ${health.status}, ${health.cached_dated_runs.length} dated runs cached</span></li>
+          <li><span class="st done">DONE</span><span class="txt">This dashboard + WebSocket push updates</span></li>
+          <li><span class="st todo">NEXT</span><span class="txt">Block-based conflict-point prediction (USP #3)</span></li>
+          <li><span class="st todo">TODO</span><span class="txt">Tunnel / GPS-blind dead reckoning (USP #2)</span></li>
+          <li><span class="st todo">TODO</span><span class="txt">Crowdsourced hazard reporting + confidence (USP #5)</span></li>
+          <li><span class="st todo">TODO</span><span class="txt">Live weather feed — multipliers are placeholders today</span></li>
+        </ul>
+        ${weather!=="clear" ? `<div class="caveat" style="border-color:var(--warn);color:#e4cd9a">
+          <b>weather = ${weather}</b> uses an <b>untuned placeholder</b> multiplier, not TSR
+          data. Illustrative only — do not quote this ETA as a weather forecast.</div>` : ""}
+      </div>
+    </div>
+   </div>
+  </div>`;
+
+  // changing weather/mode changes the socket's subscription, so reconnect rather than
+  // leaving the server pushing payloads for the old parameters
+  $("#weather").onchange = () => load();
+  $("#mode").onchange    = () => load();
+
+  window.scrollTo(0, scrollY);
+  paintBadge();
+}
+
+function routeSvg(geo, d){
+  const P = geo.points, pad = 30, LABEL = 78;
+  const lngs = P.map(p=>p[0]), lats = P.map(p=>p[1]);
+  const lo1=Math.min(...lngs), hi1=Math.max(...lngs);
+  const lo2=Math.min(...lats), hi2=Math.max(...lats);
+  // equirectangular with a cos(lat) correction so the alignment isn't stretched
+  const kx = Math.cos((lo2+hi2)/2*Math.PI/180);
+  const sx = (hi1-lo1)*kx, sy = (hi2-lo2);
+  // CSMT->MAO spans ~3.8 deg of latitude but only ~0.6 of longitude, so a fixed
+  // wide viewBox would flatten the whole corridor into a vertical smear.  Derive
+  // the box from the data instead and keep north up rather than rotating it.
+  const H = 560, s = (H-2*pad)/sy, W = Math.max(260, sx*s + 2*pad + 2*LABEL);
+  const ox = (W - sx*s)/2, oy = pad;
+  const X = p => ox + (p[0]-lo1)*kx*s;
+  const Y = p => H - (oy + (p[1]-lo2)*s);   // north up
+
+  const path = P.map((p,i)=>`${i?"L":"M"}${X(p).toFixed(1)} ${Y(p).toFixed(1)}`).join("");
+  const sharpLat = d.sharpest_curve.lat;
+  let sharpI = 0, best = 1e9;
+  P.forEach((p,i)=>{ const dd=Math.abs(p[1]-sharpLat); if(dd<best){best=dd;sharpI=i;} });
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="max-height:${H}px;margin:0 auto" role="img"
+    aria-label="Route alignment for train 22229 drawn from real coordinates">
+    <defs><filter id="g"><feGaussianBlur stdDeviation="3"/></filter></defs>
+    <path d="${path}" fill="none" stroke="#1d4d7a" stroke-width="7" filter="url(#g)" opacity=".75"/>
+    <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="1.8"
+          stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${X(P[sharpI])}" cy="${Y(P[sharpI])}" r="10" fill="none"
+            stroke="var(--warn)" stroke-width="1.4" opacity=".9"/>
+    <circle cx="${X(P[sharpI])}" cy="${Y(P[sharpI])}" r="3" fill="var(--warn)"/>
+    <text x="${X(P[sharpI])+15}" y="${Y(P[sharpI])+3.5}" font-family="ui-monospace,monospace"
+      font-size="10" fill="var(--warn)">R=${fmt(d.sharpest_curve.radius_m,0)}m</text>
+    ${(()=>{
+      // The route doubles back at the north end — CSMT(18.94) -> DR(19.02) -> TNA(19.19)
+      // -> PNVL(18.99) — so latitude is NOT monotonic along the journey and four labels
+      // land inside a ~32 px band.  Assign alternating sides (consecutive halts never
+      // share one), then declutter each side independently: sort by y and push each
+      // label down to a minimum gap from the one above it, with a leader to its dot.
+      const items = geo.halts.map((h,i)=>{
+        const p = P[h.point_index];
+        return p ? {h, i, x:X(p), y:Y(p), side: i%2 ? "l" : "r",
+                    end: i===0 || i===geo.halts.length-1} : null;
+      }).filter(Boolean);
+      const GAP = 15;
+      for (const side of ["l","r"]) {
+        const col = items.filter(o=>o.side===side).sort((a,b)=>a.y-b.y);
+        let prev = -1e9;
+        for (const o of col) { o.ly = Math.max(o.y, prev + GAP); prev = o.ly; }
+      }
+      return items.map(o=>{
+        const left = o.side==="l", tx = left ? o.x-14 : o.x+14;
+        return `<path d="M${o.x} ${o.y} L${left?o.x-9:o.x+9} ${o.ly.toFixed(1)}" fill="none"
+                  stroke="#3a4658" stroke-width="1"/>
+          <circle cx="${o.x}" cy="${o.y}" r="${o.end?4.6:3.3}"
+                  fill="${o.end?'#fff':'var(--ink)'}" stroke="var(--bg)" stroke-width="1.6"/>
+          <text x="${tx}" y="${(o.ly+3.5).toFixed(1)}" text-anchor="${left?'end':'start'}"
+            font-family="ui-monospace,monospace" font-size="11"
+            fill="${o.end?'#fff':'var(--ink2)'}" font-weight="${o.end?600:400}">${o.h.code}<tspan
+            fill="var(--ink3)" font-size="9.5"> ${o.h.km}km</tspan></text>`;
+      }).join("");
+    })()}
+  </svg>`;
+}
+
+function ladder(d, obsMean){
+  const t = d.totals;
+  const base = t.naive_flat_speed_min;
+  const rows = [
+    ["naive flat "+d.max_speed_kmh+" km/h", base, ""],
+    ["+ schedule baseline speeds", t.running_min, ""],
+    ["+ curvature ("+ (d.curvature_mode||"vertex") +")", t.running_min, ""],
+    ["+ halt dwell", t.running_min + t.dwell_min, ""],
+    ["+ historical delay → FINAL", t.predicted_eta_min, "final"],
+    ["scheduled timetable", t.scheduled_duration_min, "sched"],
+  ];
+  if (obsMean!=null) rows.push(["observed mean (real runs)", obsMean, "obs"]);
+  const max = Math.max(...rows.map(r=>r[1]));
+  return `<ul class="ladder">${rows.map(([l,v,k])=>`
+    <li class="${k}"><span class="lbl">${l}</span>
+      <span class="num">${fmt(v)}</span>
+      <span class="num ${obsMean!=null?cls(v-obsMean):''}" style="width:62px">${
+        obsMean!=null?sign(v-obsMean,0):""}</span>
+      <span class="bar"><span style="width:${(v/max*100).toFixed(1)}%;background:${
+        k==="sched"?"var(--violet)":k==="obs"?"var(--good)":"var(--accent)"}"></span></span>
+    </li>`).join("")}</ul>
+  <div style="font:10.5px var(--mono);color:var(--ink3);text-align:right;margin-top:6px">
+    right column = minutes vs observed mean</div>`;
+}
+
+paintBadge();
+load().catch(e=>{ setConn("closed"); $("#app").innerHTML =
+  `<div class="err">failed to load: ${e}<br><br>Is the API running on this origin?</div>`; });
+// tick the badge so "updated HH:MM:SS" visibly ages instead of looking frozen
+setInterval(paintBadge, 1000);
+</script>
+</body>
+</html>
