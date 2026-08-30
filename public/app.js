@@ -3,9 +3,18 @@ const clientCache = {
   fleet: null,
   fleetTime: 0,
   trainLive: new Map(),
+  trainLiveTime: new Map(),      // timestamp per train for TTL
   trainRoute: new Map(),
   trainCoaches: new Map(),
   searches: new Map(),
+};
+
+// Cache TTL config (milliseconds)
+const CACHE_TTL = {
+  fleet: 5 * 60 * 1000,          // 5 minutes
+  trainLive: 60 * 1000,          // 60 seconds (live data refreshes more often)
+  trainRoute: 24 * 60 * 60 * 1000, // 24 hours (static geometry)
+  trainCoaches: 24 * 60 * 60 * 1000, // 24 hours (static)
 };
 
 let map = null;
@@ -22,20 +31,29 @@ let activeTrainMarker = null;
 let selectedTrainNumber = null;
 let searchTimeout = null;
 
+// Auto-refresh intervals
+let fleetRefreshInterval = null;
+let trainRefreshInterval = null;
+let clockInterval = null;
+let lastFleetUpdateTime = null;
+let lastTrainUpdateTime = null;
+
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
   initMap();
   loadLiveFleet();
   setupSearch();
   setupEventListeners();
+  startAutoRefresh();
+  startLiveClock();
 });
 
 // Map Initialization
 function initMap() {
-  // Center map on India
+  // Center map on the Konkan Railway corridor (Mumbai → Goa → Mangalore)
   map = L.map('map', {
-    center: [21.7679, 78.8718],
-    zoom: 5,
+    center: [16.8, 73.5],
+    zoom: 7,
     minZoom: 4,
     maxZoom: 18,
     zoomControl: false,
@@ -111,13 +129,13 @@ function toggleMapLayer() {
   }
 }
 
-// Load Fleet Data from Backend (Protected with 5 min Cache)
-async function loadLiveFleet() {
+// Load Fleet Data from Backend (Protected with TTL-based Cache)
+async function loadLiveFleet(forceRefresh = false) {
   const fleetPill = document.getElementById('fleetStatusText');
   const now = Date.now();
 
-  // If already in client cache and less than 5 min old, reuse
-  if (clientCache.fleet && now - clientCache.fleetTime < 300000) {
+  // If already in client cache and less than TTL old, reuse (unless forced)
+  if (!forceRefresh && clientCache.fleet && now - clientCache.fleetTime < CACHE_TTL.fleet) {
     renderFleetMarkers(clientCache.fleet);
     return;
   }
@@ -126,12 +144,14 @@ async function loadLiveFleet() {
     const res = await fetch('/api/trains/radar/fleet');
     const json = await res.json();
     if (json.success && json.data?.fleet) {
+      const isUpdate = clientCache.fleet !== null;
       clientCache.fleet = json.data.fleet;
       clientCache.fleetTime = now;
+      lastFleetUpdateTime = now;
       renderFleetMarkers(json.data.fleet);
-      if (fleetPill) {
-        fleetPill.innerText = `${json.data.fleet.length} Trains Live on Radar`;
-      }
+      updateFleetPill(json.data.fleet.length);
+      // Flash the fleet pill on refresh to show it's live
+      if (isUpdate) flashElement(fleetPill?.parentElement);
     }
   } catch (err) {
     console.error('Failed to load fleet:', err);
@@ -194,30 +214,50 @@ function renderFleetMarkers(trains) {
 }
 
 // Select and Inspect a Specific Train
-async function selectTrain(trainNumber) {
+async function selectTrain(trainNumber, forceRefresh = false) {
   selectedTrainNumber = trainNumber;
-  openDrawerLoading(trainNumber);
+  if (!forceRefresh) openDrawerLoading(trainNumber);
+
+  // Start auto-refreshing this train
+  startTrainAutoRefresh(trainNumber);
 
   try {
-    // 1. Fetch live status (cached in clientCache if available)
+    const now = Date.now();
+
+    // 1. Fetch live status WITH geometry — TTL-based cache (60s)
+    //    Adding geometry=true&geometry_format=geojson embeds the route polyline
+    //    in the response, so we don't need a separate /route call
     let liveData = clientCache.trainLive.get(trainNumber);
-    if (!liveData) {
-      const res = await fetch(`/api/trains/${trainNumber}/live`);
+    const liveAge = now - (clientCache.trainLiveTime.get(trainNumber) || 0);
+    if (!liveData || forceRefresh || liveAge > CACHE_TTL.trainLive) {
+      const res = await fetch(`/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson`);
       const json = await res.json();
       liveData = json.data?.data || json.data;
-      if (liveData) clientCache.trainLive.set(trainNumber, liveData);
+      if (liveData) {
+        clientCache.trainLive.set(trainNumber, liveData);
+        clientCache.trainLiveTime.set(trainNumber, now);
+        lastTrainUpdateTime = now;
+      }
     }
 
-    // 2. Fetch route geometry (cached in clientCache)
+    // 2. Extract route polyline from live response geometry
+    //    (or fallback to separate /route call)
     let routeGeoJson = clientCache.trainRoute.get(trainNumber);
     if (!routeGeoJson) {
-      const res = await fetch(`/api/trains/${trainNumber}/route`);
-      const json = await res.json();
-      routeGeoJson = json.data?.data || json.data;
+      // Try to extract from the live response first
+      const liveGeom = liveData?.geometry;
+      if (liveGeom?.geojson?.geometry?.coordinates?.length) {
+        routeGeoJson = liveGeom;
+      } else {
+        // Fallback: separate route endpoint
+        const res = await fetch(`/api/trains/${trainNumber}/route`);
+        const json = await res.json();
+        routeGeoJson = json.data?.data || json.data;
+      }
       if (routeGeoJson) clientCache.trainRoute.set(trainNumber, routeGeoJson);
     }
 
-    // 3. Fetch coaches (cached in clientCache)
+    // 3. Fetch coaches (long-lived cache — 24h)
     let coachesData = clientCache.trainCoaches.get(trainNumber);
     if (!coachesData) {
       const res = await fetch(`/api/trains/${trainNumber}/coaches`);
@@ -227,17 +267,20 @@ async function selectTrain(trainNumber) {
     }
 
     if (liveData) {
-      renderTrainOnMap(liveData, routeGeoJson);
+      renderTrainOnMap(liveData, routeGeoJson, forceRefresh);
       renderTrainDrawer(liveData, coachesData);
+      if (forceRefresh) {
+        flashElement(document.getElementById('trainDrawer'));
+      }
     }
   } catch (err) {
     console.error('Failed to load train details:', err);
-    alert(`Could not load live details for train #${trainNumber}.`);
+    if (!forceRefresh) alert(`Could not load live details for train #${trainNumber}.`);
   }
 }
 
 // Draw Track and Stations on Map
-function renderTrainOnMap(liveData, routeGeoJson) {
+function renderTrainOnMap(liveData, routeGeoJson, skipFlyTo = false) {
   activeRouteLayer.clearLayers();
   activeStationsLayer.clearLayers();
 
@@ -247,29 +290,41 @@ function renderTrainOnMap(liveData, routeGeoJson) {
 
   let coordinates = [];
 
-  // If GeoJSON coordinates exist, use them
-  if (routeGeoJson && routeGeoJson.geometry && routeGeoJson.geometry.coordinates) {
-    coordinates = routeGeoJson.geometry.coordinates.map(c => [c[1], c[0]]);
-  } else if (routeStations.length > 0) {
-    // Fallback to station coordinates
+  // Extract GeoJSON coordinates — handle multiple nesting levels
+  // The RailRadar API returns: { geojson: { geometry: { coordinates: [...] } } }
+  // But some endpoints return:  { geometry: { coordinates: [...] } }
+  if (routeGeoJson) {
+    let geom = null;
+    if (routeGeoJson.geojson?.geometry?.coordinates) {
+      geom = routeGeoJson.geojson.geometry;
+    } else if (routeGeoJson.geometry?.coordinates) {
+      geom = routeGeoJson.geometry;
+    }
+    if (geom && geom.coordinates && geom.coordinates.length > 0) {
+      coordinates = geom.coordinates.map(c => [c[1], c[0]]); // [lng,lat] → [lat,lng]
+    }
+  }
+
+  // Fallback to station coordinates from live status
+  if (coordinates.length === 0 && routeStations.length > 0) {
     coordinates = routeStations
       .filter(s => s.lat || (s.station && s.station.lat))
       .map(s => [s.lat || s.station.lat, s.lng || s.station.lng]);
   }
 
   if (coordinates.length > 0) {
-    // Outer glowing track line
+    // Outer glowing track line (magenta/pink like RailRadar)
     const glowLine = L.polyline(coordinates, {
-      color: '#38bdf8',
-      weight: 6,
+      color: '#e040a0',
+      weight: 7,
       opacity: 0.35,
       lineCap: 'round',
     });
 
-    // Inner sharp track line
+    // Inner sharp track line (bright magenta)
     const coreLine = L.polyline(coordinates, {
-      color: '#0284c7',
-      weight: 3,
+      color: '#ec4899',
+      weight: 3.5,
       opacity: 0.95,
       lineCap: 'round',
     });
@@ -277,26 +332,36 @@ function renderTrainOnMap(liveData, routeGeoJson) {
     activeRouteLayer.addLayer(glowLine);
     activeRouteLayer.addLayer(coreLine);
 
-    // Fit map bounds smoothly
-    map.flyToBounds(coreLine.getBounds(), {
-      padding: [60, 60],
-      duration: 1.2,
-    });
+    // Fit map bounds smoothly (skip on auto-refresh to avoid jarring the view)
+    if (!skipFlyTo) {
+      map.flyToBounds(coreLine.getBounds(), {
+        padding: [60, 60],
+        duration: 1.2,
+      });
+    }
   }
 
-  // Plot Station Halts
+  // Plot Station Halts — interpolated along the route polyline
   let currentTrainLat = null;
   let currentTrainLng = null;
 
-  routeStations.forEach((s) => {
-    const lat = s.lat || (s.station && s.station.lat);
-    const lng = s.lng || (s.station && s.station.lng);
-    if (!lat || !lng) return;
+  // Total route distance from the last station's distance field
+  const totalRouteDist = routeStations.length > 0
+    ? Math.max(...routeStations.map(s => s.distance || 0))
+    : 0;
 
+  routeStations.forEach((s) => {
     const isPassed = s.status === 'departed' || s.status === 'arrived';
     const isCurrent = s.sequence === currentLoc.sequence || s.status === 'current';
 
-    if (isCurrent || (!currentTrainLat && isPassed)) {
+    // Interpolate station position on polyline using its distance-from-origin
+    const stationDist = s.distance || 0;
+    const pos = interpolateOnPolyline(coordinates, stationDist, totalRouteDist);
+    if (!pos) return;
+
+    const [lat, lng] = pos;
+
+    if (isCurrent) {
       currentTrainLat = lat;
       currentTrainLng = lng;
     }
@@ -304,49 +369,134 @@ function renderTrainOnMap(liveData, routeGeoJson) {
     // Station Circle Marker
     if (s.isHalt) {
       const circleMarker = L.circleMarker([lat, lng], {
-        radius: isCurrent ? 7 : (isPassed ? 5 : 4),
-        fillColor: isCurrent ? '#06b6d4' : (isPassed ? '#10b981' : '#94a3b8'),
+        radius: isCurrent ? 8 : (isPassed ? 5 : 4),
+        fillColor: isCurrent ? '#ec4899' : (isPassed ? '#10b981' : '#94a3b8'),
         color: '#ffffff',
-        weight: 1.5,
+        weight: isCurrent ? 2.5 : 1.5,
         opacity: 1,
         fillOpacity: 0.9,
       });
 
-      circleMarker.bindTooltip(`
-        <div style="font-weight: 700; font-size: 0.75rem;">${s.stationName || s.stationCode}</div>
-        <div style="font-size: 0.7rem; color: #94a3b8;">${s.actualArrival || s.scheduledArrival || ''}</div>
-      `, { direction: 'top', offset: [0, -6] });
+      // Station name label
+      circleMarker.bindTooltip(
+        `<div style="font-weight: 700; font-size: 0.72rem; white-space: nowrap;">${s.stationName || s.stationCode}</div>`,
+        {
+          direction: 'right',
+          offset: [8, 0],
+          permanent: map.getZoom() >= 9,
+          className: 'station-label-tooltip',
+        }
+      );
 
       activeStationsLayer.addLayer(circleMarker);
     }
   });
+
+  // Interpolate LIVE train position using distanceFromOriginKm
+  const trainDistKm = currentLoc.distanceFromOriginKm;
+  if (trainDistKm != null && coordinates.length > 0) {
+    const trainPos = interpolateOnPolyline(coordinates, trainDistKm, totalRouteDist);
+    if (trainPos) {
+      [currentTrainLat, currentTrainLng] = trainPos;
+    }
+  }
 
   // Pulse marker for active train location
   if (currentTrainLat && currentTrainLng) {
     const trainPulseIcon = L.divIcon({
       className: 'train-map-marker',
       html: `
-        <div class="train-marker-body vande" style="width: 18px; height: 18px; border-width: 3px;">
+        <div class="train-marker-body vande" style="width: 20px; height: 20px; border-width: 3px; border-color: #ec4899;">
           <div class="train-marker-pulse" style="border-color: #ec4899;"></div>
         </div>
       `,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
     });
+
+    const delayStr = (liveData.delayMinutes || 0) > 0
+      ? `<span style="color:#fbbf24;">+${liveData.delayMinutes} min late</span>`
+      : `<span style="color:#34d399;">On Time</span>`;
 
     const activeMarker = L.marker([currentTrainLat, currentTrainLng], { icon: trainPulseIcon });
     activeMarker.bindPopup(`
       <div class="train-popup-card">
         <div class="popup-train-num">🚄 #${liveData.trainNumber}</div>
         <div class="popup-train-name">${liveData.trainName}</div>
-        <div style="color: #34d399; font-size: 0.75rem; font-weight: 700;">
+        <div style="font-size: 0.75rem; font-weight: 700;">
           ${currentLoc.stationName ? 'At ' + currentLoc.stationName : 'En Route'}
+          · ${delayStr}
+        </div>
+        <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">
+          ${trainDistKm ? trainDistKm + ' km from origin' : ''}
         </div>
       </div>
     `);
 
     activeStationsLayer.addLayer(activeMarker);
   }
+}
+
+// ================================================================
+//  POLYLINE INTERPOLATION — find [lat,lng] at a given km distance
+// ================================================================
+
+/**
+ * Given a polyline (array of [lat,lng] pairs) and a target distance in km,
+ * return the interpolated [lat,lng] position on that polyline.
+ *
+ * @param {Array} polyline - Array of [lat, lng] coordinate pairs
+ * @param {number} targetKm - Distance from the start in km
+ * @param {number} totalRouteKm - Total route distance in km (from station data)
+ * @returns {[number,number]|null} - [lat, lng] or null
+ */
+function interpolateOnPolyline(polyline, targetKm, totalRouteKm) {
+  if (!polyline || polyline.length < 2 || targetKm == null) return null;
+
+  // Compute cumulative distance along polyline
+  const cumDist = [0]; // km
+  for (let i = 1; i < polyline.length; i++) {
+    const d = haversineKm(polyline[i - 1], polyline[i]);
+    cumDist.push(cumDist[i - 1] + d);
+  }
+  const polylineTotalKm = cumDist[cumDist.length - 1];
+
+  // Scale targetKm from route-km to polyline-km (they may differ slightly)
+  const scale = totalRouteKm > 0 ? polylineTotalKm / totalRouteKm : 1;
+  const targetPolyKm = targetKm * scale;
+
+  // Clamp
+  if (targetPolyKm <= 0) return polyline[0];
+  if (targetPolyKm >= polylineTotalKm) return polyline[polyline.length - 1];
+
+  // Binary search for the segment containing targetPolyKm
+  let lo = 0, hi = cumDist.length - 1;
+  while (lo < hi - 1) {
+    const mid = (lo + hi) >> 1;
+    if (cumDist[mid] <= targetPolyKm) lo = mid;
+    else hi = mid;
+  }
+
+  // Linear interpolation within the segment [lo, hi]
+  const segLen = cumDist[hi] - cumDist[lo];
+  const t = segLen > 0 ? (targetPolyKm - cumDist[lo]) / segLen : 0;
+  const lat = polyline[lo][0] + t * (polyline[hi][0] - polyline[lo][0]);
+  const lng = polyline[lo][1] + t * (polyline[hi][1] - polyline[lo][1]);
+
+  return [lat, lng];
+}
+
+/** Haversine distance between two [lat,lng] points, in km */
+function haversineKm(a, b) {
+  const R = 6371;
+  const dLat = (b[0] - a[0]) * Math.PI / 180;
+  const dLng = (b[1] - a[1]) * Math.PI / 180;
+  const sinLat = Math.sin(dLat / 2);
+  const sinLng = Math.sin(dLng / 2);
+  const h = sinLat * sinLat +
+    Math.cos(a[0] * Math.PI / 180) * Math.cos(b[0] * Math.PI / 180) *
+    sinLng * sinLng;
+  return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
 
 // Render Train Drawer Details
@@ -593,7 +743,7 @@ function setupEventListeners() {
   });
 
   document.getElementById('recenterBtn').addEventListener('click', () => {
-    map.flyTo([21.7679, 78.8718], 5, { duration: 1 });
+    map.flyTo([16.8, 73.5], 7, { duration: 1 });
   });
 
   document.getElementById('fullscreenBtn').addEventListener('click', () => {
@@ -604,5 +754,85 @@ function setupEventListeners() {
     }
   });
 
-  document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
+  document.getElementById('drawerCloseBtn').addEventListener('click', () => {
+    closeDrawer();
+    stopTrainAutoRefresh();
+  });
+}
+
+// ================================================================
+//  LIVE AUTO-REFRESH SYSTEM
+// ================================================================
+
+/** Start the fleet radar auto-refresh (every 5 min) */
+function startAutoRefresh() {
+  if (fleetRefreshInterval) clearInterval(fleetRefreshInterval);
+  fleetRefreshInterval = setInterval(() => {
+    console.log('[Live] Auto-refreshing fleet radar...');
+    loadLiveFleet(true);
+  }, CACHE_TTL.fleet);
+}
+
+/** Start auto-refreshing a selected train (every 60s) */
+function startTrainAutoRefresh(trainNumber) {
+  stopTrainAutoRefresh();
+  trainRefreshInterval = setInterval(() => {
+    if (selectedTrainNumber === trainNumber) {
+      console.log(`[Live] Auto-refreshing train #${trainNumber}...`);
+      selectTrain(trainNumber, true);
+    } else {
+      stopTrainAutoRefresh();
+    }
+  }, CACHE_TTL.trainLive);
+}
+
+/** Stop the train auto-refresh */
+function stopTrainAutoRefresh() {
+  if (trainRefreshInterval) {
+    clearInterval(trainRefreshInterval);
+    trainRefreshInterval = null;
+  }
+}
+
+// ================================================================
+//  LIVE CLOCK & STATUS PILL
+// ================================================================
+
+/** Tick the fleet status pill with a live clock and time-ago */
+function startLiveClock() {
+  if (clockInterval) clearInterval(clockInterval);
+  clockInterval = setInterval(() => {
+    updateFleetPill();
+  }, 1000);
+}
+
+function updateFleetPill(trainCount) {
+  const fleetPill = document.getElementById('fleetStatusText');
+  if (!fleetPill) return;
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
+  const count = trainCount ?? clientCache.fleet?.length ?? 0;
+
+  if (lastFleetUpdateTime) {
+    const agoSec = Math.round((Date.now() - lastFleetUpdateTime) / 1000);
+    const agoStr = agoSec < 60 ? `${agoSec}s ago` : `${Math.floor(agoSec / 60)}m ago`;
+    fleetPill.innerText = `${count} Konkan Trains · ${timeStr} · Updated ${agoStr}`;
+  } else if (count > 0) {
+    fleetPill.innerText = `${count} Konkan Trains Live · ${timeStr}`;
+  } else {
+    fleetPill.innerText = `Connecting · ${timeStr}`;
+  }
+}
+
+// ================================================================
+//  VISUAL FEEDBACK
+// ================================================================
+
+/** Flash an element to indicate data just updated */
+function flashElement(el) {
+  if (!el) return;
+  el.classList.add('data-flash');
+  setTimeout(() => el.classList.remove('data-flash'), 800);
 }

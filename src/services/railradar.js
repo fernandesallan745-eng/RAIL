@@ -158,28 +158,38 @@ class RailRadarService {
   async getLiveFleet() {
     this.ensureApiKey();
     
-    // Core representative trains across all major railway zones in India
+    // Konkan Railway trains: Mumbai (CSMT/LTT/PNVL) ↔ Goa/Mangalore via Konkan coast
+    // This is our project focus — SIH dynamic ETA on this corridor
     const majorTrains = [
-      '12625', // Kerala Express (TVC -> NDLS)
-      '12626', // Kerala Express (NDLS -> TVC)
-      '12002', // Bhopal Shatabdi (NDLS -> RKMP)
-      '12001', // Shatabdi Express (RKMP -> NDLS)
-      '12951', // Mumbai Rajdhani (MMCT -> NDLS)
-      '12952', // Mumbai Rajdhani (NDLS -> MMCT)
-      '12301', // Howrah Rajdhani (HWH -> NDLS)
-      '12302', // Howrah Rajdhani (NDLS -> HWH)
-      '22436', // Vande Bharat (NDLS -> BSB)
-      '22435', // Vande Bharat (BSB -> NDLS)
-      '12861', // Mahbubnagar SF Express (VSKP -> MBNR)
-      '12423', // Dibrugarh Rajdhani (DBRG -> NDLS)
-      '12424', // Dibrugarh Rajdhani (NDLS -> DBRG)
-      '12721', // Dakshin Express (HYB -> NZM)
-      '12779', // Goa Express (VSG -> NZM)
-      '12259', // Sealdah Bikaner AC Duronto
-      '12004', // Lucknow Shatabdi
-      '12926', // Paschim Express
-      '12487', // Seemanchal Express
-      '12308', // Howrah SF Express
+      // Vande Bharat & Premium
+      '22229', // Vande Bharat CSMT–Madgaon
+      '22230', // Vande Bharat Madgaon–CSMT
+      '12133', // Mumbai CSMT – Mangalore Jn SF Express
+      '12134', // Mangalore Jn – Mumbai CSMT SF Express
+
+      // Konkan Kanya / Jan Shatabdi
+      '10111', // Konkan Kanya Express (CSMT → Madgaon)
+      '10112', // Konkan Kanya Express (Madgaon → CSMT)
+      '12051', // Jan Shatabdi (Madgaon → CSMT)
+      '12052', // Jan Shatabdi (CSMT → Madgaon)
+
+      // Mandovi / Nethravathi
+      '10103', // Mandovi Express (CSMT → Madgaon)
+      '10104', // Mandovi Express (Madgaon → CSMT)
+      '16345', // Nethravathi Express (LTT → Trivandrum)
+      '16346', // Nethravathi Express (Trivandrum → LTT)
+
+      // Goa / Mangalore bound
+      '12779', // Goa Express (VSG → NZM)
+      '12780', // Goa Express (NZM → VSG)
+      '12619', // Matsyagandha Express (LTT → Mangalore)
+      '12620', // Matsyagandha Express (Mangalore → LTT)
+
+      // Specials / Mail
+      '01131', // Mumbai LTT – Sawantwadi Road Special
+      '01132', // Sawantwadi Road – Mumbai LTT Special
+      '12617', // Mangala Lakshadweep Express (Ernakulam → NZM)
+      '12618', // Mangala Lakshadweep Express (NZM → Ernakulam)
     ];
 
     const fleet = [];
@@ -187,7 +197,11 @@ class RailRadarService {
     // Fetch live status for fleet trains with Promise.allSettled to ensure high availability
     const promises = majorTrains.map(async (num) => {
       try {
-        const liveRes = await this.getTrainLiveStatus(num);
+        // Request geometry so we can interpolate the live position
+        const liveRes = await this.getTrainLiveStatus(num, {
+          geometry: true,
+          geometry_format: 'geojson',
+        });
         const liveData = liveRes?.data || liveRes;
         
         if (!liveData) return null;
@@ -197,25 +211,49 @@ class RailRadarService {
         const prevHalt = liveData.previousHalt || {};
         const nextHalt = liveData.nextHalt || {};
 
-        // Find coordinates from current location or route stations
-        let lat = currentLoc.lat;
-        let lng = currentLoc.lng;
+        // ── Compute actual train position via polyline interpolation ──
+        let lat = null;
+        let lng = null;
 
-        if ((!lat || !lng) && liveData.route && Array.isArray(liveData.route)) {
-          const currentSeq = currentLoc.sequence;
-          const matchedStation = liveData.route.find(s => s.sequence === currentSeq) ||
-                                 liveData.route.find(s => s.status === 'departed' || s.status === 'current') ||
-                                 liveData.route[0];
-          if (matchedStation && matchedStation.station) {
-            lat = matchedStation.station.lat;
-            lng = matchedStation.station.lng;
-          } else if (matchedStation) {
-            lat = matchedStation.lat;
-            lng = matchedStation.lng;
+        // Extract route polyline from geometry
+        const geomObj = liveData.geometry;
+        const coords = geomObj?.geojson?.geometry?.coordinates; // [[lng,lat], ...]
+        const route = liveData.route || [];
+        const trainDistKm = currentLoc.distanceFromOriginKm;
+        const totalRouteDist = route.length > 0
+          ? Math.max(...route.map(s => s.distance || 0))
+          : 0;
+
+        if (coords && coords.length > 1 && trainDistKm != null && totalRouteDist > 0) {
+          // Convert [lng,lat] → [lat,lng] for the polyline
+          const polyline = coords.map(c => [c[1], c[0]]);
+          
+          // Compute cumulative distance along polyline
+          const cumDist = [0];
+          for (let i = 1; i < polyline.length; i++) {
+            const dLat = (polyline[i][0] - polyline[i-1][0]) * Math.PI / 180;
+            const dLng = (polyline[i][1] - polyline[i-1][1]) * Math.PI / 180;
+            const a = Math.sin(dLat/2)**2 + Math.cos(polyline[i-1][0]*Math.PI/180) * Math.cos(polyline[i][0]*Math.PI/180) * Math.sin(dLng/2)**2;
+            const km = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            cumDist.push(cumDist[i-1] + km);
           }
+          const polyTotal = cumDist[cumDist.length - 1];
+          const scale = polyTotal / totalRouteDist;
+          const targetPoly = Math.max(0, Math.min(polyTotal, trainDistKm * scale));
+
+          // Binary search for the segment
+          let lo = 0, hi = cumDist.length - 1;
+          while (lo < hi - 1) {
+            const mid = (lo + hi) >> 1;
+            cumDist[mid] <= targetPoly ? lo = mid : hi = mid;
+          }
+          const segLen = cumDist[hi] - cumDist[lo];
+          const t = segLen > 0 ? (targetPoly - cumDist[lo]) / segLen : 0;
+          lat = polyline[lo][0] + t * (polyline[hi][0] - polyline[lo][0]);
+          lng = polyline[lo][1] + t * (polyline[hi][1] - polyline[lo][1]);
         }
 
-        // Fallback to source or destination if not departed
+        // Fallback: source station if interpolation failed
         if (!lat || !lng) {
           if (trainInfo.source && trainInfo.source.lat) {
             lat = trainInfo.source.lat;
