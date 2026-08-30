@@ -118,6 +118,16 @@ export const getTrainLiveStatus = async (req, res, next) => {
       console.warn(`[FastAPI integration] Curvature ETA model offline or failed: ${err.message}`);
     }
 
+    // Success path: Persist a copy of the enhanced train status to disk cache
+    if (enhancedData) {
+      try {
+        const trainFile = path.join(FALLBACK_DIR, `train_${trainNumber}_live_fallback.json`);
+        fs.writeFileSync(trainFile, JSON.stringify(enhancedData, null, 2), 'utf-8');
+      } catch (writeErr) {
+        console.error(`[Controller] Failed to write disk fallback for train #${trainNumber}:`, writeErr.message);
+      }
+    }
+
     res.json({
       success: true,
       trainNumber,
@@ -125,9 +135,9 @@ export const getTrainLiveStatus = async (req, res, next) => {
     });
   } catch (error) {
     // Upstream failure or rate limit: recover last cached data if available
-    console.warn(`[Controller] Upstream live status call failed: ${error.message}. Checking cache...`);
+    console.warn(`[Controller] Upstream live status call failed for train #${trainNumber}: ${error.message}. Checking cache...`);
     
-    // Check multiple potential cache keys (with or without refresh/geometry flags)
+    // 1. Check in-memory cache keys first
     const baseUri = `/api/trains/${trainNumber}/live`;
     const cacheKeys = [
       `__cache__${baseUri}?geometry=true&geometry_format=geojson`,
@@ -138,7 +148,7 @@ export const getTrainLiveStatus = async (req, res, next) => {
     for (const key of cacheKeys) {
       const cached = cache.get(key);
       if (cached && (cached.data || cached.success)) {
-        console.log(`[Controller] Recovered cached status from key "${key}" for train #${trainNumber}`);
+        console.log(`[Controller] Recovered in-memory cached status from key "${key}" for train #${trainNumber}`);
         const payload = cached.data || cached;
         payload.is_cached_fallback = true;
         payload.rate_limit_active = (error.status === 429 || error.response?.status === 429);
@@ -147,6 +157,27 @@ export const getTrainLiveStatus = async (req, res, next) => {
           trainNumber,
           data: payload,
         });
+      }
+    }
+
+    // 2. Check disk-persisted fallback copy next
+    const trainFile = path.join(FALLBACK_DIR, `train_${trainNumber}_live_fallback.json`);
+    if (fs.existsSync(trainFile)) {
+      try {
+        const diskPayload = JSON.parse(fs.readFileSync(trainFile, 'utf-8'));
+        if (diskPayload) {
+          console.log(`[Controller] Recovered disk-persisted cached status from ${trainFile} for train #${trainNumber}`);
+          diskPayload.is_cached_fallback = true;
+          diskPayload.recovered_from_disk = true;
+          diskPayload.rate_limit_active = (error.status === 429 || error.response?.status === 429);
+          return res.json({
+            success: true,
+            trainNumber,
+            data: diskPayload,
+          });
+        }
+      } catch (readErr) {
+        console.error(`[Controller] Failed to read disk fallback for train #${trainNumber}:`, readErr.message);
       }
     }
     
