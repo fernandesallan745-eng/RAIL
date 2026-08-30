@@ -1,6 +1,8 @@
+import axios from 'axios';
 import { railRadarService } from '../services/railradar.js';
 import { config } from '../config/env.js';
 import { cache } from '../middleware/cache.js';
+import { enhanceLiveData, getTunnelZones } from '../services/deadReckoning.js';
 
 export const getHealth = (req, res) => {
   res.json({
@@ -45,11 +47,58 @@ export const getTrainLiveStatus = async (req, res, next) => {
     if (!trainNumber) {
       return res.status(400).json({ success: false, message: 'Train number is required.' });
     }
-    const data = await railRadarService.getTrainLiveStatus(trainNumber, req.query);
+
+    // 1. Fetch raw live status and route geometry in parallel
+    const [liveDataRaw, routeGeoJsonRaw] = await Promise.allSettled([
+      railRadarService.getTrainLiveStatus(trainNumber, req.query),
+      railRadarService.getTrainRoute(trainNumber)
+    ]);
+
+    const liveDataObj = liveDataRaw.status === 'fulfilled' ? liveDataRaw.value : null;
+    const routeGeoJson = routeGeoJsonRaw.status === 'fulfilled' ? routeGeoJsonRaw.value : null;
+
+    if (!liveDataObj) {
+      throw new Error(`Failed to fetch live status for train #${trainNumber}`);
+    }
+
+    // Extract inner payload depending on nesting structure
+    const liveData = liveDataObj.data?.data || liveDataObj.data || liveDataObj;
+
+    // 2. Augment live status with Dead Reckoning tunnel/stale-signal tracking
+    const enhancedData = enhanceLiveData(liveData, routeGeoJson);
+
+    // 3. Request curvature/delay-aware ETA from FastAPI server (Port 8000)
+    //    We match the date from the live response (startDate)
+    const startDate = liveData.startDate || new Date().toISOString().split('T')[0];
+    try {
+      const fastApiUrl = `http://127.0.0.1:8000/eta/${trainNumber}`;
+      const fastApiRes = await axios.get(fastApiUrl, {
+        params: { date: startDate, weather: req.query.weather || 'clear' },
+        timeout: 1500, // short timeout to fail-safe if FastAPI is offline
+      });
+      if (fastApiRes.data) {
+        enhancedData.curvatureEta = fastApiRes.data;
+      }
+    } catch (err) {
+      console.warn(`[FastAPI integration] Curvature ETA model offline or failed: ${err.message}`);
+    }
+
     res.json({
       success: true,
       trainNumber,
-      data,
+      data: enhancedData,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getTunnels = async (req, res, next) => {
+  try {
+    const zones = getTunnelZones();
+    res.json({
+      success: true,
+      data: zones,
     });
   } catch (error) {
     next(error);

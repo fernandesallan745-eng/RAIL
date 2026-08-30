@@ -97,7 +97,10 @@
     <div class="drawer-content-scroll">
       <!-- Live Status Card -->
       <div class="live-status-card">
-        <div id="drawerDelayBadge" class="delay-badge-pill ontime">🟢 On Time</div>
+        <div class="status-top-row">
+          <div id="drawerDelayBadge" class="delay-badge-pill ontime">🟢 On Time</div>
+          <div id="drawerDrBadge" class="delay-badge-pill dr-badge" style="display: none;">📡 Dead Reckoning</div>
+        </div>
         <div id="drawerCurrentPos" class="current-pos-text">Departed New Delhi</div>
         <div id="drawerNextHalt" class="next-halt-text">Next halt: Mathura Jn</div>
         
@@ -108,6 +111,36 @@
         <div class="progress-stats-row">
           <span id="drawerCoveredKm">280 km covered (40%)</span>
           <span id="drawerTotalKm">707 km total</span>
+        </div>
+
+        <!-- Dead Reckoning Info Panel (USP) -->
+        <div id="deadReckoningPanel" class="dr-info-panel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2);">
+          <div style="font-weight: 700; color: #f87171; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;">
+            <span class="pulsing-red-dot-dr"></span> SIGNAL DROPPED: Entering Blind Spot
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+            Zone: <strong id="drTunnelName" style="color: #fff;">-</strong><br/>
+            Last signal: <span id="drLastSignal">3 min ago</span><br/>
+            Current Position: <span id="drEstPos" style="color: #f87171; font-weight: 600;">Dead Reckoned</span><br/>
+            Confidence: <span id="drConfidence" style="color: #fbbf24; font-weight: 600;">85%</span>
+          </div>
+        </div>
+
+        <!-- Curvature & Delay-Aware ETA Engine Insights -->
+        <div id="curvatureEtaPanel" class="eta-insights-panel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2);">
+          <div style="font-weight: 700; color: #60a5fa; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;">
+            🧠 Dynamic Curvature & Delay ETA Engine
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+            <div>RDSO Curve Capped Speed: <br/><strong id="etaSharpestCurve" style="color: #fff;">-</strong></div>
+            <div>Weather Cap (Clear): <br/><strong id="etaWeatherCap" style="color: #fff;">-</strong></div>
+            <div>Timetable Slack: <br/><strong id="etaScheduleSlack" style="color: #fff;">-</strong></div>
+            <div>Mean Historical Delay: <br/><strong id="etaHistDelay" style="color: #fbbf24;">-</strong></div>
+          </div>
+          <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 0.75rem; color: #fff; font-weight: 600; display: flex; justify-content: space-between;">
+            <span>Engine Prediction:</span>
+            <span id="etaEnginePrediction" style="color: #34d399;">-</span>
+          </div>
         </div>
       </div>
 

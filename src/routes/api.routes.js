@@ -8,6 +8,7 @@ import {
   searchTrains,
   getTrainCategories,
   getLiveFleet,
+  getTunnels,
   proxyPass,
 } from '../controllers/train.controller.js';
 import { cacheMiddleware } from '../middleware/cache.js';
@@ -20,6 +21,9 @@ router.get('/health', getHealth);
 
 // Live Radar Fleet across India (cached for 5 min to conserve API quota)
 router.get('/trains/radar/fleet', cacheMiddleware(config.cache.liveTtl), getLiveFleet);
+
+// Tunnel zones
+router.get('/tunnels/zones', cacheMiddleware(3600), getTunnels);
 
 // Train search / autocomplete
 router.get('/trains/search', cacheMiddleware(config.cache.staticTtl), searchTrains);

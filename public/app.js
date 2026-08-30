@@ -532,6 +532,66 @@ function renderTrainDrawer(liveData, coachesData) {
     delayBadge.innerHTML = `🔴 Delayed by ${delayMinutes} mins`;
   }
 
+  // 📡 Dead Reckoning Panel UI Integration
+  const drPanel = document.getElementById('deadReckoningPanel');
+  const drBadge = document.getElementById('drawerDrBadge');
+  const drInfo = liveData.deadReckoning;
+
+  if (drInfo && drInfo.active) {
+    drBadge.style.display = 'block';
+    drPanel.style.display = 'block';
+    
+    document.getElementById('drTunnelName').innerText = drInfo.tunnelZone?.name || 'Unnamed Tunnel';
+    const staleSecs = Math.round(drInfo.staleSinceMs / 1000);
+    const staleStr = staleSecs < 60 ? `${staleSecs}s ago` : `${Math.floor(staleSecs / 60)}m ago`;
+    document.getElementById('drLastSignal').innerText = `${staleStr} (${new Date(drInfo.lastSignalAt).toLocaleTimeString('en-IN')})`;
+    
+    const estPos = drInfo.estimatedPosition;
+    document.getElementById('drEstPos').innerText = `${estPos.lat.toFixed(4)}°, ${estPos.lng.toFixed(4)}° (${estPos.distanceFromEntryKm.toFixed(2)} km in)`;
+    document.getElementById('drConfidence').innerText = `${Math.round(estPos.confidence * 100)}%`;
+  } else {
+    drBadge.style.display = 'none';
+    drPanel.style.display = 'none';
+  }
+
+  // 🧠 Curvature & Delay-Aware ETA Engine Panel UI Integration
+  const etaPanel = document.getElementById('curvatureEtaPanel');
+  const cEta = liveData.curvatureEta;
+
+  if (cEta) {
+    etaPanel.style.display = 'block';
+
+    const segments = cEta.segments || [];
+    // Compute summary metrics from segment details
+    const activeSegIndex = Math.min(
+      currentLoc.sequence ? currentLoc.sequence - 1 : 0,
+      segments.length - 1
+    );
+    const activeSeg = segments[activeSegIndex] || {};
+
+    const sharpestR = cEta.sharpest_radius_m || activeSeg.min_radius_m || 'N/A';
+    const curveSpd = cEta.sharpest_capped_speed_kmh || activeSeg.curve_capped_speed_kmh || '80';
+    document.getElementById('etaSharpestCurve').innerText = sharpestR !== 'N/A' 
+      ? `R=${sharpestR}m (${curveSpd} km/h)` 
+      : 'No curve cap';
+
+    const weatherVal = cEta.weather || 'clear';
+    const weatherCapVal = activeSeg.weather_capped_speed_kmh || '80';
+    document.getElementById('etaWeatherCap').innerText = `${weatherVal.toUpperCase()} (${weatherCapVal} km/h)`;
+
+    const totalSlack = segments.reduce((sum, s) => sum + (s.schedule_slack_min || 0), 0);
+    document.getElementById('etaScheduleSlack').innerText = `${totalSlack.toFixed(1)} min`;
+
+    const totalHistDelay = segments.reduce((sum, s) => sum + (s.hist_delay_min || 0), 0);
+    document.getElementById('etaHistDelay').innerText = `+${totalHistDelay.toFixed(1)} min`;
+
+    const totalPred = cEta.total_predicted_min || segments.reduce((sum, s) => sum + (s.segment_eta_min || 0), 0);
+    const totalSched = cEta.actual_scheduled_min || 635;
+    document.getElementById('etaEnginePrediction').innerText = `${totalPred.toFixed(1)} min (vs ${totalSched} min Sched)`;
+  } else {
+    etaPanel.style.display = 'none';
+  }
+
   // Current Position
   const posText = currentLoc.stationName
     ? `${currentLoc.status === 'departed' ? 'Departed from' : 'Approaching'} ${currentLoc.stationName}`
