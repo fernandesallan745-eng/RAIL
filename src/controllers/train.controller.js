@@ -1,8 +1,18 @@
+import fs from 'fs';
+import path from 'path';
 import axios from 'axios';
 import { railRadarService } from '../services/railradar.js';
 import { config } from '../config/env.js';
 import { cache } from '../middleware/cache.js';
 import { enhanceLiveData, getTunnelZones } from '../services/deadReckoning.js';
+
+const FALLBACK_DIR = path.join(process.cwd(), '.cache');
+const FALLBACK_FILE = path.join(FALLBACK_DIR, 'fleet_fallback.json');
+
+// Ensure cache folder exists
+if (!fs.existsSync(FALLBACK_DIR)) {
+  fs.mkdirSync(FALLBACK_DIR, { recursive: true });
+}
 
 export const getHealth = (req, res) => {
   res.json({
@@ -226,6 +236,66 @@ export const getTrainCategories = async (req, res, next) => {
 export const getLiveFleet = async (req, res, next) => {
   try {
     const data = await railRadarService.getLiveFleet();
+    
+    // If the fleet fetch returned 0 trains (likely due to upstream rate limits on all promises),
+    // fall back to the last successfully cached fleet copy so the dashboard doesn't go blank.
+    if (!data || !data.fleet || data.fleet.length === 0) {
+      console.warn('[LiveFleet Controller] Upstream returned empty fleet. Fetching fallback cache...');
+      
+      // 1. Try In-Memory Cache first
+      const cacheKeys = [
+        '__cache__/api/trains/radar/fleet',
+        '__cache__/api/trains/radar/fleet?refresh=true',
+      ];
+      for (const key of cacheKeys) {
+        const cached = cache.get(key);
+        const cachedFleet = cached?.data?.fleet || cached?.fleet;
+        if (cachedFleet && cachedFleet.length > 0) {
+          console.log(`[LiveFleet Controller] Recovered in-memory cached fleet from key "${key}"`);
+          return res.json({
+            success: true,
+            data: {
+              count: cachedFleet.length,
+              timestamp: cached?.data?.timestamp || cached?.timestamp || new Date().toISOString(),
+              fleet: cachedFleet,
+              is_cached_fallback: true,
+            }
+          });
+        }
+      }
+
+      // 2. Try Disk Fallback Cache next (survives server restarts)
+      if (fs.existsSync(FALLBACK_FILE)) {
+        try {
+          const diskPayload = JSON.parse(fs.readFileSync(FALLBACK_FILE, 'utf-8'));
+          if (diskPayload && diskPayload.fleet && diskPayload.fleet.length > 0) {
+            console.log(`[LiveFleet Controller] Recovered disk-persisted cached fleet from ${FALLBACK_FILE}`);
+            return res.json({
+              success: true,
+              data: {
+                count: diskPayload.fleet.length,
+                timestamp: diskPayload.timestamp || new Date().toISOString(),
+                fleet: diskPayload.fleet,
+                is_cached_fallback: true,
+                recovered_from_disk: true,
+              }
+            });
+          }
+        } catch (readErr) {
+          console.error('[LiveFleet Controller] Failed to read disk fallback:', readErr.message);
+        }
+      }
+    }
+
+    // Success path: Persist a copy to disk cache
+    if (data && data.fleet && data.fleet.length > 0) {
+      try {
+        fs.writeFileSync(FALLBACK_FILE, JSON.stringify(data, null, 2), 'utf-8');
+      } catch (writeErr) {
+        console.error('[LiveFleet Controller] Failed to write fallback file to disk:', writeErr.message);
+      }
+    }
+
     res.json({
       success: true,
       data,
