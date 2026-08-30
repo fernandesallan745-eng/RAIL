@@ -12,10 +12,13 @@ class RailRadarService {
       },
     });
 
+    this.currentKeyIndex = 0;
+
     // Request Interceptor: Attach API Key
     this.client.interceptors.request.use(
       (req) => {
-        const apiKey = config.railRadar.apiKey;
+        const keys = config.railRadar.apiKeys || [];
+        const apiKey = keys[this.currentKeyIndex] || config.railRadar.apiKey;
         if (apiKey) {
           req.headers['Authorization'] = apiKey.startsWith('Bearer ')
             ? apiKey
@@ -26,10 +29,36 @@ class RailRadarService {
       (error) => Promise.reject(error)
     );
 
-    // Response Interceptor: Format errors consistently
+    // Response Interceptor: Format errors consistently & rotate on 429
     this.client.interceptors.response.use(
       (res) => res,
-      (error) => {
+      async (error) => {
+        // Check if rate limited (429)
+        const isRateLimit = error.response && error.response.status === 429;
+        const keys = config.railRadar.apiKeys || [];
+
+        // Track how many times this specific request has been retried across keys
+        const originalRequest = error.config || {};
+        originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+
+        // If rate limited, we have more than 1 key, and we haven't exhausted all of them, rotate and retry!
+        if (isRateLimit && keys.length > 1 && originalRequest._retryCount < keys.length) {
+          const nextIndex = (this.currentKeyIndex + 1) % keys.length;
+          console.warn(`\x1b[33m[RailRadar Service] Upstream rate limit (429) hit for Key #${this.currentKeyIndex}. Rotating to Key #${nextIndex} (Attempt ${originalRequest._retryCount}/${keys.length - 1})...\x1b[0m`);
+          
+          this.currentKeyIndex = nextIndex;
+          config.railRadar.apiKey = keys[this.currentKeyIndex]; // update current config reference
+          
+          // Retry the failed request with the new rotated key
+          originalRequest.headers['Authorization'] = `Bearer ${keys[this.currentKeyIndex]}`;
+          
+          try {
+            return await this.client(originalRequest);
+          } catch (retryErr) {
+            return Promise.reject(retryErr); // Propagate if the rotated key also fails
+          }
+        }
+
         const customError = new Error();
 
         if (error.response) {
