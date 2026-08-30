@@ -673,9 +673,6 @@ function renderTimeline(route, currentLoc) {
     const item = document.createElement('div');
     item.className = `timeline-item ${isPassed ? 'passed' : ''} ${isCurrent ? 'current' : ''}`;
 
-    const delay = s.delayDeparture ?? s.delayArrival ?? 0;
-    const delayHtml = delay > 0 ? `<div class="time-delay-tag">+${delay}m</div>` : '';
-
     const scheduledTime = s.scheduledArrival || s.scheduledDeparture || '--:--';
     const timeStr = scheduledTime.includes('T') ? scheduledTime.split('T')[1].slice(0, 5) : scheduledTime;
 
