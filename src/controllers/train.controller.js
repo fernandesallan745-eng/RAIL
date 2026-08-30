@@ -68,16 +68,43 @@ export const getTrainLiveStatus = async (req, res, next) => {
     const enhancedData = enhanceLiveData(liveData, routeGeoJson);
 
     // 3. Request curvature/delay-aware ETA from FastAPI server (Port 8000)
-    //    We match the date from the live response (startDate)
-    const startDate = liveData.startDate || new Date().toISOString().split('T')[0];
+    //    We match the date from the live response (startDate).
+    //    If the date is not cached, we query the health endpoint to find the latest
+    //    available cached date and use that as a fallback.
+    let startDate = liveData.startDate || new Date().toISOString().split('T')[0];
     try {
       const fastApiUrl = `http://127.0.0.1:8000/eta/${trainNumber}`;
-      const fastApiRes = await axios.get(fastApiUrl, {
-        params: { date: startDate, weather: req.query.weather || 'clear' },
-        timeout: 1500, // short timeout to fail-safe if FastAPI is offline
-      });
-      if (fastApiRes.data) {
-        enhancedData.curvatureEta = fastApiRes.data;
+      try {
+        const fastApiRes = await axios.get(fastApiUrl, {
+          params: { date: startDate, weather: req.query.weather || 'clear' },
+          timeout: 1500,
+        });
+        if (fastApiRes.data) {
+          enhancedData.curvatureEta = fastApiRes.data;
+        }
+      } catch (err) {
+        // If 404, the date is not cached. Try finding a fallback date from health check.
+        if (err.response && err.response.status === 404) {
+          console.log(`[FastAPI integration] Date ${startDate} not cached. Fetching fallback...`);
+          const healthRes = await axios.get('http://127.0.0.1:8000/health', { timeout: 1000 });
+          const cachedDates = healthRes.data?.cached_dated_runs || [];
+          if (cachedDates.length > 0) {
+            // Pick the latest available date
+            const fallbackDate = cachedDates[cachedDates.length - 1];
+            console.log(`[FastAPI integration] Falling back to latest cached date: ${fallbackDate}`);
+            const fallbackRes = await axios.get(fastApiUrl, {
+              params: { date: fallbackDate, weather: req.query.weather || 'clear' },
+              timeout: 1500,
+            });
+            if (fallbackRes.data) {
+              enhancedData.curvatureEta = fallbackRes.data;
+              // Make sure to reflect that we are showing a modeled fallback date
+              enhancedData.curvatureEta.is_fallback_date = true;
+            }
+          }
+        } else {
+          throw err;
+        }
       }
     } catch (err) {
       console.warn(`[FastAPI integration] Curvature ETA model offline or failed: ${err.message}`);

@@ -11,8 +11,8 @@ const clientCache = {
 
 // Cache TTL config (milliseconds)
 const CACHE_TTL = {
-  fleet: 5 * 60 * 1000,          // 5 minutes
-  trainLive: 60 * 1000,          // 60 seconds (live data refreshes more often)
+  fleet: 30 * 1000,              // 30 seconds (fleet refreshes often)
+  trainLive: 10 * 1000,          // 10 seconds (selected train refreshes in real-time)
   trainRoute: 24 * 60 * 60 * 1000, // 24 hours (static geometry)
   trainCoaches: 24 * 60 * 60 * 1000, // 24 hours (static)
 };
@@ -141,7 +141,8 @@ async function loadLiveFleet(forceRefresh = false) {
   }
 
   try {
-    const res = await fetch('/api/trains/radar/fleet');
+    const url = forceRefresh ? '/api/trains/radar/fleet?refresh=true' : '/api/trains/radar/fleet';
+    const res = await fetch(url);
     const json = await res.json();
     if (json.success && json.data?.fleet) {
       const isUpdate = clientCache.fleet !== null;
@@ -230,7 +231,8 @@ async function selectTrain(trainNumber, forceRefresh = false) {
     let liveData = clientCache.trainLive.get(trainNumber);
     const liveAge = now - (clientCache.trainLiveTime.get(trainNumber) || 0);
     if (!liveData || forceRefresh || liveAge > CACHE_TTL.trainLive) {
-      const res = await fetch(`/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson`);
+      const url = `/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson${forceRefresh ? '&refresh=true' : ''}`;
+      const res = await fetch(url);
       const json = await res.json();
       liveData = json.data?.data || json.data;
       if (liveData) {

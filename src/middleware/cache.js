@@ -21,7 +21,10 @@ export const cacheMiddleware = (ttlSeconds = config.cache.liveTtl) => {
 
     // Generate unique cache key based on URL and query params
     const key = `__cache__${req.originalUrl || req.url}`;
-    const cachedResponse = cache.get(key);
+    
+    // Check if client is forcing a refresh
+    const forceRefresh = req.query.refresh === 'true' || req.headers['x-refresh'] === 'true';
+    const cachedResponse = forceRefresh ? null : cache.get(key);
 
     if (cachedResponse) {
       res.setHeader('X-Cache', 'HIT');
