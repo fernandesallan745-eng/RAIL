@@ -11,8 +11,8 @@ const clientCache = {
 
 // Cache TTL config (milliseconds)
 const CACHE_TTL = {
-  fleet: 30 * 1000,              // 30 seconds (fleet refreshes often)
-  trainLive: 10 * 1000,          // 10 seconds (selected train refreshes in real-time)
+  fleet: 60 * 1000,              // 60 seconds (fleet refreshes every minute)
+  trainLive: 20 * 1000,          // 20 seconds (selected train refreshes every 20s)
   trainRoute: 24 * 60 * 60 * 1000, // 24 hours (static geometry)
   trainCoaches: 24 * 60 * 60 * 1000, // 24 hours (static)
 };
@@ -234,6 +234,9 @@ async function selectTrain(trainNumber, forceRefresh = false) {
       const url = `/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson${forceRefresh ? '&refresh=true' : ''}`;
       const res = await fetch(url);
       const json = await res.json();
+      if (!res.ok || json.success === false) {
+        throw new Error(json.message || json.error || `API error (${res.status})`);
+      }
       liveData = json.data?.data || json.data;
       if (liveData) {
         clientCache.trainLive.set(trainNumber, liveData);
@@ -277,7 +280,9 @@ async function selectTrain(trainNumber, forceRefresh = false) {
     }
   } catch (err) {
     console.error('Failed to load train details:', err);
-    if (!forceRefresh) alert(`Could not load live details for train #${trainNumber}.`);
+    document.getElementById('drawerTrainName').innerText = `Error: ${err.message}`;
+    stopTrainAutoRefresh();
+    if (!forceRefresh) alert(`Could not load live details for train #${trainNumber}: ${err.message}`);
   }
 }
 
