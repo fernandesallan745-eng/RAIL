@@ -4,6 +4,8 @@ import path from 'path';
 
 dotenv.config();
 
+// Recalculating keys on watch reload
+
 // Extract all instances of RAILRADAR_API_KEY from .env manually
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
