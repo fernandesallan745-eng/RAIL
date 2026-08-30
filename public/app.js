@@ -280,27 +280,9 @@ async function selectTrain(trainNumber, forceRefresh = false) {
     }
   } catch (err) {
     console.error('Failed to load train details:', err);
-    
-    // Parse if it was a rate limit error
-    const isRateLimit = err.message.toLowerCase().includes('rate limit') || err.message.toLowerCase().includes('429');
-    const msg = isRateLimit 
-      ? '⚠️ Upstream rate limit. Displaying cached telemetry.'
-      : `⚠️ Error: ${err.message}`;
-      
-    document.getElementById('drawerTrainName').innerHTML = `<span style="color: #fbbf24; font-weight: 700; font-size: 0.85rem;">${msg}</span>`;
-    
-    // Try to recover any cached data from in-memory cache to render what we can
-    const cachedLive = clientCache.trainLive.get(trainNumber);
-    const cachedCoaches = clientCache.trainCoaches.get(trainNumber);
-    const cachedRoute = clientCache.trainRoute.get(trainNumber);
-    
-    if (cachedLive) {
-      renderTrainOnMap(cachedLive, cachedRoute, true);
-      renderTrainDrawer(cachedLive, cachedCoaches);
-      document.getElementById('drawerTrainName').innerHTML = `<span style="color: #fbbf24; font-weight: 700; font-size: 0.85rem;">⚠️ Rate Limited (Showing Cache)</span>`;
-    } else {
-      stopTrainAutoRefresh();
-    }
+    document.getElementById('drawerTrainName').innerHTML = `<span style="color: #f87171; font-weight: 700; font-size: 0.85rem;">⚠️ Error: ${err.message}</span>`;
+    stopTrainAutoRefresh();
+    alert(`Could not load live details for train #${trainNumber}: ${err.message}`);
   }
 }
 
