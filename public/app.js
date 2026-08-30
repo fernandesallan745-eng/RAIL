@@ -751,8 +751,38 @@ function renderTimeline(route, currentLoc) {
 
 function openDrawerLoading(num) {
   const drawer = document.getElementById('trainDrawer');
+  
+  // Reset texts
   document.getElementById('drawerTrainNum').innerText = `#${num}`;
+  document.getElementById('drawerTrainType').innerText = 'Locating...';
   document.getElementById('drawerTrainName').innerText = 'Loading train telemetry...';
+  
+  document.getElementById('drawerSourceCode').innerText = '-';
+  document.getElementById('drawerSourceName').innerText = 'Loading Origin';
+  document.getElementById('drawerDestCode').innerText = '-';
+  document.getElementById('drawerDestName').innerText = 'Loading Destination';
+  
+  document.getElementById('drawerCurrentPos').innerText = 'Querying live position...';
+  document.getElementById('drawerNextHalt').innerText = 'Retrieving schedule...';
+  
+  // Reset badges and panels
+  const delayBadge = document.getElementById('drawerDelayBadge');
+  delayBadge.className = 'delay-badge-pill ontime';
+  delayBadge.innerHTML = '⚡ Checking...';
+  
+  document.getElementById('drawerDrBadge').style.display = 'none';
+  document.getElementById('deadReckoningPanel').style.display = 'none';
+  document.getElementById('curvatureEtaPanel').style.display = 'none';
+  
+  // Reset progress bar
+  document.getElementById('drawerProgressFill').style.width = '0%';
+  document.getElementById('drawerCoveredKm').innerText = '-';
+  document.getElementById('drawerTotalKm').innerText = '-';
+  
+  // Clear lists
+  document.getElementById('coachRakeContainer').innerHTML = '<div style="color:var(--text-dim);font-size:0.75rem;">Loading coach composition...</div>';
+  document.getElementById('timelineHaltsList').innerHTML = '<div style="color:var(--text-dim);font-size:0.75rem;padding:12px;">Loading route stops...</div>';
+  
   drawer.classList.add('open');
 }
 

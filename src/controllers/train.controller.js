@@ -160,25 +160,96 @@ export const getTrainLiveStatus = async (req, res, next) => {
       }
     }
 
-    // 2. Check disk-persisted fallback copy next
-    const trainFile = path.join(FALLBACK_DIR, `train_${trainNumber}_live_fallback.json`);
-    if (fs.existsSync(trainFile)) {
-      try {
-        const diskPayload = JSON.parse(fs.readFileSync(trainFile, 'utf-8'));
-        if (diskPayload) {
-          console.log(`[Controller] Recovered disk-persisted cached status from ${trainFile} for train #${trainNumber}`);
-          diskPayload.is_cached_fallback = true;
-          diskPayload.recovered_from_disk = true;
-          diskPayload.rate_limit_active = (error.status === 429 || error.response?.status === 429);
-          return res.json({
-            success: true,
-            trainNumber,
-            data: diskPayload,
-          });
-        }
-      } catch (readErr) {
-        console.error(`[Controller] Failed to read disk fallback for train #${trainNumber}:`, readErr.message);
+    // 2. Check disk-persisted fallback copies next
+    //    We check multiple naming variations in the .cache folder
+    let fallbackDataRaw = null;
+    let fallbackPath = '';
+
+    const pathsToCheck = [
+      path.join(FALLBACK_DIR, `train_${trainNumber}_live_fallback.json`),
+      path.join(FALLBACK_DIR, `${trainNumber}_live.json`),
+    ];
+
+    // Also look for dated runs (e.g. 22229_live_2026-08-28.json)
+    try {
+      const files = fs.readdirSync(FALLBACK_DIR);
+      const datedFiles = files
+        .filter(f => f.startsWith(`${trainNumber}_live_`) && f.endsWith('.json'))
+        .sort(); // latest date will be last
+      if (datedFiles.length > 0) {
+        pathsToCheck.push(path.join(FALLBACK_DIR, datedFiles[datedFiles.length - 1]));
       }
+    } catch (dirErr) {
+      console.warn('[Controller] Failed to read fallback dir:', dirErr.message);
+    }
+
+    for (const fpath of pathsToCheck) {
+      if (fs.existsSync(fpath)) {
+        try {
+          fallbackDataRaw = JSON.parse(fs.readFileSync(fpath, 'utf-8'));
+          fallbackPath = fpath;
+          break; // found one!
+        } catch (e) {
+          console.warn(`[Controller] Failed to parse fallback at ${fpath}:`, e.message);
+        }
+      }
+    }
+
+    if (fallbackDataRaw) {
+      console.log(`[Controller] Recovered disk-persisted cached status from ${fallbackPath} for train #${trainNumber}`);
+      
+      const liveData = fallbackDataRaw.data?.data || fallbackDataRaw.data || fallbackDataRaw;
+      
+      // Attempt to load route geometry for DR enhancement
+      let routeGeoJson = null;
+      const routePath = path.join(FALLBACK_DIR, `${trainNumber}_route.json`);
+      if (fs.existsSync(routePath)) {
+        try {
+          routeGeoJson = JSON.parse(fs.readFileSync(routePath, 'utf-8'));
+        } catch (e) {}
+      }
+
+      // Apply DR and curvature engine processing on the fallback data
+      const enhancedData = enhanceLiveData(liveData, routeGeoJson);
+      enhancedData.is_cached_fallback = true;
+      enhancedData.recovered_from_disk = true;
+      enhancedData.rate_limit_active = (error.status === 429 || error.response?.status === 429);
+
+      // Attach curvature ETA model if available
+      const startDate = liveData.startDate || new Date().toISOString().split('T')[0];
+      try {
+        const fastApiUrl = `http://127.0.0.1:8000/eta/${trainNumber}`;
+        const fastApiRes = await axios.get(fastApiUrl, {
+          params: { date: startDate, weather: req.query.weather || 'clear' },
+          timeout: 1500,
+        });
+        if (fastApiRes.data) {
+          enhancedData.curvatureEta = fastApiRes.data;
+        }
+      } catch (err) {
+        // Fallback date query to FastAPI health check
+        try {
+          const healthRes = await axios.get('http://127.0.0.1:8000/health', { timeout: 1000 });
+          const cachedDates = healthRes.data?.cached_dated_runs || [];
+          if (cachedDates.length > 0) {
+            const fallbackDate = cachedDates[cachedDates.length - 1];
+            const fallbackRes = await axios.get(`http://127.0.0.1:8000/eta/${trainNumber}`, {
+              params: { date: fallbackDate, weather: req.query.weather || 'clear' },
+              timeout: 1500,
+            });
+            if (fallbackRes.data) {
+              enhancedData.curvatureEta = fallbackRes.data;
+              enhancedData.curvatureEta.is_fallback_date = true;
+            }
+          }
+        } catch (subErr) {}
+      }
+
+      return res.json({
+        success: true,
+        trainNumber,
+        data: enhancedData,
+      });
     }
     
     // No cache found: propagate the error
