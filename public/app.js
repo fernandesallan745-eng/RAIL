@@ -679,14 +679,48 @@ function renderTimeline(route, currentLoc) {
     const scheduledTime = s.scheduledArrival || s.scheduledDeparture || '--:--';
     const timeStr = scheduledTime.includes('T') ? scheduledTime.split('T')[1].slice(0, 5) : scheduledTime;
 
+    const delay = s.delayDeparture ?? s.delayArrival ?? 0;
+    
+    // Calculate expected time based on delay
+    let expectedTimeHtml = '';
+    if (delay > 0 && scheduledTime !== '--:--') {
+      try {
+        let date;
+        if (scheduledTime.includes('T')) {
+          date = new Date(scheduledTime);
+        } else {
+          const [hh, mm] = scheduledTime.split(':').map(Number);
+          date = new Date();
+          date.setHours(hh, mm, 0, 0);
+        }
+        if (!isNaN(date.getTime())) {
+          date.setMinutes(date.getMinutes() + delay);
+          const expH = String(date.getHours()).padStart(2, '0');
+          const expM = String(date.getMinutes()).padStart(2, '0');
+          expectedTimeHtml = `<div class="time-expected" style="color: #fbbf24; font-weight: 700; font-size: 0.85rem;">${expH}:${expM}</div>`;
+        }
+      } catch (e) {
+        console.error('Failed to parse expected time:', e);
+      }
+    }
+
+    const scheduledDisplayHtml = delay > 0 
+      ? `<div class="time-scheduled-crossed" style="font-size: 0.72rem; color: var(--text-dim); text-decoration: line-through;">${timeStr}</div>`
+      : `<div class="time-scheduled" style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${timeStr}</div>`;
+
+    const delayHtml = delay > 0 
+      ? `<div class="time-delay-tag" style="color: #fbbf24; font-size: 0.7rem; font-weight: 600;">+${delay}m</div>` 
+      : `<div class="time-ontime-tag" style="color: #34d399; font-size: 0.7rem;">On Time</div>`;
+
     item.innerHTML = `
       <div class="timeline-dot"></div>
       <div>
         <div class="station-title">${s.stationName || s.stationCode}</div>
         <div class="station-meta-sub">Platform ${s.platform || '1'} &bull; ${s.distance || 0} km</div>
       </div>
-      <div class="station-time-col">
-        <div class="time-actual">${timeStr}</div>
+      <div class="station-time-col" style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
+        ${scheduledDisplayHtml}
+        ${expectedTimeHtml}
         ${delayHtml}
       </div>
     `;
