@@ -1,6 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {
+  projectTunnelsOntoRoute,
+  findTunnelState,
+  blockSpeedAtKm,
+  tunnelCoverage,
+  tunnelMeta,
+  rawTunnels,
+} from './tunnels.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,35 +17,87 @@ const __dirname = path.dirname(__filename);
 //  TUNNEL & BLIND-SPOT ETA ENGINE  (Dead Reckoning v1)
 // ============================================================
 //
-//  When RTIS/GPS drops inside tunnels or blind spots, this
-//  engine interpolates position along the known route polyline
-//  using last-known speed + tunnel-specific historical speed.
-//  On signal return it recalibrates via exponential moving
-//  average, so accuracy improves with every passage.
+//  When GPS drops inside a tunnel, this engine answers "which tunnel are we in,
+//  and how long until we come out" from the train's distance-from-origin and a
+//  database of 69 real Konkan tunnel portals (src/data/konkan-tunnels.json,
+//  built by build_tunnels.py from OpenStreetMap way geometry).
+//
+//  TWO THINGS THAT CHANGED FROM v0, both of which were wrong:
+//
+//  1. Tunnel identity is CONTAINMENT, not proximity. v0 matched the nearest
+//     tunnel within 15 km. With 69 tunnels whose MEDIAN length is 593 m, a
+//     15 km radius contains dozens of them — it would routinely name a
+//     neighbour with total confidence. Now: entryKm <= position <= exitKm.
+//
+//  2. Tunnel state is computed on EVERY poll, not only once GPS goes stale.
+//     "Which tunnel am I about to enter" is useful before the signal drops;
+//     dead reckoning still waits for staleness, but identity does not.
+//
+//  HONESTY: there is no live speed anywhere in this data source (CLAUDE.md
+//  VERIFIED #3). Time-to-exit uses the schedule-derived block speed and every
+//  such number carries its basis label. Do not relabel it as GPS speed.
 // ============================================================
 
 // --- Config ---
 const STALE_THRESHOLD_MS = 3 * 60 * 1000;   // 3 minutes
-const PROXIMITY_KM       = 15;              // how close to a tunnel entry to trigger zone match
 const EMA_ALPHA           = 0.3;            // recalibration smoothing factor
 
-// --- Load tunnel zones ---
-const TUNNEL_ZONES_PATH   = path.join(__dirname, '../data/tunnel-zones.json');
 const SPEED_HISTORY_PATH  = path.join(__dirname, '../data/speed-history.json');
 
-let tunnelZones = [];
 let speedHistory = { _meta: { alpha: EMA_ALPHA, lastUpdated: null }, zones: {} };
-
-try {
-  tunnelZones = JSON.parse(fs.readFileSync(TUNNEL_ZONES_PATH, 'utf-8'));
-} catch (err) {
-  console.warn('[DeadReckoning] Could not load tunnel-zones.json:', err.message);
-}
 
 try {
   speedHistory = JSON.parse(fs.readFileSync(SPEED_HISTORY_PATH, 'utf-8'));
 } catch {
   // Will be created on first recalibration
+}
+
+// Projection is a pure function of (polyline, route) and both are immutable for
+// a run, so it is memoised per train — the 69x2 portal projections run once, not
+// on every poll.
+const projectionCache = new Map(); // trainNumber → projectTunnelsOntoRoute result
+
+/**
+ * Pull [[lat,lng], ...] out of whichever shape the geometry arrived in.
+ * RailRadar nests an extra `geojson` wrapper (CLAUDE.md VERIFIED #1) and the
+ * route endpoint, the live endpoint and the disk fallback each expose it at a
+ * slightly different depth.
+ */
+function extractCoords(source) {
+  if (!source) return null;
+  const candidates = [
+    source?.geojson?.geometry?.coordinates,
+    source?.geometry?.geojson?.geometry?.coordinates,
+    source?.data?.geojson?.geometry?.coordinates,
+    source?.geometry?.coordinates,
+    source?.data?.geometry?.coordinates,
+    source?.coordinates,
+  ];
+  for (const c of candidates) {
+    if (Array.isArray(c) && c.length > 1 && Array.isArray(c[0])) {
+      // GeoJSON is [lng, lat]
+      return c.map((p) => [p[1], p[0]]);
+    }
+  }
+  return null;
+}
+
+/** Projected tunnels for a train, computed once and reused. */
+function getProjection(trainNumber, liveData, routeGeoJson) {
+  const key = String(trainNumber || liveData?.trainNumber || 'unknown');
+  const cached = projectionCache.get(key);
+  // Re-project if the cached run had no station anchors but this payload does —
+  // that is the difference between a caveated global-scale fit and a real one.
+  const route = liveData?.route || [];
+  const hasCoords = route.some((s) => (s.lat ?? s.station?.lat) != null);
+  if (cached && !(cached.axisBasis === 'global-scale' && hasCoords)) return cached;
+
+  const coords = extractCoords(routeGeoJson) || extractCoords(liveData?.geometry);
+  if (!coords) return null;
+
+  const result = projectTunnelsOntoRoute(coords, route, liveData?.train?.distance ?? null);
+  projectionCache.set(key, result);
+  return result;
 }
 
 // ============================================================
@@ -110,12 +170,28 @@ function routeToCoords(route) {
     ]);
 }
 
-/** Get historical speed for a zone (recalibrated or default) */
-function getZoneSpeed(zone) {
-  if (speedHistory.zones[zone.id] && speedHistory.zones[zone.id].avgSpeedKmph) {
-    return speedHistory.zones[zone.id].avgSpeedKmph;
+/**
+ * Speed to use inside a tunnel, with its provenance attached.
+ *
+ * Order of preference:
+ *   1. an EMA-recalibrated observed speed for this tunnel, if one exists
+ *   2. the schedule-derived block speed passed in by the caller
+ *
+ * There is deliberately NO invented constant fallback. v0 returned 40 km/h when
+ * it knew nothing, which is indistinguishable in the UI from a measured number.
+ * If neither source exists this returns null and the UI shows no time-to-exit.
+ */
+function getZoneSpeed(tunnelId, blockSpeed) {
+  const observed = tunnelId ? speedHistory.zones?.[tunnelId] : null;
+  if (observed?.avgSpeedKmph) {
+    return {
+      speedKmph: observed.avgSpeedKmph,
+      basis: 'observed-ema',
+      basisLabel: `recalibrated from ${observed.sampleCount || 1} observed passage(s)`,
+    };
   }
-  return zone.historicalAvgSpeedKmph || 40;
+  if (blockSpeed?.speedKmph) return blockSpeed;
+  return null;
 }
 
 // ============================================================
@@ -123,76 +199,54 @@ function getZoneSpeed(zone) {
 // ============================================================
 
 /**
- * Detect if a train is currently in a blind spot / tunnel.
+ * Where is the train relative to the tunnel database, and is its signal stale?
  *
- * @param {Object} liveData - raw live status from RailRadar
- * @returns {{ inBlindSpot: boolean, zone: Object|null, staleSinceMs: number }}
+ * Tunnel identity comes from CHAINAGE CONTAINMENT and is computed whether or not
+ * the signal is stale. Only `inBlindSpot` depends on staleness.
+ *
+ * @param {Object} liveData    - raw live status from RailRadar
+ * @param {Object} projection  - projectTunnelsOntoRoute() result, or null
+ * @returns {{ inBlindSpot, tunnelState, staleSinceMs, blockSpeed }}
  */
-export function detectBlindSpot(liveData) {
-  if (!liveData) return { inBlindSpot: false, zone: null, staleSinceMs: 0 };
-
-  const status = liveData.status;
-  if (status !== 'running') return { inBlindSpot: false, zone: null, staleSinceMs: 0 };
-
-  // Check staleness
-  const lastUpdated = liveData.lastUpdatedAt || liveData.lastUpdated;
-  if (!lastUpdated) return { inBlindSpot: false, zone: null, staleSinceMs: 0 };
-
-  const staleSinceMs = Date.now() - new Date(lastUpdated).getTime();
-  if (staleSinceMs < STALE_THRESHOLD_MS) {
-    return { inBlindSpot: false, zone: null, staleSinceMs };
-  }
-
-  // Signal is stale. Check proximity to any known tunnel zone.
-  const currentLoc = liveData.currentLocation || {};
-  let trainLat = currentLoc.lat;
-  let trainLng = currentLoc.lng;
-
-  // Fallback: derive from route if location has no coords
-  if (trainLat == null || trainLng == null) {
-    const route = liveData.route || [];
-    const seq = currentLoc.sequence;
-    if (seq != null) {
-      const matchStation = route.find(s => s.sequence === seq);
-      if (matchStation) {
-        trainLat = matchStation.lat || (matchStation.station && matchStation.station.lat);
-        trainLng = matchStation.lng || (matchStation.station && matchStation.station.lng);
-      }
-    }
-    // Still nothing — try train source
-    if (trainLat == null) {
-      const trainInfo = liveData.train || {};
-      trainLat = trainInfo.source?.lat;
-      trainLng = trainInfo.source?.lng;
-    }
-  }
-
-  if (trainLat == null || trainLng == null) {
-    // Can't locate the train at all — still report stale but no zone
-    return { inBlindSpot: true, zone: null, staleSinceMs };
-  }
-
-  // Find nearest tunnel zone
-  let nearestZone = null;
-  let nearestDist = Infinity;
-
-  for (const zone of tunnelZones) {
-    const distEntry = haversineKm(trainLat, trainLng, zone.entryLat, zone.entryLng);
-    const distExit  = haversineKm(trainLat, trainLng, zone.exitLat, zone.exitLng);
-    const minDist = Math.min(distEntry, distExit);
-
-    if (minDist < PROXIMITY_KM && minDist < nearestDist) {
-      nearestDist = minDist;
-      nearestZone = zone;
-    }
-  }
-
-  return {
-    inBlindSpot: true,
-    zone: nearestZone,
-    staleSinceMs,
-    proximityKm: nearestDist === Infinity ? null : Math.round(nearestDist * 10) / 10,
+export function detectBlindSpot(liveData, projection = null) {
+  const empty = {
+    inBlindSpot: false,
+    tunnelState: null,
+    staleSinceMs: 0,
+    blockSpeed: null,
   };
+  if (!liveData) return empty;
+
+  const lastUpdated = liveData.lastUpdatedAt || liveData.lastUpdated;
+  const staleSinceMs = lastUpdated
+    ? Date.now() - new Date(lastUpdated).getTime()
+    : 0;
+
+  const route = liveData.route || [];
+  const km = liveData.currentLocation?.distanceFromOriginKm;
+
+  let tunnelState = null;
+  let blockSpeed = null;
+  if (projection?.tunnels?.length && km != null) {
+    blockSpeed = blockSpeedAtKm(route, km);
+    const insideId = projection.tunnels.find(
+      (t) => km >= t.entryKm && km <= t.exitKm
+    )?.id;
+    tunnelState = findTunnelState(
+      projection.tunnels,
+      km,
+      getZoneSpeed(insideId, blockSpeed)
+    );
+  }
+
+  // Dead reckoning engages only when the signal has actually gone quiet AND the
+  // train is running. Being inside a tunnel is neither necessary nor sufficient:
+  // a stale signal in open country is still a blind spot, and a tunnel with a
+  // fresh position needs no reckoning.
+  const running = liveData.status === 'running';
+  const inBlindSpot = running && staleSinceMs >= STALE_THRESHOLD_MS;
+
+  return { inBlindSpot, tunnelState, staleSinceMs, blockSpeed };
 }
 
 // ============================================================
@@ -204,26 +258,31 @@ export function detectBlindSpot(liveData) {
  *
  * @param {Object} liveData     – raw live status
  * @param {Object} routeGeoJson – route geometry (optional, for polyline interpolation)
- * @param {Object} zone         – matched tunnel zone (or null)
+ * @param {Object} speed        – { speedKmph, basis, basisLabel } or null
  * @param {number} staleSinceMs – how long signal has been stale
  * @returns {{ lat, lng, distanceFromEntryKm, confidence }}
  */
-export function interpolatePosition(liveData, routeGeoJson, zone, staleSinceMs) {
+export function interpolatePosition(liveData, routeGeoJson, speed, staleSinceMs) {
   const currentLoc = liveData.currentLocation || {};
   const trainInfo = liveData.train || {};
   const route = liveData.route || [];
 
-  // Determine speed to use
-  let speedKmph;
-  if (zone) {
-    speedKmph = getZoneSpeed(zone);
-  } else {
-    // Use last known speed, or train's average speed
-    speedKmph = currentLoc.speedToNextStationKmph || trainInfo.avgSpeed || 50;
+  // Every candidate here is schedule-derived or a static journey mean; none is a
+  // live speedometer reading (CLAUDE.md VERIFIED #3). The basis label rides along
+  // so the UI can say which one it used.
+  let speedKmph = speed?.speedKmph;
+  let speedBasis = speed?.basis;
+  if (!speedKmph) {
+    speedKmph = currentLoc.speedToNextStationKmph || trainInfo.avgSpeed || null;
+    speedBasis = currentLoc.speedToNextStationKmph
+      ? 'schedule'
+      : trainInfo.avgSpeed
+      ? 'journey-average'
+      : null;
   }
 
   const elapsedHours = staleSinceMs / (1000 * 60 * 60);
-  const estimatedDistanceKm = speedKmph * elapsedHours;
+  const estimatedDistanceKm = speedKmph ? speedKmph * elapsedHours : 0;
 
   // Starting point: the last known distance from origin
   const lastKnownDistKm = currentLoc.distanceFromOriginKm ||
@@ -233,11 +292,8 @@ export function interpolatePosition(liveData, routeGeoJson, zone, staleSinceMs) 
 
   // Try to interpolate along route GeoJSON polyline
   let estimatedPos = null;
-
-  if (routeGeoJson && routeGeoJson.geometry && routeGeoJson.geometry.coordinates) {
-    const coords = routeGeoJson.geometry.coordinates.map(c => [c[1], c[0]]); // [lat, lng]
-    estimatedPos = interpolateAlongPolyline(coords, totalDistKm);
-  }
+  const coords = extractCoords(routeGeoJson) || extractCoords(liveData?.geometry);
+  if (coords) estimatedPos = interpolateAlongPolyline(coords, totalDistKm);
 
   // Fallback: interpolate along route stations
   if (!estimatedPos) {
@@ -250,11 +306,6 @@ export function interpolatePosition(liveData, routeGeoJson, zone, staleSinceMs) 
   // Confidence degrades with time: starts at 0.95, drops ~5% per minute stale
   const staleMinutes = staleSinceMs / 60000;
   let confidence = Math.max(0.15, 0.95 - staleMinutes * 0.05);
-
-  // Boost confidence if we matched a known tunnel zone
-  if (zone) {
-    confidence = Math.min(0.98, confidence + 0.1);
-  }
   confidence = Math.round(confidence * 100) / 100;
 
   return {
@@ -262,7 +313,8 @@ export function interpolatePosition(liveData, routeGeoJson, zone, staleSinceMs) 
     lng: estimatedPos?.lng || currentLoc.lng || trainInfo.source?.lng,
     distanceFromEntryKm: Math.round(estimatedDistanceKm * 10) / 10,
     totalDistFromOriginKm: Math.round(totalDistKm * 10) / 10,
-    speedUsedKmph: Math.round(speedKmph),
+    speedUsedKmph: speedKmph ? Math.round(speedKmph) : null,
+    speedBasis,
     confidence,
   };
 }
@@ -274,7 +326,7 @@ export function interpolatePosition(liveData, routeGeoJson, zone, staleSinceMs) 
 /**
  * Calculate estimated time of arrival at the next halt.
  */
-export function calculateETA(liveData, estimatedPos, zone) {
+export function calculateETA(liveData, estimatedPos, speed) {
   const nextHalt = liveData.nextHalt || {};
   const route = liveData.route || [];
   const trainInfo = liveData.train || {};
@@ -288,18 +340,29 @@ export function calculateETA(liveData, estimatedPos, zone) {
     s => s.stationCode === nextHalt.stationCode || s.sequence === nextHalt.sequence
   );
 
-  let remainingKm = 0;
+  let remainingKm = null;
   if (nextHaltStation && nextHaltStation.distance != null && estimatedPos.totalDistFromOriginKm) {
     remainingKm = Math.max(0, nextHaltStation.distance - estimatedPos.totalDistFromOriginKm);
   } else if (nextHalt.distance != null && estimatedPos.totalDistFromOriginKm) {
     remainingKm = Math.max(0, nextHalt.distance - estimatedPos.totalDistFromOriginKm);
-  } else {
-    remainingKm = 20; // rough fallback
   }
 
-  const speedKmph = zone ? getZoneSpeed(zone) : (trainInfo.avgSpeed || 50);
-  const etaMinutes = Math.round((remainingKm / speedKmph) * 60);
+  const speedKmph = speed?.speedKmph || trainInfo.avgSpeed || null;
+  // No invented "rough fallback" distance and no invented speed: if either is
+  // unknown, say so rather than printing a confident number built from neither.
+  if (remainingKm == null || !speedKmph) {
+    return {
+      stationName: nextHalt.stationName || nextHalt.stationCode,
+      stationCode: nextHalt.stationCode,
+      remainingKm: remainingKm == null ? null : Math.round(remainingKm * 10) / 10,
+      estimatedMinutes: null,
+      estimatedArrival: null,
+      unavailableReason: remainingKm == null ? 'no distance to next halt' : 'no speed basis',
+      confidence: null,
+    };
+  }
 
+  const etaMinutes = Math.round((remainingKm / speedKmph) * 60);
   const etaDate = new Date(Date.now() + etaMinutes * 60000);
 
   return {
@@ -308,6 +371,8 @@ export function calculateETA(liveData, estimatedPos, zone) {
     remainingKm: Math.round(remainingKm * 10) / 10,
     estimatedMinutes: etaMinutes,
     estimatedArrival: etaDate.toISOString(),
+    speedBasis: speed?.basis || 'journey-average',
+    speedBasisLabel: speed?.basisLabel || null,
     confidence: Math.max(0.15, estimatedPos.confidence - 0.05),
   };
 }
@@ -372,23 +437,57 @@ export function recalibrate(zoneId, transitTimeMs, transitDistKm) {
 // ============================================================
 
 /**
- * Enhance raw RailRadar live data with dead reckoning fields.
- * Call this AFTER fetching from the RailRadar API, BEFORE
- * returning to the client.
+ * Enhance raw RailRadar live data with the tunnel layer and, when the signal has
+ * gone quiet, dead reckoning.
+ *
+ * Two independent blocks are attached:
+ *   liveData.tunnels        – always, whenever the route can be projected.
+ *                             "Which tunnel am I in / which is next" is useful
+ *                             before the signal drops, not only after.
+ *   liveData.deadReckoning  – only when the signal is actually stale.
  *
  * @param {Object} liveData     – raw live data from API
  * @param {Object} routeGeoJson – route geometry (optional)
- * @returns {Object} – liveData augmented with `deadReckoning` block
+ * @returns {Object} – liveData augmented in place
  */
 export function enhanceLiveData(liveData, routeGeoJson = null) {
   if (!liveData) return liveData;
 
-  const detection = detectBlindSpot(liveData);
+  const projection = getProjection(liveData.trainNumber, liveData, routeGeoJson);
+  const detection = detectBlindSpot(liveData, projection);
+  const state = detection.tunnelState;
+
+  if (projection) {
+    liveData.tunnels = {
+      inside: state?.inside || null,
+      ahead: state?.ahead || null,
+      passedCount: state?.passedCount ?? null,
+      totalCount: projection.tunnels.length,
+      // The full projected list, so the map can draw every tunnel and not just
+      // the one the train is in. ~20 KB, generated from the memoised projection
+      // at zero upstream cost — this handler is the single-train drawer, which
+      // polls every 30 s; the fleet endpoint never calls enhanceLiveData, so a
+      // wider fleet does not multiply this.
+      //
+      // Sent rather than fetched separately because entryKm/exitKm are
+      // train-specific (they are on THIS train's timetable axis), so a static
+      // /api/tunnels/zones list could not carry them.
+      list: projection.tunnels,
+      coverage: tunnelCoverage(projection.tunnels),
+      // Axis provenance. 'global-scale' means the route came back without
+      // station coordinates, so tunnel chainage is fitted with one scale factor
+      // instead of anchored per block — a ~585 m worst-case error, which is
+      // longer than the median tunnel. The UI must caveat it.
+      axisBasis: projection.axisBasis,
+      anchorCount: projection.anchorCount,
+      axisMismatchM: projection.axisMismatchM,
+      source: tunnelMeta.source || null,
+      sourceIsOfficial: tunnelMeta.sourceIsOfficial ?? false,
+      caveat: tunnelMeta.uiCaveat || null,
+    };
+  }
 
   if (!detection.inBlindSpot) {
-    // Signal is fresh. Check if we need to recalibrate a previous blind spot.
-    // (Recalibration is handled by tracking state across requests — for V1
-    //  we annotate the response so the client can track and trigger it.)
     liveData.deadReckoning = {
       active: false,
       staleSinceMs: detection.staleSinceMs,
@@ -397,30 +496,23 @@ export function enhanceLiveData(liveData, routeGeoJson = null) {
     return liveData;
   }
 
-  // --- Blind Spot Detected: Dead Reckoning ---
-  const estimatedPos = interpolatePosition(
-    liveData, routeGeoJson, detection.zone, detection.staleSinceMs
-  );
+  // --- Signal has gone quiet: dead-reckon forward ---
+  const insideId = state?.inside?.id || null;
+  const speed = getZoneSpeed(insideId, detection.blockSpeed);
 
-  const eta = calculateETA(liveData, estimatedPos, detection.zone);
+  const estimatedPos = interpolatePosition(
+    liveData, routeGeoJson, speed, detection.staleSinceMs
+  );
+  const eta = calculateETA(liveData, estimatedPos, speed);
 
   liveData.deadReckoning = {
     active: true,
-    reason: detection.zone ? 'tunnel_zone' : 'signal_stale',
+    reason: state?.inside ? 'inside_tunnel' : 'signal_stale',
     staleSinceMs: detection.staleSinceMs,
     lastSignalAt: liveData.lastUpdatedAt || liveData.lastUpdated,
-    tunnelZone: detection.zone ? {
-      id: detection.zone.id,
-      name: detection.zone.name,
-      route: detection.zone.route,
-      lengthKm: detection.zone.lengthKm,
-      entryLat: detection.zone.entryLat,
-      entryLng: detection.zone.entryLng,
-      exitLat: detection.zone.exitLat,
-      exitLng: detection.zone.exitLng,
-      signalDropProbability: detection.zone.signalDropProbability,
-      proximityKm: detection.proximityKm,
-    } : null,
+    // The tunnel identity is the same object the `tunnels` block reports —
+    // one source of truth, so the two panels can never disagree.
+    tunnel: state?.inside || null,
     estimatedPosition: {
       lat: estimatedPos.lat,
       lng: estimatedPos.lng,
@@ -430,7 +522,9 @@ export function enhanceLiveData(liveData, routeGeoJson = null) {
     },
     etaNextHalt: eta,
     method: 'dead_reckoning_v1',
-    historicalAvgSpeedKmph: estimatedPos.speedUsedKmph,
+    speedUsedKmph: estimatedPos.speedUsedKmph,
+    speedBasis: estimatedPos.speedBasis,
+    speedBasisLabel: speed?.basisLabel || null,
   };
 
   return liveData;
@@ -440,13 +534,19 @@ export function enhanceLiveData(liveData, routeGeoJson = null) {
 //  EXPORTS FOR API
 // ============================================================
 
-/** Return the full tunnel zones database (for frontend overlay) */
+/** The tunnel database as built, plus its provenance metadata. */
 export function getTunnelZones() {
-  return tunnelZones.map(z => ({
-    ...z,
-    currentHistoricalSpeed: getZoneSpeed(z),
-    recalibrationData: speedHistory.zones[z.id] || null,
-  }));
+  return {
+    meta: tunnelMeta,
+    coverage: tunnelCoverage(rawTunnels),
+    tunnels: rawTunnels.map((t) => ({
+      ...t,
+      // Only present once a passage has actually been observed. speed-history.json
+      // ships empty, so this is null for every tunnel until the EMA path runs for
+      // the first time — it has never run.
+      recalibrationData: speedHistory.zones?.[t.id] || null,
+    })),
+  };
 }
 
 /** Return recalibration history stats */

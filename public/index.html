@@ -125,19 +125,29 @@
           <span id="drawerTotalKm">707 km total</span>
         </div>
 
-        <!-- Dead Reckoning Info Panel (USP) -->
-        <div id="deadReckoningPanel" class="dr-info-panel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2);">
-          <div style="font-weight: 700; color: #f87171; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;">
-            <span class="pulsing-red-dot-dr"></span> SIGNAL DROPPED: Entering Blind Spot
+        <!-- Tunnel tracking + GPS blind-spot dead reckoning (USP #2) -->
+        <!-- Shown whenever the tunnel layer projects, not only on signal loss:
+             "which tunnel is next" is useful in normal running too. The header
+             and body are rewritten by renderTunnelPanel() in app.js. -->
+        <div id="tunnelPanel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px;">
+          <div id="tunnelPanelHeader" style="font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;"></div>
+          <div id="tunnelPanelBody" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;"></div>
+
+          <!-- Dead-reckoning sub-block: only populated while the signal is stale -->
+          <div id="deadReckoningPanel" style="display: none; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(148,163,184,0.18);">
+            Last signal: <span id="drLastSignal">-</span><br/>
+            Reckoned position: <span id="drEstPos" style="color: #f87171; font-weight: 600;">-</span><br/>
+            Confidence: <span id="drConfidence" style="color: #fbbf24; font-weight: 600;">-</span>
           </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
-            Zone: <strong id="drTunnelName" style="color: #fff;">-</strong><br/>
-            Last signal: <span id="drLastSignal">3 min ago</span><br/>
-            Current Position: <span id="drEstPos" style="color: #f87171; font-weight: 600;">Dead Reckoned</span><br/>
-            Confidence: <span id="drConfidence" style="color: #fbbf24; font-weight: 600;">85%</span>
-          </div>
-          <div style="font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; font-style: italic; line-height: 1.35;">
-            Prototype: tunnel geometry &amp; historical speeds are illustrative estimates, not yet sourced from official alignment data.
+
+          <!-- Provenance. Geometry is now real (OSM), speed still is not live —
+               the wording must keep those two apart. Do not shorten to
+               "prototype data": that hides which half is sourced. -->
+          <div id="tunnelPanelCaveat" style="font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; font-style: italic; line-height: 1.35;">
+            Tunnel geometry: OpenStreetMap way data, chord lengths within 1.1% of
+            published KRCL figures — not official alignment data. Time-to-exit uses
+            the <strong>schedule-derived</strong> block speed; this source carries no
+            live speed.
           </div>
         </div>
 

@@ -82,8 +82,21 @@ export const getTrainLiveStatus = async (req, res, next) => {
 
   try {
     // 1. Fetch raw live status and route geometry in parallel
+    //
+    // includeCoordinates puts lat/lng on every route station. Without it the
+    // tunnel layer has nothing to anchor its chainage to and silently falls back
+    // to a single global scale factor — ~585 m of axis error, which is longer
+    // than the median Konkan tunnel (593 m), i.e. enough to name the wrong one
+    // (see src/services/tunnels.js, "the AXIS"). It is a parameter on the call
+    // we already make, so it costs no extra upstream request.
+    //
+    // req.query spreads FIRST so a caller can still override for debugging, but
+    // the browser never sends this param, so in practice we always add it.
     const [liveDataRaw, routeGeoJsonRaw] = await Promise.allSettled([
-      railRadarService.getTrainLiveStatus(trainNumber, req.query),
+      railRadarService.getTrainLiveStatus(trainNumber, {
+        includeCoordinates: true,
+        ...req.query,
+      }),
       railRadarService.getTrainRoute(trainNumber)
     ]);
 

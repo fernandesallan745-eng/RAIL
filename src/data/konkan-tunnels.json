@@ -1,0 +1,1852 @@
+{
+  "_meta": {
+    "source": "OpenStreetMap way geometry, supplied as CSV (konkan_railway_tunnels_mumbai_goa (1).csv)",
+    "sourceIsOfficial": false,
+    "lengthBasis": "portal-to-portal great-circle chord",
+    "lengthBasisNote": "Chord matches published KRCL figures to within 1.1% across the 5 tunnels with public figures. alongTrackLengthM (measured along the route polyline by perpendicular portal projection) agrees with the chord to within ~1%, so the two bases corroborate each other. Chord is the published number because it depends only on the OSM portal coordinates, not on the polyline's vertex density.",
+    "publishedValidation": [
+      {
+        "name": "Karbude Tunnel",
+        "publishedM": 6506,
+        "derivedChordM": 6534.6,
+        "deltaPct": 0.44
+      },
+      {
+        "name": "Natuwadi Tunnel",
+        "publishedM": 4387,
+        "derivedChordM": 4409.0,
+        "deltaPct": 0.5
+      },
+      {
+        "name": "Tike Tunnel",
+        "publishedM": 4077,
+        "derivedChordM": 4087.2,
+        "deltaPct": 0.25
+      },
+      {
+        "name": "Savarde Tunnel",
+        "publishedM": 3447,
+        "derivedChordM": 3409.6,
+        "deltaPct": -1.09
+      },
+      {
+        "name": "Berdewadi Tunnel",
+        "publishedM": 4000,
+        "derivedChordM": 4040.8,
+        "deltaPct": 1.02
+      }
+    ],
+    "tunnelCount": 69,
+    "duplicateNumbers": [
+      "66"
+    ],
+    "gapsInsideRange": [
+      67,
+      68,
+      69
+    ],
+    "nonNumericNumbers": [
+      "36A"
+    ],
+    "order": "sorted by chainage along the 12051 CSMT\u2192MAO polyline",
+    "referenceAxisNote": "polyline 582.79 km vs timetable 582.2 km \u2014 585 m mismatch; runtime renormalises per block onto the timetable axis",
+    "uiCaveat": "Tunnel positions and lengths are derived from OpenStreetMap way geometry, not official KRCL alignment data. Time-to-exit uses the schedule-derived block speed \u2014 there is no live speed in the data source.",
+    "builtBy": "build_tunnels.py"
+  },
+  "tunnels": [
+    {
+      "id": "dasgaon-tunnel",
+      "no": "1",
+      "name": "Dasgaon Tunnel",
+      "portalA": {
+        "lat": 18.08911,
+        "lng": 73.35471
+      },
+      "portalB": {
+        "lat": 18.09194,
+        "lng": 73.354303
+      },
+      "chordLengthM": 317.6,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        527,
+        528
+      ],
+      "refPolylineKm": [
+        193.5505,
+        193.8684
+      ],
+      "snapErrorM": 5.5,
+      "alongTrackLengthM": 317.8,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "bijghar-tunnel",
+      "no": "2",
+      "name": "Bijghar Tunnel",
+      "portalA": {
+        "lat": 18.011363,
+        "lng": 73.399635
+      },
+      "portalB": {
+        "lat": 18.015133,
+        "lng": 73.398262
+      },
+      "chordLengthM": 443.6,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        548,
+        548
+      ],
+      "refPolylineKm": [
+        203.5838,
+        204.0274
+      ],
+      "snapErrorM": 1.0,
+      "alongTrackLengthM": 443.6,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "karanjadi-tunnel",
+      "no": "3",
+      "name": "Karanjadi Tunnel",
+      "portalA": {
+        "lat": 17.989433,
+        "lng": 73.404089
+      },
+      "portalB": {
+        "lat": 17.99102,
+        "lng": 73.40483
+      },
+      "chordLengthM": 193.1,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        554,
+        555
+      ],
+      "refPolylineKm": [
+        206.395,
+        206.5881
+      ],
+      "snapErrorM": 0.2,
+      "alongTrackLengthM": 193.1,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "underi-tunnel",
+      "no": "4",
+      "name": "Underi Tunnel",
+      "portalA": {
+        "lat": 17.980876,
+        "lng": 73.394144
+      },
+      "portalB": {
+        "lat": 17.982172,
+        "lng": 73.39512
+      },
+      "chordLengthM": 177.3,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        561,
+        563
+      ],
+      "refPolylineKm": [
+        207.8442,
+        208.0215
+      ],
+      "snapErrorM": 0.6,
+      "alongTrackLengthM": 177.3,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "shirsavane-tunnel",
+      "no": "5",
+      "name": "Shirsavane Tunnel",
+      "portalA": {
+        "lat": 17.92247,
+        "lng": 73.383343
+      },
+      "portalB": {
+        "lat": 17.930739,
+        "lng": 73.382672
+      },
+      "chordLengthM": 922.2,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        580,
+        581
+      ],
+      "refPolylineKm": [
+        213.8052,
+        214.7274
+      ],
+      "snapErrorM": 0.3,
+      "alongTrackLengthM": 922.2,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "natuwadi-tunnel",
+      "no": "6",
+      "name": "Natuwadi Tunnel",
+      "portalA": {
+        "lat": 17.864348,
+        "lng": 73.415043
+      },
+      "portalB": {
+        "lat": 17.893624,
+        "lng": 73.386944
+      },
+      "chordLengthM": 4409.0,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        585,
+        589
+      ],
+      "refPolylineKm": [
+        217.9801,
+        222.4013
+      ],
+      "snapErrorM": 0.4,
+      "alongTrackLengthM": 4421.2,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "diwankhawati-tunnel",
+      "no": "7",
+      "name": "Diwankhawati Tunnel",
+      "portalA": {
+        "lat": 17.839166,
+        "lng": 73.41543
+      },
+      "portalB": {
+        "lat": 17.842138,
+        "lng": 73.41632
+      },
+      "chordLengthM": 343.6,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        599,
+        600
+      ],
+      "refPolylineKm": [
+        224.9831,
+        225.3267
+      ],
+      "snapErrorM": 0.2,
+      "alongTrackLengthM": 343.6,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "bhoste-tunnel",
+      "no": "8",
+      "name": "Bhoste Tunnel",
+      "portalA": {
+        "lat": 17.711035,
+        "lng": 73.397293
+      },
+      "portalB": {
+        "lat": 17.711987,
+        "lng": 73.399862
+      },
+      "chordLengthM": 292.0,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        643,
+        644
+      ],
+      "refPolylineKm": [
+        242.344,
+        242.6361
+      ],
+      "snapErrorM": 0.6,
+      "alongTrackLengthM": 292.0,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "alsure-tunnel",
+      "no": "9",
+      "name": "Alsure Tunnel",
+      "portalA": {
+        "lat": 17.695227,
+        "lng": 73.383318
+      },
+      "portalB": {
+        "lat": 17.69941,
+        "lng": 73.386607
+      },
+      "chordLengthM": 581.2,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        649,
+        650
+      ],
+      "refPolylineKm": [
+        244.3623,
+        244.9434
+      ],
+      "snapErrorM": 0.3,
+      "alongTrackLengthM": 581.2,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "nilike-tunnel",
+      "no": "10",
+      "name": "Nilike Tunnel",
+      "portalA": {
+        "lat": 17.684362,
+        "lng": 73.382353
+      },
+      "portalB": {
+        "lat": 17.693101,
+        "lng": 73.382095
+      },
+      "chordLengthM": 972.1,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        651,
+        658
+      ],
+      "refPolylineKm": [
+        245.213,
+        246.2274
+      ],
+      "snapErrorM": 0.5,
+      "alongTrackLengthM": 1014.5,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "kondavali-tunnel",
+      "no": "11",
+      "name": "Kondavali Tunnel",
+      "portalA": {
+        "lat": 17.676112,
+        "lng": 73.388903
+      },
+      "portalB": {
+        "lat": 17.677863,
+        "lng": 73.387331
+      },
+      "chordLengthM": 256.2,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        662,
+        664
+      ],
+      "refPolylineKm": [
+        247.1245,
+        247.3807
+      ],
+      "snapErrorM": 0.4,
+      "alongTrackLengthM": 256.3,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "ashti-tunnel",
+      "no": "12",
+      "name": "Ashti Tunnel",
+      "portalA": {
+        "lat": 17.636153,
+        "lng": 73.386171
+      },
+      "portalB": {
+        "lat": 17.644656,
+        "lng": 73.382996
+      },
+      "chordLengthM": 1003.6,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        681,
+        688
+      ],
+      "refPolylineKm": [
+        251.3175,
+        252.3732
+      ],
+      "snapErrorM": 2.1,
+      "alongTrackLengthM": 1055.7,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "kotawali-tunnel",
+      "no": "13",
+      "name": "Kotawali Tunnel",
+      "portalA": {
+        "lat": 17.592143,
+        "lng": 73.445128
+      },
+      "portalB": {
+        "lat": 17.595332,
+        "lng": 73.443127
+      },
+      "chordLengthM": 413.2,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        716,
+        718
+      ],
+      "refPolylineKm": [
+        260.1857,
+        260.602
+      ],
+      "snapErrorM": 1.2,
+      "alongTrackLengthM": 416.3,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "songaon-tunnel",
+      "no": "14",
+      "name": "Songaon Tunnel",
+      "portalA": {
+        "lat": 17.581047,
+        "lng": 73.466933
+      },
+      "portalB": {
+        "lat": 17.582722,
+        "lng": 73.464994
+      },
+      "chordLengthM": 277.4,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        731,
+        731
+      ],
+      "refPolylineKm": [
+        263.0232,
+        263.3006
+      ],
+      "snapErrorM": 2.3,
+      "alongTrackLengthM": 277.4,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "dhamandevi-tunnel",
+      "no": "15",
+      "name": "Dhamandevi Tunnel",
+      "portalA": {
+        "lat": 17.571526,
+        "lng": 73.48036
+      },
+      "portalB": {
+        "lat": 17.575129,
+        "lng": 73.47502
+      },
+      "chordLengthM": 693.5,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        732,
+        732
+      ],
+      "refPolylineKm": [
+        264.3824,
+        265.0759
+      ],
+      "snapErrorM": 2.9,
+      "alongTrackLengthM": 693.5,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "chiplun-tunnel",
+      "no": "16",
+      "name": "Chiplun Tunnel",
+      "portalA": {
+        "lat": 17.48602,
+        "lng": 73.515643
+      },
+      "portalB": {
+        "lat": 17.495886,
+        "lng": 73.530742
+      },
+      "chordLengthM": 1941.1,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        764,
+        767
+      ],
+      "refPolylineKm": [
+        277.6611,
+        279.624
+      ],
+      "snapErrorM": 0.5,
+      "alongTrackLengthM": 1962.9,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "savarde-tunnel",
+      "no": "17",
+      "name": "Savarde Tunnel",
+      "portalA": {
+        "lat": 17.431163,
+        "lng": 73.510376
+      },
+      "portalB": {
+        "lat": 17.459763,
+        "lng": 73.521968
+      },
+      "chordLengthM": 3409.6,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        775,
+        779
+      ],
+      "refPolylineKm": [
+        282.6574,
+        286.0935
+      ],
+      "snapErrorM": 2.5,
+      "alongTrackLengthM": 3436.1,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "agave-tunnel",
+      "no": "18",
+      "name": "Agave Tunnel",
+      "portalA": {
+        "lat": 17.374895,
+        "lng": 73.529712
+      },
+      "portalB": {
+        "lat": 17.381696,
+        "lng": 73.525244
+      },
+      "chordLengthM": 892.6,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        792,
+        792
+      ],
+      "refPolylineKm": [
+        292.0138,
+        292.9064
+      ],
+      "snapErrorM": 0.5,
+      "alongTrackLengthM": 892.6,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "khershet-tunnel",
+      "no": "19",
+      "name": "Khershet Tunnel",
+      "portalA": {
+        "lat": 17.344035,
+        "lng": 73.528372
+      },
+      "portalB": {
+        "lat": 17.353439,
+        "lng": 73.529816
+      },
+      "chordLengthM": 1056.8,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        799,
+        802
+      ],
+      "refPolylineKm": [
+        295.3349,
+        296.3952
+      ],
+      "snapErrorM": 0.4,
+      "alongTrackLengthM": 1060.3,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "aravali-tunnel",
+      "no": "20",
+      "name": "Aravali Tunnel",
+      "portalA": {
+        "lat": 17.308565,
+        "lng": 73.533372
+      },
+      "portalB": {
+        "lat": 17.311837,
+        "lng": 73.536112
+      },
+      "chordLengthM": 465.8,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        816,
+        817
+      ],
+      "refPolylineKm": [
+        300.2463,
+        300.7121
+      ],
+      "snapErrorM": 0.5,
+      "alongTrackLengthM": 465.8,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "shinde-tunnel",
+      "no": "21",
+      "name": "Shinde Tunnel",
+      "portalA": {
+        "lat": 17.292124,
+        "lng": 73.536097
+      },
+      "portalB": {
+        "lat": 17.308059,
+        "lng": 73.532995
+      },
+      "chordLengthM": 1802.2,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        817,
+        826
+      ],
+      "refPolylineKm": [
+        300.7812,
+        302.753
+      ],
+      "snapErrorM": 0.6,
+      "alongTrackLengthM": 1971.9,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "dhamani-i-tunnel",
+      "no": "22",
+      "name": "Dhamani I Tunnel",
+      "portalA": {
+        "lat": 17.219359,
+        "lng": 73.549283
+      },
+      "portalB": {
+        "lat": 17.22408,
+        "lng": 73.551084
+      },
+      "chordLengthM": 558.7,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        848,
+        850
+      ],
+      "refPolylineKm": [
+        311.0783,
+        311.6401
+      ],
+      "snapErrorM": 2.9,
+      "alongTrackLengthM": 561.8,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "dhamani-ii-tunnel",
+      "no": "23",
+      "name": "Dhamani II Tunnel",
+      "portalA": {
+        "lat": 17.21535,
+        "lng": 73.54873
+      },
+      "portalB": {
+        "lat": 17.21863,
+        "lng": 73.549104
+      },
+      "chordLengthM": 366.9,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        850,
+        852
+      ],
+      "refPolylineKm": [
+        311.7234,
+        312.0916
+      ],
+      "snapErrorM": 1.7,
+      "alongTrackLengthM": 368.3,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "ambed-tunnel",
+      "no": "24",
+      "name": "Ambed Tunnel",
+      "portalA": {
+        "lat": 17.18386,
+        "lng": 73.541857
+      },
+      "portalB": {
+        "lat": 17.193985,
+        "lng": 73.545856
+      },
+      "chordLengthM": 1203.3,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        862,
+        868
+      ],
+      "refPolylineKm": [
+        314.5092,
+        315.749
+      ],
+      "snapErrorM": 3.9,
+      "alongTrackLengthM": 1239.8,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "konad-tunnel",
+      "no": "25",
+      "name": "Konad Tunnel",
+      "portalA": {
+        "lat": 17.180825,
+        "lng": 73.537791
+      },
+      "portalB": {
+        "lat": 17.181557,
+        "lng": 73.538826
+      },
+      "chordLengthM": 136.8,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        869,
+        869
+      ],
+      "refPolylineKm": [
+        316.1604,
+        316.2972
+      ],
+      "snapErrorM": 0.7,
+      "alongTrackLengthM": 136.8,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "bhirkond-tunnel",
+      "no": "26",
+      "name": "Bhirkond Tunnel",
+      "portalA": {
+        "lat": 17.168646,
+        "lng": 73.496272
+      },
+      "portalB": {
+        "lat": 17.171207,
+        "lng": 73.50788
+      },
+      "chordLengthM": 1265.7,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        875,
+        879
+      ],
+      "refPolylineKm": [
+        319.7985,
+        321.1019
+      ],
+      "snapErrorM": 2.0,
+      "alongTrackLengthM": 1303.4,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "parchuri-tunnel",
+      "no": "27",
+      "name": "Parchuri Tunnel",
+      "portalA": {
+        "lat": 17.137317,
+        "lng": 73.470159
+      },
+      "portalB": {
+        "lat": 17.158565,
+        "lng": 73.482792
+      },
+      "chordLengthM": 2717.3,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        880,
+        889
+      ],
+      "refPolylineKm": [
+        322.9207,
+        325.6658
+      ],
+      "snapErrorM": 1.2,
+      "alongTrackLengthM": 2745.1,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "velewadi-tunnel",
+      "no": "28",
+      "name": "Velewadi Tunnel",
+      "portalA": {
+        "lat": 17.131911,
+        "lng": 73.461961
+      },
+      "portalB": {
+        "lat": 17.136331,
+        "lng": 73.469169
+      },
+      "chordLengthM": 910.0,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        889,
+        893
+      ],
+      "refPolylineKm": [
+        325.8177,
+        326.7327
+      ],
+      "snapErrorM": 0.2,
+      "alongTrackLengthM": 915.0,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "ukshi-tunnel",
+      "no": "29",
+      "name": "Ukshi Tunnel",
+      "portalA": {
+        "lat": 17.130652,
+        "lng": 73.457991
+      },
+      "portalB": {
+        "lat": 17.130889,
+        "lng": 73.458977
+      },
+      "chordLengthM": 108.0,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        895,
+        895
+      ],
+      "refPolylineKm": [
+        327.0697,
+        327.1774
+      ],
+      "snapErrorM": 10.3,
+      "alongTrackLengthM": 107.7,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "banachiwadi-tunnel",
+      "no": "30",
+      "name": "Banachiwadi Tunnel",
+      "portalA": {
+        "lat": 17.125724,
+        "lng": 73.449095
+      },
+      "portalB": {
+        "lat": 17.129181,
+        "lng": 73.453341
+      },
+      "chordLengthM": 592.7,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        898,
+        901
+      ],
+      "refPolylineKm": [
+        327.7005,
+        328.3041
+      ],
+      "snapErrorM": 2.3,
+      "alongTrackLengthM": 603.5,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "ukshi-i-tunnel",
+      "no": "31",
+      "name": "Ukshi I Tunnel",
+      "portalA": {
+        "lat": 17.122085,
+        "lng": 73.44661
+      },
+      "portalB": {
+        "lat": 17.124015,
+        "lng": 73.447879
+      },
+      "chordLengthM": 253.5,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        902,
+        902
+      ],
+      "refPolylineKm": [
+        328.5338,
+        328.7872
+      ],
+      "snapErrorM": 5.9,
+      "alongTrackLengthM": 253.4,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "ukshi-ii-tunnel",
+      "no": "32",
+      "name": "Ukshi II Tunnel",
+      "portalA": {
+        "lat": 17.116195,
+        "lng": 73.441777
+      },
+      "portalB": {
+        "lat": 17.120899,
+        "lng": 73.445794
+      },
+      "chordLengthM": 675.1,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        902,
+        905
+      ],
+      "refPolylineKm": [
+        328.945,
+        329.6257
+      ],
+      "snapErrorM": 4.5,
+      "alongTrackLengthM": 680.7,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "ranpat-tunnel",
+      "no": "33",
+      "name": "Ranpat Tunnel",
+      "portalA": {
+        "lat": 17.111471,
+        "lng": 73.42954
+      },
+      "portalB": {
+        "lat": 17.114148,
+        "lng": 73.437529
+      },
+      "chordLengthM": 899.7,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        907,
+        907
+      ],
+      "refPolylineKm": [
+        330.1331,
+        331.0328
+      ],
+      "snapErrorM": 0.4,
+      "alongTrackLengthM": 899.7,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "lajul-tunnel",
+      "no": "34",
+      "name": "Lajul Tunnel",
+      "portalA": {
+        "lat": 17.107201,
+        "lng": 73.420219
+      },
+      "portalB": {
+        "lat": 17.110969,
+        "lng": 73.428061
+      },
+      "chordLengthM": 932.8,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        907,
+        911
+      ],
+      "refPolylineKm": [
+        331.1996,
+        332.1367
+      ],
+      "snapErrorM": 0.2,
+      "alongTrackLengthM": 937.1,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "karbude-tunnel",
+      "no": "35",
+      "name": "Karbude Tunnel",
+      "portalA": {
+        "lat": 17.054976,
+        "lng": 73.384951
+      },
+      "portalB": {
+        "lat": 17.104456,
+        "lng": 73.418121
+      },
+      "chordLengthM": 6534.6,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        913,
+        913
+      ],
+      "refPolylineKm": [
+        332.5158,
+        339.0505
+      ],
+      "snapErrorM": 5.0,
+      "alongTrackLengthM": 6534.6,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "khedshi-i-tunnel",
+      "no": "36",
+      "name": "Khedshi I Tunnel",
+      "portalA": {
+        "lat": 17.029065,
+        "lng": 73.380691
+      },
+      "portalB": {
+        "lat": 17.034476,
+        "lng": 73.379401
+      },
+      "chordLengthM": 617.1,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        922,
+        923
+      ],
+      "refPolylineKm": [
+        341.5561,
+        342.1732
+      ],
+      "snapErrorM": 3.7,
+      "alongTrackLengthM": 617.1,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "khedshi-ii-tunnel",
+      "no": "36A",
+      "name": "Khedshi II Tunnel",
+      "portalA": {
+        "lat": 17.02174,
+        "lng": 73.381278
+      },
+      "portalB": {
+        "lat": 17.027255,
+        "lng": 73.381055
+      },
+      "chordLengthM": 613.7,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        923,
+        927
+      ],
+      "refPolylineKm": [
+        342.3781,
+        343.0
+      ],
+      "snapErrorM": 0.2,
+      "alongTrackLengthM": 621.9,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "pomendi-tunnel",
+      "no": "37",
+      "name": "Pomendi Tunnel",
+      "portalA": {
+        "lat": 16.985142,
+        "lng": 73.368544
+      },
+      "portalB": {
+        "lat": 16.987419,
+        "lng": 73.363345
+      },
+      "chordLengthM": 608.1,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        960,
+        964
+      ],
+      "refPolylineKm": [
+        350.9235,
+        351.5344
+      ],
+      "snapErrorM": 2.7,
+      "alongTrackLengthM": 610.9,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "banewadi-tunnel",
+      "no": "38",
+      "name": "Banewadi Tunnel",
+      "portalA": {
+        "lat": 16.981458,
+        "lng": 73.388108
+      },
+      "portalB": {
+        "lat": 16.983338,
+        "lng": 73.377832
+      },
+      "chordLengthM": 1112.6,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        967,
+        967
+      ],
+      "refPolylineKm": [
+        352.5433,
+        353.656
+      ],
+      "snapErrorM": 3.0,
+      "alongTrackLengthM": 1112.6,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "tike-tunnel",
+      "no": "39",
+      "name": "Tike Tunnel",
+      "portalA": {
+        "lat": 16.962965,
+        "lng": 73.428758
+      },
+      "portalB": {
+        "lat": 16.980262,
+        "lng": 73.394848
+      },
+      "chordLengthM": 4087.2,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        969,
+        973
+      ],
+      "refPolylineKm": [
+        354.3852,
+        358.4853
+      ],
+      "snapErrorM": 3.8,
+      "alongTrackLengthM": 4100.0,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "konvad-tunnel",
+      "no": "40",
+      "name": "Konvad Tunnel",
+      "portalA": {
+        "lat": 16.951228,
+        "lng": 73.448118
+      },
+      "portalB": {
+        "lat": 16.955,
+        "lng": 73.442189
+      },
+      "chordLengthM": 757.4,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        975,
+        976
+      ],
+      "refPolylineKm": [
+        360.1683,
+        360.9256
+      ],
+      "snapErrorM": 2.2,
+      "alongTrackLengthM": 757.4,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "nivasar-i-tunnel",
+      "no": "41",
+      "name": "Nivasar I Tunnel",
+      "portalA": {
+        "lat": 16.940819,
+        "lng": 73.464149
+      },
+      "portalB": {
+        "lat": 16.944122,
+        "lng": 73.459108
+      },
+      "chordLengthM": 649.9,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        982,
+        982
+      ],
+      "refPolylineKm": [
+        362.3449,
+        362.9948
+      ],
+      "snapErrorM": 3.6,
+      "alongTrackLengthM": 649.9,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "nivasar-ii-tunnel",
+      "no": "42",
+      "name": "Nivasar II Tunnel",
+      "portalA": {
+        "lat": 16.938689,
+        "lng": 73.471413
+      },
+      "portalB": {
+        "lat": 16.939339,
+        "lng": 73.467095
+      },
+      "chordLengthM": 465.0,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        984,
+        988
+      ],
+      "refPolylineKm": [
+        363.3494,
+        363.8167
+      ],
+      "snapErrorM": 0.3,
+      "alongTrackLengthM": 467.3,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "math-tunnel",
+      "no": "43",
+      "name": "Math Tunnel",
+      "portalA": {
+        "lat": 16.939703,
+        "lng": 73.509564
+      },
+      "portalB": {
+        "lat": 16.938714,
+        "lng": 73.497766
+      },
+      "chordLengthM": 1259.8,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        991,
+        995
+      ],
+      "refPolylineKm": [
+        366.6297,
+        367.8929
+      ],
+      "snapErrorM": 0.4,
+      "alongTrackLengthM": 1263.2,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "anjanari-tunnel",
+      "no": "44",
+      "name": "Anjanari Tunnel",
+      "portalA": {
+        "lat": 16.942128,
+        "lng": 73.526695
+      },
+      "portalB": {
+        "lat": 16.941679,
+        "lng": 73.523524
+      },
+      "chordLengthM": 341.0,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        995,
+        995
+      ],
+      "refPolylineKm": [
+        369.3939,
+        369.7349
+      ],
+      "snapErrorM": 0.1,
+      "alongTrackLengthM": 341.0,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "ghatiwali-tunnel",
+      "no": "45",
+      "name": "Ghatiwali Tunnel",
+      "portalA": {
+        "lat": 16.947083,
+        "lng": 73.563323
+      },
+      "portalB": {
+        "lat": 16.946417,
+        "lng": 73.556984
+      },
+      "chordLengthM": 678.3,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        995,
+        997
+      ],
+      "refPolylineKm": [
+        372.9918,
+        373.671
+      ],
+      "snapErrorM": 1.1,
+      "alongTrackLengthM": 679.2,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "talawade-tunnel",
+      "no": "46",
+      "name": "Talawade Tunnel",
+      "portalA": {
+        "lat": 16.939525,
+        "lng": 73.576682
+      },
+      "portalB": {
+        "lat": 16.941488,
+        "lng": 73.574083
+      },
+      "chordLengthM": 352.2,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1002,
+        1002
+      ],
+      "refPolylineKm": [
+        375.0066,
+        375.3588
+      ],
+      "snapErrorM": 0.2,
+      "alongTrackLengthM": 352.2,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "adavali-i-tunnel",
+      "no": "47",
+      "name": "Adavali I Tunnel",
+      "portalA": {
+        "lat": 16.901445,
+        "lng": 73.604368
+      },
+      "portalB": {
+        "lat": 16.906673,
+        "lng": 73.601494
+      },
+      "chordLengthM": 656.8,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1009,
+        1011
+      ],
+      "refPolylineKm": [
+        379.9426,
+        380.5995
+      ],
+      "snapErrorM": 0.5,
+      "alongTrackLengthM": 656.9,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "adavali-ii-tunnel",
+      "no": "48",
+      "name": "Adavali II Tunnel",
+      "portalA": {
+        "lat": 16.898295,
+        "lng": 73.605746
+      },
+      "portalB": {
+        "lat": 16.900853,
+        "lng": 73.604672
+      },
+      "chordLengthM": 306.5,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1011,
+        1013
+      ],
+      "refPolylineKm": [
+        380.6728,
+        380.9797
+      ],
+      "snapErrorM": 1.8,
+      "alongTrackLengthM": 306.9,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "berdewadi-tunnel",
+      "no": "49",
+      "name": "Berdewadi Tunnel",
+      "portalA": {
+        "lat": 16.859269,
+        "lng": 73.611634
+      },
+      "portalB": {
+        "lat": 16.895253,
+        "lng": 73.606335
+      },
+      "chordLengthM": 4040.8,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1014,
+        1014
+      ],
+      "refPolylineKm": [
+        381.3239,
+        385.3647
+      ],
+      "snapErrorM": 3.9,
+      "alongTrackLengthM": 4040.8,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "mandavkarwadi-tunnel",
+      "no": "50",
+      "name": "Mandavkarwadi Tunnel",
+      "portalA": {
+        "lat": 16.815762,
+        "lng": 73.616499
+      },
+      "portalB": {
+        "lat": 16.817727,
+        "lng": 73.616331
+      },
+      "chordLengthM": 219.2,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1021,
+        1021
+      ],
+      "refPolylineKm": [
+        390.0178,
+        390.237
+      ],
+      "snapErrorM": 0.1,
+      "alongTrackLengthM": 219.2,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "wahngaon-tunnel",
+      "no": "51",
+      "name": "Wahngaon Tunnel",
+      "portalA": {
+        "lat": 16.800603,
+        "lng": 73.617787
+      },
+      "portalB": {
+        "lat": 16.802668,
+        "lng": 73.617611
+      },
+      "chordLengthM": 230.4,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1021,
+        1021
+      ],
+      "refPolylineKm": [
+        391.6978,
+        391.9282
+      ],
+      "snapErrorM": 0.3,
+      "alongTrackLengthM": 230.4,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "vilavade-tunnel",
+      "no": "52",
+      "name": "Vilavade Tunnel",
+      "portalA": {
+        "lat": 16.789549,
+        "lng": 73.618591
+      },
+      "portalB": {
+        "lat": 16.794727,
+        "lng": 73.618202
+      },
+      "chordLengthM": 577.3,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1022,
+        1023
+      ],
+      "refPolylineKm": [
+        392.583,
+        393.1603
+      ],
+      "snapErrorM": 1.4,
+      "alongTrackLengthM": 577.3,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "shiravali-i-tunnel",
+      "no": "53",
+      "name": "Shiravali I Tunnel",
+      "portalA": {
+        "lat": 16.76071,
+        "lng": 73.620704
+      },
+      "portalB": {
+        "lat": 16.776501,
+        "lng": 73.619718
+      },
+      "chordLengthM": 1759.0,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1024,
+        1024
+      ],
+      "refPolylineKm": [
+        394.6171,
+        396.3762
+      ],
+      "snapErrorM": 0.8,
+      "alongTrackLengthM": 1759.0,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "shiravali-ii-tunnel",
+      "no": "54",
+      "name": "Shiravali II Tunnel",
+      "portalA": {
+        "lat": 16.755592,
+        "lng": 73.620563
+      },
+      "portalB": {
+        "lat": 16.758252,
+        "lng": 73.620543
+      },
+      "chordLengthM": 295.8,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1025,
+        1026
+      ],
+      "refPolylineKm": [
+        396.6504,
+        396.9464
+      ],
+      "snapErrorM": 5.0,
+      "alongTrackLengthM": 296.0,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "konde-tiware-ii-tunnel",
+      "no": "55",
+      "name": "Konde Tiware II Tunnel",
+      "portalA": {
+        "lat": 16.749829,
+        "lng": 73.620477
+      },
+      "portalB": {
+        "lat": 16.752418,
+        "lng": 73.620509
+      },
+      "chordLengthM": 287.9,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1028,
+        1028
+      ],
+      "refPolylineKm": [
+        397.2997,
+        397.5876
+      ],
+      "snapErrorM": 0.9,
+      "alongTrackLengthM": 287.9,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "tiware-tunnel",
+      "no": "56",
+      "name": "Tiware Tunnel",
+      "portalA": {
+        "lat": 16.739221,
+        "lng": 73.620344
+      },
+      "portalB": {
+        "lat": 16.749089,
+        "lng": 73.620468
+      },
+      "chordLengthM": 1097.4,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1028,
+        1028
+      ],
+      "refPolylineKm": [
+        397.6699,
+        398.7672
+      ],
+      "snapErrorM": 4.6,
+      "alongTrackLengthM": 1097.3,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "barewadi-i-tunnel",
+      "no": "57",
+      "name": "Barewadi I Tunnel",
+      "portalA": {
+        "lat": 16.72702,
+        "lng": 73.620122
+      },
+      "portalB": {
+        "lat": 16.733514,
+        "lng": 73.620231
+      },
+      "chordLengthM": 722.2,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1028,
+        1028
+      ],
+      "refPolylineKm": [
+        399.4019,
+        400.1241
+      ],
+      "snapErrorM": 2.3,
+      "alongTrackLengthM": 722.2,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "barewadi-ii-tunnel",
+      "no": "58",
+      "name": "Barewadi II Tunnel",
+      "portalA": {
+        "lat": 16.71507,
+        "lng": 73.619947
+      },
+      "portalB": {
+        "lat": 16.717783,
+        "lng": 73.61996
+      },
+      "chordLengthM": 301.7,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1028,
+        1029
+      ],
+      "refPolylineKm": [
+        401.1514,
+        401.4531
+      ],
+      "snapErrorM": 0.6,
+      "alongTrackLengthM": 301.7,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "sundal-tunnel",
+      "no": "59",
+      "name": "Sundal Tunnel",
+      "portalA": {
+        "lat": 16.703453,
+        "lng": 73.619689
+      },
+      "portalB": {
+        "lat": 16.707245,
+        "lng": 73.619665
+      },
+      "chordLengthM": 421.7,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1030,
+        1031
+      ],
+      "refPolylineKm": [
+        402.3244,
+        402.7472
+      ],
+      "snapErrorM": 3.7,
+      "alongTrackLengthM": 422.8,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "malewadi-tunnel",
+      "no": "60",
+      "name": "Malewadi Tunnel",
+      "portalA": {
+        "lat": 16.678582,
+        "lng": 73.621597
+      },
+      "portalB": {
+        "lat": 16.681535,
+        "lng": 73.621261
+      },
+      "chordLengthM": 330.3,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1034,
+        1034
+      ],
+      "refPolylineKm": [
+        405.1942,
+        405.5244
+      ],
+      "snapErrorM": 2.1,
+      "alongTrackLengthM": 330.3,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "adawali-tunnel",
+      "no": "61",
+      "name": "Adawali Tunnel",
+      "portalA": {
+        "lat": 16.670881,
+        "lng": 73.622592
+      },
+      "portalB": {
+        "lat": 16.673817,
+        "lng": 73.622204
+      },
+      "chordLengthM": 329.1,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1035,
+        1035
+      ],
+      "refPolylineKm": [
+        406.0582,
+        406.3873
+      ],
+      "snapErrorM": 0.7,
+      "alongTrackLengthM": 329.1,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "ladwadi-tunnel",
+      "no": "62",
+      "name": "Ladwadi Tunnel",
+      "portalA": {
+        "lat": 16.622741,
+        "lng": 73.62878
+      },
+      "portalB": {
+        "lat": 16.625141,
+        "lng": 73.62847
+      },
+      "chordLengthM": 268.9,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1039,
+        1039
+      ],
+      "refPolylineKm": [
+        411.5177,
+        411.7866
+      ],
+      "snapErrorM": 1.7,
+      "alongTrackLengthM": 268.9,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "rogewadi-tunnel",
+      "no": "63",
+      "name": "Rogewadi Tunnel",
+      "portalA": {
+        "lat": 16.612669,
+        "lng": 73.630435
+      },
+      "portalB": {
+        "lat": 16.613873,
+        "lng": 73.630069
+      },
+      "chordLengthM": 139.4,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1040,
+        1041
+      ],
+      "refPolylineKm": [
+        412.7822,
+        412.9216
+      ],
+      "snapErrorM": 0.4,
+      "alongTrackLengthM": 139.4,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "gopalwadi-tunnel",
+      "no": "64",
+      "name": "Gopalwadi Tunnel",
+      "portalA": {
+        "lat": 16.599825,
+        "lng": 73.637509
+      },
+      "portalB": {
+        "lat": 16.609207,
+        "lng": 73.631608
+      },
+      "chordLengthM": 1218.1,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1043,
+        1046
+      ],
+      "refPolylineKm": [
+        413.3266,
+        414.5459
+      ],
+      "snapErrorM": 0.4,
+      "alongTrackLengthM": 1219.3,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "berle-tunnel",
+      "no": "65",
+      "name": "Berle Tunnel",
+      "portalA": {
+        "lat": 16.54906,
+        "lng": 73.675393
+      },
+      "portalB": {
+        "lat": 16.552087,
+        "lng": 73.673188
+      },
+      "chordLengthM": 410.5,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1049,
+        1049
+      ],
+      "refPolylineKm": [
+        421.0758,
+        421.4863
+      ],
+      "snapErrorM": 2.9,
+      "alongTrackLengthM": 410.5,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "sherpe-tunnel",
+      "no": "66",
+      "name": "Sherpe Tunnel",
+      "portalA": {
+        "lat": 16.529322,
+        "lng": 73.689847
+      },
+      "portalB": {
+        "lat": 16.531575,
+        "lng": 73.688158
+      },
+      "chordLengthM": 308.5,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1050,
+        1050
+      ],
+      "refPolylineKm": [
+        423.8594,
+        424.1679
+      ],
+      "snapErrorM": 2.0,
+      "alongTrackLengthM": 308.5,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "pernam-tunnel",
+      "no": "66",
+      "name": "Pernam Tunnel",
+      "portalA": {
+        "lat": 15.712974,
+        "lng": 73.815525
+      },
+      "portalB": {
+        "lat": 15.726887,
+        "lng": 73.817709
+      },
+      "chordLengthM": 1564.6,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1169,
+        1172
+      ],
+      "refPolylineKm": [
+        523.7134,
+        525.2843
+      ],
+      "snapErrorM": 0.6,
+      "alongTrackLengthM": 1570.9,
+      "positionalConfidence": "high"
+    },
+    {
+      "id": "old-goa-tunnel",
+      "no": "70",
+      "name": "Old Goa Tunnel",
+      "portalA": {
+        "lat": 15.503288,
+        "lng": 73.925132
+      },
+      "portalB": {
+        "lat": 15.508215,
+        "lng": 73.925318
+      },
+      "chordLengthM": 548.2,
+      "osmWaySegments": 1,
+      "refVertexIndex": [
+        1250,
+        1251
+      ],
+      "refPolylineKm": [
+        552.1476,
+        552.6958
+      ],
+      "snapErrorM": 0.2,
+      "alongTrackLengthM": 548.2,
+      "positionalConfidence": "high"
+    }
+  ]
+}

@@ -40,6 +40,7 @@ let railwayLayer = null;
 let fleetMarkersLayer = null;
 let activeRouteLayer = null;
 let activeStationsLayer = null;
+let tunnelsLayer = null;
 let activeTrainMarker = null;
 
 let selectedTrainNumber = null;
@@ -167,6 +168,8 @@ function initMap() {
   fleetMarkersLayer = L.layerGroup().addTo(map);
   activeRouteLayer = L.layerGroup().addTo(map);
   activeStationsLayer = L.layerGroup().addTo(map);
+  // Drawn above the route line so a tunnel reads as a section OF the route.
+  tunnelsLayer = L.layerGroup().addTo(map);
 }
 
 // Layer Switcher
@@ -369,10 +372,234 @@ async function selectTrain(trainNumber, forceRefresh = false, forceServerRefresh
   }
 }
 
+// ── Tunnel overlay ──────────────────────────────────────────────────────────
+// Draws the 69 real Konkan tunnels as segments of the route line. Amber = a
+// tunnel the train is not in; bright cyan + pulse = the tunnel it is inside.
+//
+// Every number here is server-computed (src/services/tunnels.js). The client
+// does no chainage arithmetic of its own — the axis correction that makes
+// containment trustworthy lives on the server, and duplicating it here would
+// let the two drift.
+function renderTunnels(liveData) {
+  const info = liveData.tunnels;
+  if (!info || !Array.isArray(info.list) || !info.list.length) return;
+
+  const insideId = info.inside?.id || null;
+
+  for (const t of info.list) {
+    const line = [
+      [t.portalA.lat, t.portalA.lng],
+      [t.portalB.lat, t.portalB.lng],
+    ];
+    const isActive = t.id === insideId;
+
+    // Casing first so short tunnels stay visible against the magenta route.
+    tunnelsLayer.addLayer(
+      L.polyline(line, {
+        color: isActive ? '#22d3ee' : '#f59e0b',
+        weight: isActive ? 11 : 8,
+        opacity: isActive ? 0.45 : 0.3,
+        lineCap: 'butt',
+      })
+    );
+
+    const core = L.polyline(line, {
+      color: isActive ? '#67e8f9' : '#fbbf24',
+      weight: isActive ? 5 : 3.5,
+      opacity: isActive ? 1 : 0.85,
+      lineCap: 'butt',
+      // Dashed reads as "the train is out of sight in here".
+      dashArray: isActive ? null : '5,4',
+    });
+
+    // Chord is the published length; the chainage span is what the containment
+    // test actually uses. They differ by up to ~4% (axis renormalisation +
+    // along-track vs straight-line), so both are shown rather than letting the
+    // popup's own two numbers appear to contradict each other.
+    const lenKm = (t.chordLengthM / 1000).toFixed(2);
+    const spanKm = t.chainageLengthM != null ? (t.chainageLengthM / 1000).toFixed(2) : null;
+    const conf =
+      t.positionalConfidence === 'low'
+        ? '<div style="color:#fbbf24;margin-top:4px;font-size:0.68rem">⚠ Position uncertainty exceeds this tunnel\'s length — identification not reliable.</div>'
+        : '';
+    core.bindPopup(
+      `<div style="font-family:system-ui,sans-serif;min-width:190px">
+         <div style="font-weight:700;font-size:0.9rem">${escapeHtml(t.name)}</div>
+         <div style="color:#64748b;font-size:0.72rem;margin-bottom:6px">Tunnel #${escapeHtml(t.no)} · Konkan Railway</div>
+         <div style="font-size:0.78rem">Length: <strong>${lenKm} km</strong> <span style="color:#64748b">(portal-to-portal chord)</span></div>
+         <div style="font-size:0.78rem">Chainage: ${t.entryKm.toFixed(1)}–${t.exitKm.toFixed(1)} km from origin${spanKm ? ` <span style="color:#64748b">(${spanKm} km along route)</span>` : ''}</div>
+         ${isActive ? '<div style="color:#0891b2;font-weight:700;margin-top:5px;font-size:0.78rem">🚆 Train is inside this tunnel</div>' : ''}
+         ${conf}
+       </div>`
+    );
+
+    tunnelsLayer.addLayer(core);
+  }
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[c]);
+}
+
+// ── Tunnel + blind-spot panel ───────────────────────────────────────────────
+// Two independent facts, deliberately not merged:
+//   liveData.tunnels        — where the train is relative to the 69 tunnels.
+//                             Present in normal running; this is the useful part.
+//   liveData.deadReckoning  — only when the GPS has actually gone quiet.
+// A train can be inside a tunnel with a fresh fix (short bore), and can have a
+// stale fix nowhere near one. Showing them as one thing would assert a causal
+// link the data does not support.
+function renderTunnelPanel(liveData) {
+  const panel = document.getElementById('tunnelPanel');
+  const header = document.getElementById('tunnelPanelHeader');
+  const body = document.getElementById('tunnelPanelBody');
+  const drBlock = document.getElementById('deadReckoningPanel');
+  const drBadge = document.getElementById('drawerDrBadge');
+  if (!panel) return;
+
+  const info = liveData.tunnels;
+  const dr = liveData.deadReckoning;
+  const stale = !!(dr && dr.active);
+
+  if (!info) {
+    panel.style.display = 'none';
+    if (drBadge) drBadge.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+  if (drBadge) drBadge.style.display = stale ? 'block' : 'none';
+
+  const inside = info.inside;
+  // Colour tracks the SIGNAL state, not the tunnel state: red is reserved for
+  // "we have lost the train", which is the condition an operator must act on.
+  const accent = stale ? '#f87171' : inside ? '#22d3ee' : '#fbbf24';
+  panel.style.background = stale
+    ? 'rgba(239, 68, 68, 0.08)'
+    : inside
+      ? 'rgba(34, 211, 238, 0.08)'
+      : 'rgba(251, 191, 36, 0.06)';
+  panel.style.border = `1px solid ${accent}33`;
+  header.style.color = accent;
+
+  header.innerHTML = stale
+    ? '<span class="pulsing-red-dot-dr"></span> SIGNAL DROPPED — position dead-reckoned'
+    : inside
+      ? '🚇 IN TUNNEL'
+      : '🚇 Tunnel tracking';
+
+  const rows = [];
+
+  if (inside) {
+    // Two different lengths, and they must not be silently mixed. chordLengthM
+    // is the portal-to-portal straight line (the published, KRCL-validated
+    // number). chainageLengthM is the tunnel's span on THIS train's timetable
+    // axis, which is what metresIn/metresToExit are measured against — Karbude
+    // is 6535 m chord but 6778 m of chainage. Showing only the chord would make
+    // the very next line ("6777 m to exit") look like an arithmetic error, so
+    // the axis length is surfaced whenever the two differ materially.
+    const lenKm = (inside.chordLengthM / 1000).toFixed(2);
+    const axisKm = (inside.chainageLengthM / 1000).toFixed(2);
+    const lensDiffer =
+      inside.chainageLengthM &&
+      Math.abs(inside.chainageLengthM - inside.chordLengthM) / inside.chordLengthM > 0.02;
+    rows.push(
+      `Tunnel: <strong style="color:#fff">${escapeHtml(inside.name)}</strong> ` +
+        `<span style="color:var(--text-dim)">#${escapeHtml(inside.no)} · ${lenKm} km chord` +
+        (lensDiffer ? ` · ${axisKm} km along route` : '') +
+        `</span>`
+    );
+    rows.push(
+      `Progress: <strong style="color:#fff">${inside.metresIn} m in</strong>` +
+        (inside.progressPct != null ? ` of ${Math.round(inside.chainageLengthM)} m (${inside.progressPct}%)` : '')
+    );
+    rows.push(
+      `To daylight: <strong style="color:${accent}">${inside.metresToExit} m</strong>` +
+        (inside.minutesToExit != null
+          ? ` · <strong style="color:${accent}">~${inside.minutesToExit} min</strong>`
+          : ' · <span style="color:var(--text-dim)">time unavailable (no speed)</span>')
+    );
+    if (inside.minutesToExit != null) {
+      // The basis label travels with the number by design (VERIFIED #3 — there
+      // is no live speed field in this payload). Never render the minutes alone.
+      rows.push(
+        `<span style="color:var(--text-dim);font-size:0.7rem">at ${inside.speedKmph} km/h — ` +
+          `${escapeHtml(inside.speedBasisLabel || inside.speedBasis || 'unknown basis')}</span>`
+      );
+    }
+    if (inside.positionalConfidence === 'low') {
+      rows.push(
+        '<span style="color:#fbbf24">⚠ Positional uncertainty exceeds this tunnel\'s ' +
+          'own length — identification is not reliable.</span>'
+      );
+    }
+  } else if (info.ahead) {
+    const a = info.ahead;
+    rows.push(
+      `Next tunnel: <strong style="color:#fff">${escapeHtml(a.name)}</strong> ` +
+        `<span style="color:var(--text-dim)">#${escapeHtml(a.no)} · ${(a.chordLengthM / 1000).toFixed(2)} km</span>`
+    );
+    rows.push(
+      `Distance: <strong style="color:${accent}">${(a.metresToEntry / 1000).toFixed(1)} km</strong>` +
+        (a.minutesToEntry != null ? ` · ~${a.minutesToEntry} min away` : '')
+    );
+  } else {
+    rows.push('<span style="color:var(--text-dim)">No tunnels ahead on this run.</span>');
+  }
+
+  if (info.passedCount != null && info.totalCount) {
+    rows.push(
+      `<span style="color:var(--text-dim)">${info.passedCount} of ${info.totalCount} tunnels passed · ` +
+        `${info.coverage?.totalKm ?? '?'} km of bore on this corridor</span>`
+    );
+  }
+
+  // Axis provenance. 'global-scale' means the route came back without station
+  // coordinates, so chainage is fitted with one scale factor instead of anchored
+  // per block — a ~585 m error, longer than the median tunnel (593 m). That is
+  // enough to name the wrong tunnel, so it is surfaced, not swallowed.
+  if (info.axisBasis !== 'station-anchored') {
+    rows.push(
+      `<span style="color:#fbbf24">⚠ Chainage fitted by global scale ` +
+        `(${info.axisBasis}, ${info.anchorCount} anchors) — up to ` +
+        `${info.axisMismatchM ?? '?'} m of axis error, which exceeds a typical ` +
+        `tunnel. Treat the identification as indicative.</span>`
+    );
+  }
+
+  body.innerHTML = rows.join('<br/>');
+
+  if (stale && drBlock) {
+    drBlock.style.display = 'block';
+    const staleSecs = Math.round(dr.staleSinceMs / 1000);
+    const staleStr = staleSecs < 60 ? `${staleSecs}s ago` : `${Math.floor(staleSecs / 60)}m ago`;
+    const clock = dr.lastSignalAt
+      ? ` (${new Date(dr.lastSignalAt).toLocaleTimeString('en-IN')})`
+      : '';
+    document.getElementById('drLastSignal').innerText = staleStr + clock;
+
+    const p = dr.estimatedPosition || {};
+    document.getElementById('drEstPos').innerText =
+      p.lat != null && p.lng != null
+        ? `${p.lat.toFixed(4)}°, ${p.lng.toFixed(4)}°` +
+          (p.totalDistFromOriginKm != null
+            ? ` (${p.totalDistFromOriginKm.toFixed(1)} km from origin)`
+            : '')
+        : 'unavailable';
+    document.getElementById('drConfidence').innerText =
+      p.confidence != null ? `${Math.round(p.confidence * 100)}%` : 'unavailable';
+  } else if (drBlock) {
+    drBlock.style.display = 'none';
+  }
+}
+
 // Draw Track and Stations on Map
 function renderTrainOnMap(liveData, routeGeoJson, skipFlyTo = false) {
   activeRouteLayer.clearLayers();
   activeStationsLayer.clearLayers();
+  tunnelsLayer.clearLayers();
 
   const trainInfo = liveData.train || {};
   const currentLoc = liveData.currentLocation || {};
@@ -422,6 +649,9 @@ function renderTrainOnMap(liveData, routeGeoJson, skipFlyTo = false) {
     activeRouteLayer.addLayer(glowLine);
     activeRouteLayer.addLayer(coreLine);
 
+    // Tunnels sit on top of the route line, so they must be drawn after it.
+    renderTunnels(liveData);
+
     // Fit map bounds smoothly (skip on auto-refresh to avoid jarring the view)
     if (!skipFlyTo) {
       map.flyToBounds(coreLine.getBounds(), {
@@ -431,7 +661,7 @@ function renderTrainOnMap(liveData, routeGeoJson, skipFlyTo = false) {
     }
   }
 
-  // Plot Station Halts — interpolated along the route polyline
+// Plot Station Halts — interpolated along the route polyline
   let currentTrainLat = null;
   let currentTrainLng = null;
 
@@ -622,27 +852,8 @@ function renderTrainDrawer(liveData, coachesData) {
     delayBadge.innerHTML = `🔴 Delayed by ${delayMinutes} mins`;
   }
 
-  // 📡 Dead Reckoning Panel UI Integration
-  const drPanel = document.getElementById('deadReckoningPanel');
-  const drBadge = document.getElementById('drawerDrBadge');
-  const drInfo = liveData.deadReckoning;
-
-  if (drInfo && drInfo.active) {
-    drBadge.style.display = 'block';
-    drPanel.style.display = 'block';
-    
-    document.getElementById('drTunnelName').innerText = drInfo.tunnelZone?.name || 'Unnamed Tunnel';
-    const staleSecs = Math.round(drInfo.staleSinceMs / 1000);
-    const staleStr = staleSecs < 60 ? `${staleSecs}s ago` : `${Math.floor(staleSecs / 60)}m ago`;
-    document.getElementById('drLastSignal').innerText = `${staleStr} (${new Date(drInfo.lastSignalAt).toLocaleTimeString('en-IN')})`;
-    
-    const estPos = drInfo.estimatedPosition;
-    document.getElementById('drEstPos').innerText = `${estPos.lat.toFixed(4)}°, ${estPos.lng.toFixed(4)}° (${estPos.distanceFromEntryKm.toFixed(2)} km in)`;
-    document.getElementById('drConfidence').innerText = `${Math.round(estPos.confidence * 100)}%`;
-  } else {
-    drBadge.style.display = 'none';
-    drPanel.style.display = 'none';
-  }
+  // 🚇 Tunnel tracking + GPS blind-spot panel
+  renderTunnelPanel(liveData);
 
   // 🧠 Curvature & Delay-Aware ETA Engine Panel UI Integration
   const etaPanel = document.getElementById('curvatureEtaPanel');
@@ -836,6 +1047,7 @@ function openDrawerLoading(num) {
   delayBadge.innerHTML = '⚡ Checking...';
   
   document.getElementById('drawerDrBadge').style.display = 'none';
+  document.getElementById('tunnelPanel').style.display = 'none';
   document.getElementById('deadReckoningPanel').style.display = 'none';
   document.getElementById('curvatureEtaPanel').style.display = 'none';
   

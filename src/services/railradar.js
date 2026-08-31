@@ -681,9 +681,14 @@ class RailRadarService {
         // the immutable polyline is reused and we skip ~164 KB of payload per poll.
         // See the trackGeometryCache note above — position stays live either way.
         const cachedTrack = trackGeometryCache.get(num);
+        // includeCoordinates adds lat/lng to every route station. It costs no
+        // extra upstream REQUEST — it is a param on the call we already make —
+        // and without it the tunnel layer cannot anchor its chainage to the
+        // timetable axis and silently degrades to a global scale factor
+        // (see src/services/tunnels.js, "the AXIS").
         const liveRes = await this.getTrainLiveStatus(num, cachedTrack
-          ? { geometry: false }
-          : { geometry: true, geometry_format: 'geojson' });
+          ? { geometry: false, includeCoordinates: true }
+          : { geometry: true, geometry_format: 'geojson', includeCoordinates: true });
         // Stamped as close to the upstream response as possible: with live caching
         // off, "when did we actually ask?" is the claim the UI needs to be able
         // to make honestly.
