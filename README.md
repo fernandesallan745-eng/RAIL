@@ -41,6 +41,67 @@ Visit **`http://localhost:5000`** in your browser to open the interactive API te
 
 ---
 
+## 🗺️ Offline map pack (optional, for demos on weak wifi)
+
+The Leaflet map loads basemap tiles from CDNs by default. To make it work with
+**no network**, build a local tile pack. Both steps below need internet and are
+run **once**; nothing here is committed to git (`public/tiles/` and
+`public/vendor/` are gitignored).
+
+**Current state: the pipeline ships, the tiles do not.** Without these steps
+every local tile 404s and the map transparently falls back to the CDN — i.e.
+identical to today's online behaviour. The map is *not* offline-capable until
+you run them.
+
+### 1. Vendor Leaflet locally
+Otherwise Leaflet itself is fetched from unpkg, and with no network the map
+never renders at all.
+```bash
+npm install leaflet && mkdir -p public/vendor && cp -r node_modules/leaflet/dist public/vendor/leaflet
+```
+
+### 2. Build the tile pack
+Check the size first — `--dry-run` makes **no** network requests:
+```bash
+python3 fetch_tiles.py --source maptiler-streets --key YOUR_KEY --dry-run
+```
+Default corridor (lat 12.5–19.3, lng 72.6–75.1) at 22 KB/tile:
+**z6–z11 = 855 tiles ≈ 18 MB**, **z6–z12 = 3,204 tiles ≈ 69 MB**. Then fetch:
+```bash
+python3 fetch_tiles.py --source maptiler-streets --key YOUR_KEY --max-zoom 11 --yes
+```
+The run is cache-first and resumable — re-run the same command to retry
+failures or fill in a partial pack. It finishes by writing
+`public/tiles/pack.json`, the manifest the map reads on load: **no code change
+is needed.** Layers listed there are served from disk (with per-tile CDN
+fallback for gaps) and zooming past the packed maximum upscales local tiles
+instead of showing blanks. Layers absent from it skip the local lookup
+entirely, so a pack-less install makes no wasted requests.
+
+Run it once per layer you want offline (`--layer satellite`, `--layer dark`, …);
+the manifest is merged, not overwritten.
+
+### Choosing a source
+`fetch_tiles.py` **refuses** to bulk-download from Esri, CARTO and
+OpenRailwayMap: showing their tiles interactively is fine, but caching them to
+disk in bulk breaks their terms. Use a provider that permits offline caching —
+`maptiler-satellite`, `maptiler-streets`, `maptiler-dark`, `stadia-dark`,
+`thunderforest-transport` (all keyed, free tiers available) — or point
+`--url-template` at your own render. The `osm` preset is capped at 5,000 tiles
+and single-connection per the OSMF Tile Usage Policy.
+
+Whatever you choose, **keep its attribution visible in the UI** — the script
+prints the required string, and it belongs in the layer's `attribution` option
+in `public/app.js` → `initMap()`. Run `python3 fetch_tiles.py --help` for all
+options (`--bbox`, `--layer`, `--concurrency`, …).
+
+### Verify it works offline
+Load `http://localhost:5000`, then turn off wifi (or tick *Offline* in DevTools →
+Network) and reload. The map shell and packed zoom levels should render entirely
+from disk.
+
+---
+
 ## 📡 Available API Endpoints
 
 | Method | Endpoint | Description | Cache TTL |
@@ -87,8 +148,14 @@ curl http://localhost:5000/api/health
 ├── .env                  # Environment variables & API key (gitignored)
 ├── .env.example          # Sample environment template
 ├── package.json          # Project configuration & dependencies
+├── fetch_tiles.py        # Builds the offline map pack into public/tiles/
 ├── public/
-│   └── index.html        # Interactive API tester & Developer UI
+│   ├── index.html        # Leaflet live-map UI (loads Leaflet local-first)
+│   ├── app.js            # Map engine, fleet polling, drawer & telemetry
+│   ├── app.css           # UI styles
+│   ├── offline-tiles.js  # Offline-first tile layer (local pack → CDN fallback)
+│   ├── tiles/            # Offline tile pack + pack.json manifest (gitignored)
+│   └── vendor/           # Vendored Leaflet (gitignored; see "Offline map pack")
 ├── src/
 │   ├── config/
 │   │   └── env.js        # Environment config loader & validation

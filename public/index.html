@@ -5,14 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>RailRadar Konkan — Live Train Tracker & ETA</title>
   
-  <!-- Fonts -->
+  <!-- Fonts (network). All app.css font stacks end in system fallbacks
+       (sans-serif / monospace), so a blocked Google Fonts degrades cleanly. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Leaflet CSS -->
+
+  <!-- Leaflet CSS — local vendored copy first, CDN as fallback.
+       Both are listed; the vendored file wins when present and the CDN link is
+       harmless duplication when it isn't. See README "Offline map pack". -->
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  
+
   <!-- App Stylesheet -->
   <link rel="stylesheet" href="/app.css">
 </head>
@@ -54,6 +58,14 @@
       <span id="layerToggleLabel" class="layer-toggle-label">Satellite</span>
     </div>
   </div>
+
+  <!-- Link to the model audit console. Href is filled in from /api/health's modelApi.baseUrl
+       (the FastAPI service serves /admin), so the port is never hardcoded here; the link
+       stays hidden until that lookup succeeds rather than offering a dead link. -->
+  <a id="auditLink" href="#" target="_blank" rel="noopener" hidden
+     title="Model Audit Console — every ETA layer, opened up (FastAPI service)">
+    Model audit →
+  </a>
 
   <!-- Bottom Left Fleet Status Badge -->
   <div class="fleet-status-pill">
@@ -124,6 +136,9 @@
             Current Position: <span id="drEstPos" style="color: #f87171; font-weight: 600;">Dead Reckoned</span><br/>
             Confidence: <span id="drConfidence" style="color: #fbbf24; font-weight: 600;">85%</span>
           </div>
+          <div style="font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; font-style: italic; line-height: 1.35;">
+            Prototype: tunnel geometry &amp; historical speeds are illustrative estimates, not yet sourced from official alignment data.
+          </div>
         </div>
 
         <!-- Curvature & Delay-Aware ETA Engine Insights -->
@@ -162,10 +177,64 @@
     </div>
   </div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  
-  <!-- App JS -->
-  <script src="/app.js"></script>
+  <!-- Leaflet + app bootstrap.
+       Leaflet loads from the local vendored copy when present, else from the CDN.
+       offline-tiles.js and app.js both need `L` to already exist, so they are
+       chained after it rather than declared as plain <script> tags. -->
+  <script src="/vendor/leaflet/leaflet.js"></script>
+  <script>
+    (function () {
+      // async = false keeps injected scripts executing in insertion order.
+      function load(src, attrs, done) {
+        var s = document.createElement('script');
+        s.src = src;
+        s.async = false;
+        if (attrs) {
+          for (var key in attrs) { s.setAttribute(key, attrs[key]); }
+        }
+        s.onload = function () { if (done) done(null); };
+        s.onerror = function () { if (done) done(new Error('failed to load ' + src)); };
+        document.head.appendChild(s);
+      }
+
+      function bootApp() {
+        load('/offline-tiles.js', null, function () { load('/app.js', null, null); });
+      }
+
+      if (typeof L !== 'undefined') {
+        bootApp();  // vendored copy present → shell needs no network at all
+        return;
+      }
+
+      // Not vendored yet: fall back to the CDN. Injected dynamically rather than
+      // via document.write, which Chrome may block outright on slow connections
+      // (chromestatus 5718547946799104) — precisely the weak-wifi case the
+      // offline pack exists for.
+      load(
+        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+        {
+          integrity: 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=',
+          crossorigin: '',
+        },
+        function (err) {
+          if (err || typeof L === 'undefined') {
+            var el = document.getElementById('map');
+            if (el) {
+              el.innerHTML =
+                '<div style="position:absolute;inset:0;display:flex;align-items:center;' +
+                'justify-content:center;text-align:center;padding:24px;color:#94a3b8;' +
+                "font-family:system-ui,sans-serif;font-size:0.9rem;line-height:1.6\">" +
+                '<div><strong style="color:#f8fafc">Map library unavailable</strong><br/>' +
+                'Leaflet could not load locally or from the CDN.<br/>' +
+                'Vendor it for offline use — see README &rarr; &ldquo;Offline map pack&rdquo;.</div></div>';
+            }
+            console.error('[boot] Leaflet unavailable locally and from CDN.');
+            return;  // don't run app.js; it would throw on L.map()
+          }
+          bootApp();
+        }
+      );
+    })();
+  </script>
 </body>
 </html>

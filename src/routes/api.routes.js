@@ -16,25 +16,39 @@ import { config } from '../config/env.js';
 
 const router = Router();
 
-// Health check & credentials status
+// ─── Caching policy ──────────────────────────────────────────────────────────────────────────
+// LIVE endpoints use config.cache.liveTtl, which defaults to 0 = never cached. Every request is
+// a real upstream call, so a position shown on the map is a position fetched now.
+//
+// STATIC endpoints keep config.cache.staticTtl (24 h). A route polyline, coach layout and
+// timetable are immutable for the run — re-downloading them cannot make anything fresher, it
+// only burns quota. Caching those is exactly what makes uncached live polling affordable, so
+// this asymmetry is deliberate: do not "fix" the static TTLs to 0 to match live.
+//
+// Bursts are prevented in src/services/railradar.js by one global scheduler, not here. The
+// cache is no longer load protection, so it must not be relied on as such.
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+
+// Health check, credentials state, live posture & quota diagnostics
 router.get('/health', getHealth);
 
-// Live Radar Fleet across India (cached for 5 min to conserve API quota)
+// LIVE — Konkan fleet positions. Uncached: every poll hits RailRadar.
 router.get('/trains/radar/fleet', cacheMiddleware(config.cache.liveTtl), getLiveFleet);
 
-// Tunnel zones
+// STATIC — tunnel zones are local JSON, not upstream data
 router.get('/tunnels/zones', cacheMiddleware(3600), getTunnels);
 
-// Train search / autocomplete
+// STATIC — search results for a train number/name don't change within a demo
 router.get('/trains/search', cacheMiddleware(config.cache.staticTtl), searchTrains);
 
-// Train specific details
+// LIVE — running status, current location, delay. Uncached.
 router.get('/trains/:trainNumber/live', cacheMiddleware(config.cache.liveTtl), getTrainLiveStatus);
+// STATIC — immutable per run (see policy note above)
 router.get('/trains/:trainNumber/route', cacheMiddleware(config.cache.staticTtl), getTrainRoute);
 router.get('/trains/:trainNumber/coaches', cacheMiddleware(config.cache.staticTtl), getTrainCoaches);
 router.get('/trains/:trainNumber', cacheMiddleware(config.cache.staticTtl), getTrainSchedule);
 
-// Lookups
+// STATIC — lookups
 router.get('/lookup/categories', cacheMiddleware(86400), getTrainCategories);
 
 // Transparent proxy for any RailRadar endpoint

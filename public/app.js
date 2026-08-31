@@ -9,11 +9,25 @@ const clientCache = {
   searches: new Map(),
 };
 
-// Cache TTL config (milliseconds)
+// Poll / client-cache intervals (milliseconds).
+//
+// The server no longer caches live data (CACHE_TTL_LIVE=0), so these intervals ARE the upstream
+// quota spend — every tick is one real RailRadar call per train.
+//
+// The binding constraint is RailRadar's 10 REQUESTS PER MINUTE, not the monthly tier. Against a
+// 9 req/min self-imposed ceiling (see RAILRADAR_PER_MINUTE):
+//   1 train  / 60 s   =  1 req/min  =   60 req/hour
+//   drawer   / 30 s   =  2 req/min  =  120 req/hour
+//                        3 req/min  =  180 req/hour total  → ~33% of the allowance
+//   5 keys x 1000     = 5000 req/month  ->  roughly 28 hours of continuous running
+// The leftover 6 req/min is deliberate headroom: a click, a search or a manual refresh during
+// the demo has to succeed immediately, not queue behind the poll loop. Shortening either
+// interval, or growing FLEET_MAX_TRAINS, eats that headroom first and the month second.
+// Static geometry stays cached 24 h and costs nothing per tick.
 const CACHE_TTL = {
-  fleet: 60 * 1000,              // 60 seconds (fleet refreshes every minute)
-  trainLive: 20 * 1000,          // 20 seconds (selected train refreshes every 20s)
-  trainRoute: 24 * 60 * 60 * 1000, // 24 hours (static geometry)
+  fleet: 60 * 1000,              // 60 seconds — one upstream call per train per tick
+  trainLive: 30 * 1000,          // 30 seconds — was 20 s, raised now that each tick is a real call
+  trainRoute: 24 * 60 * 60 * 1000, // 24 hours (static geometry — immutable, free)
   trainCoaches: 24 * 60 * 60 * 1000, // 24 hours (static)
 };
 
@@ -39,14 +53,53 @@ let lastFleetUpdateTime = null;
 let lastTrainUpdateTime = null;
 
 // Initialize Application
-document.addEventListener('DOMContentLoaded', () => {
+async function bootstrapApp() {
+  // Read /tiles/pack.json first so initMap knows which layers have local tiles
+  // and to what zoom. One request; failure is non-fatal (→ CDN-only).
+  if (typeof loadPackManifest === 'function') {
+    await loadPackManifest();
+  }
   initMap();
   loadLiveFleet();
   setupSearch();
   setupEventListeners();
   startAutoRefresh();
   startLiveClock();
-});
+  wireAuditLink();
+}
+
+// The audit console (/admin) is served by the Python FastAPI model service, not this Node
+// server, so it lives on a different port. Read that port from /api/health rather than
+// hardcoding a second copy of it here, and reuse the browser's own hostname so the link
+// also works when the demo laptop is reached from another device on the LAN.
+async function wireAuditLink() {
+  const el = document.getElementById('auditLink');
+  if (!el) return;
+  try {
+    const res = await fetch('/api/health');
+    const j = await res.json();
+    const base = j?.modelApi?.baseUrl;
+    if (!base) return;
+    const u = new URL(base);
+    // 127.0.0.1/localhost is correct for the SERVER; for the browser, follow this page's host
+    if (u.hostname === '127.0.0.1' || u.hostname === 'localhost') u.hostname = location.hostname;
+    u.pathname = '/admin';
+    el.href = u.toString();
+    el.hidden = false;
+  } catch (e) {
+    // model service unreachable → leave the link hidden rather than offering a dead one
+    console.warn('[audit link] model service not reachable:', e.message);
+  }
+}
+
+// index.html loads this file via an injected <script>, which does NOT delay
+// DOMContentLoaded — so that event may already have fired by the time we run.
+// Check readyState instead of listening unconditionally, or the map never inits.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootstrapApp);
+} else {
+  bootstrapApp();
+}
 
 // Map Initialization
 function initMap() {
@@ -59,45 +112,52 @@ function initMap() {
     zoomControl: false,
   });
 
-  // Layer 1: Satellite Hybrid (Esri World Imagery + Labels)
-  const esriSatellite = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    {
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-      maxZoom: 18,
-    }
-  );
+  // Basemaps are offline-first: each tile is requested from the local pack at
+  // /tiles/<layer>/{z}/{x}/{y}.png (built by fetch_tiles.py) and falls back to
+  // the CDN per-tile when it is missing. With no pack present every tile falls
+  // back, so online behaviour is identical to before. See public/offline-tiles.js.
+  const tileLayerFactory =
+    typeof createOfflineLayer === 'function'
+      ? createOfflineLayer
+      : (o) => L.tileLayer(o.remoteTemplate, o); // offline-tiles.js absent → plain CDN
 
-  const esriLabels = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-    {
-      attribution: '',
-      maxZoom: 18,
-      opacity: 0.85,
-    }
-  );
+  // Layer 1: Satellite Hybrid (Esri World Imagery + Labels)
+  const esriSatellite = tileLayerFactory({
+    layer: 'satellite',
+    remoteTemplate:
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+    maxZoom: 18,
+  });
+
+  const esriLabels = tileLayerFactory({
+    layer: 'satellite-labels',
+    remoteTemplate:
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+    attribution: '',
+    maxZoom: 18,
+    opacity: 0.85,
+  });
 
   satelliteLayersGroup = L.layerGroup([esriSatellite, esriLabels]);
 
   // Layer 2: CartoDB Dark Matter
-  darkLayersGroup = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-      maxZoom: 18,
-      subdomains: 'abcd',
-    }
-  );
+  darkLayersGroup = tileLayerFactory({
+    layer: 'dark',
+    remoteTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+    maxZoom: 18,
+    subdomains: 'abcd',
+  });
 
   // Layer 3: OpenRailwayMap overlay (Track lines)
-  railwayLayer = L.tileLayer(
-    'https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
-    {
-      maxZoom: 18,
-      opacity: 0.45,
-      attribution: '&copy; <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a>',
-    }
-  );
+  railwayLayer = tileLayerFactory({
+    layer: 'railway',
+    remoteTemplate: 'https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png',
+    maxZoom: 18,
+    opacity: 0.45,
+    attribution: '&copy; <a href="https://www.openrailwaymap.org/">OpenRailwayMap</a>',
+  });
 
   // Default to Satellite View matching RailRadar
   satelliteLayersGroup.addTo(map);
@@ -119,18 +179,33 @@ function toggleMapLayer() {
     darkLayersGroup.addTo(map);
     currentLayer = 'dark';
     label.innerText = 'Dark';
-    btn.style.backgroundImage = "url('https://a.basemaps.cartocdn.com/dark_all/4/11/7.png')";
+    btn.style.backgroundImage = thumbBackground('dark', 4, 11, 7,
+      'https://a.basemaps.cartocdn.com/dark_all/4/11/7.png');
   } else {
     map.removeLayer(darkLayersGroup);
     satelliteLayersGroup.addTo(map);
     currentLayer = 'satellite';
     label.innerText = 'Satellite';
-    btn.style.backgroundImage = "url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/7/11')";
+    btn.style.backgroundImage = thumbBackground('satellite', 4, 11, 7,
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/7/11');
   }
 }
 
+// Toggle-button thumbnail: local pack tile stacked ON TOP of the CDN tile.
+// CSS paints layered backgrounds front-to-back, so if the local tile 404s it
+// simply isn't painted and the CDN one shows through — a free fallback with no
+// JS probing. Offline with a pack, the local tile wins and no CDN request runs.
+// The local URL is only listed when the manifest says that layer was built, so
+// a pack-less install makes zero doomed requests.
+function thumbBackground(layer, z, x, y, remoteUrl) {
+  const pack = typeof getOfflinePack === 'function' ? getOfflinePack() : null;
+  const hasLocal = !!(pack && pack.layers && pack.layers[layer]);
+  const remote = `url('${remoteUrl}')`;
+  return hasLocal ? `url('/tiles/${layer}/${z}/${x}/${y}.png'), ${remote}` : remote;
+}
+
 // Load Fleet Data from Backend (Protected with TTL-based Cache)
-async function loadLiveFleet(forceRefresh = false) {
+async function loadLiveFleet(forceRefresh = false, forceServerRefresh = false) {
   const fleetPill = document.getElementById('fleetStatusText');
   const now = Date.now();
 
@@ -141,7 +216,12 @@ async function loadLiveFleet(forceRefresh = false) {
   }
 
   try {
-    const url = forceRefresh ? '/api/trains/radar/fleet?refresh=true' : '/api/trains/radar/fleet';
+    // forceRefresh bypasses only the CLIENT cache. We deliberately do NOT send
+    // ?refresh=true on the periodic poll — that bypasses the server's 300s
+    // node-cache and hits RailRadar upstream (20 trains/call) every minute,
+    // burning the 1,000 req/month free tier in hours. Server-cache bypass is
+    // opt-in via forceServerRefresh (reserved for an explicit manual refresh).
+    const url = forceServerRefresh ? '/api/trains/radar/fleet?refresh=true' : '/api/trains/radar/fleet';
     const res = await fetch(url);
     const json = await res.json();
     if (json.success && json.data?.fleet) {
@@ -197,7 +277,7 @@ function renderFleetMarkers(trains) {
         <div class="popup-train-num">#${train.number} &bull; ${train.type}</div>
         <div class="popup-train-name">${train.name}</div>
         <div class="popup-stats-row">
-          <span>Speed: ${Math.round(train.speed || 60)} km/h</span>
+          <span title="Schedule-derived block speed (speedToNextStationKmph) — not a live GPS reading">Speed (sched): ${Math.round(train.speed || 60)} km/h</span>
           <span>Status: ${delayText}</span>
         </div>
         <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">
@@ -215,7 +295,7 @@ function renderFleetMarkers(trains) {
 }
 
 // Select and Inspect a Specific Train
-async function selectTrain(trainNumber, forceRefresh = false) {
+async function selectTrain(trainNumber, forceRefresh = false, forceServerRefresh = false) {
   selectedTrainNumber = trainNumber;
   if (!forceRefresh) openDrawerLoading(trainNumber);
 
@@ -231,7 +311,10 @@ async function selectTrain(trainNumber, forceRefresh = false) {
     let liveData = clientCache.trainLive.get(trainNumber);
     const liveAge = now - (clientCache.trainLiveTime.get(trainNumber) || 0);
     if (!liveData || forceRefresh || liveAge > CACHE_TTL.trainLive) {
-      const url = `/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson${forceRefresh ? '&refresh=true' : ''}`;
+      // forceRefresh bypasses only the client cache; ?refresh=true (server-cache
+      // bypass → live RailRadar upstream hit) is gated behind forceServerRefresh so
+      // the 20s auto-refresh reads the server's 300s cache instead of the live API.
+      const url = `/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson${forceServerRefresh ? '&refresh=true' : ''}`;
       const res = await fetch(url);
       const json = await res.json();
       if (!res.ok || json.success === false) {
@@ -892,22 +975,34 @@ function setupEventListeners() {
 //  LIVE AUTO-REFRESH SYSTEM
 // ================================================================
 
-/** Start the fleet radar auto-refresh (every 5 min) */
+/**
+ * Start the fleet radar auto-refresh. Fires every CACHE_TTL.fleet (60s). The server no longer
+ * caches live data, so each tick is one real RailRadar call per configured train — the poll
+ * interval is the quota spend. Bursts are prevented upstream-side by the global scheduler in
+ * src/services/railradar.js, not by a cache.
+ */
 function startAutoRefresh() {
   if (fleetRefreshInterval) clearInterval(fleetRefreshInterval);
   fleetRefreshInterval = setInterval(() => {
-    console.log('[Live] Auto-refreshing fleet radar...');
-    loadLiveFleet(true);
+    // A hidden tab must not spend quota. A forgotten background tab polling all night is the
+    // single most likely way the monthly budget dies, so skip the tick instead of firing it.
+    if (document.visibilityState === 'hidden') return;
+    console.log('[Live] Auto-refreshing fleet radar (live upstream)...');
+    loadLiveFleet(true);          // bypass client cache; server has no live cache to respect
   }, CACHE_TTL.fleet);
 }
 
-/** Start auto-refreshing a selected train (every 60s) */
+/**
+ * Start auto-refreshing the selected train. Fires every CACHE_TTL.trainLive (30s) and each tick
+ * is a real upstream call — there is no server-side live cache shielding it any more.
+ */
 function startTrainAutoRefresh(trainNumber) {
   stopTrainAutoRefresh();
   trainRefreshInterval = setInterval(() => {
+    if (document.visibilityState === 'hidden') return;   // see note in startAutoRefresh
     if (selectedTrainNumber === trainNumber) {
-      console.log(`[Live] Auto-refreshing train #${trainNumber}...`);
-      selectTrain(trainNumber, true);
+      console.log(`[Live] Auto-refreshing train #${trainNumber} (live upstream)...`);
+      selectTrain(trainNumber, true);   // bypass client cache; no server live cache to respect
     } else {
       stopTrainAutoRefresh();
     }

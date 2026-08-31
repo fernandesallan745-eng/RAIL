@@ -9,6 +9,12 @@ node_modules/
 # Cache
 .cache/
 
+# Offline map pack — binary assets built locally by fetch_tiles.py, and Leaflet
+# vendored from npm. Tens of MB; rebuild on the demo machine instead of
+# committing. Commit them only if you need a single self-contained clone.
+public/tiles/
+public/vendor/
+
 # OS files
 .DS_Store
 Thumbs.db

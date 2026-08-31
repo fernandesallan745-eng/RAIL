@@ -4,8 +4,16 @@
     {
       "name": "railsync-api",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["/tmp/claude-501/railsync_launch/boot.py", "8000"],
-      "port": 8000
+      "runtimeArgs": ["-m", "uvicorn", "api:app", "--host", "127.0.0.1", "--port", "8000", "--reload"],
+      "port": 8000,
+      "autoPort": true
+    },
+    {
+      "name": "railsync-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5000,
+      "autoPort": true
     }
   ]
 }

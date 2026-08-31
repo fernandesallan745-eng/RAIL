@@ -7,6 +7,8 @@ Run:
 Endpoints:
     GET /                         → service info
     GET /health                   → cache status (which trains/dates are available)
+    GET /dashboard                → operator dashboard (static HTML)
+    GET /admin                    → layer-by-layer model audit console (static HTML)
     GET /eta/{train_number}?date=YYYY-MM-DD[&weather=clear][&mode=block|vertex]
                                   → per-segment breakdown + total ETA
     GET /eta/{train_number}/curvature
@@ -17,6 +19,7 @@ Cache-first: the model reads .cache/*.json and makes no upstream API calls.
 from datetime import datetime, timedelta
 import asyncio
 import os
+import re
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, FileResponse
@@ -65,7 +68,16 @@ def root():
                      "because R=268m covers only ~79m of track. Use only when the data "
                      "source exposes one radius per block, and label it as an upper bound.",
         },
-        "endpoints": ["/health", "/eta/{train_number}", "/eta/{train_number}/curvature"],
+        # published so the dashboards can show the actual multipliers next to the
+        # "untuned placeholder" warning instead of hardcoding a copy that can drift
+        # out of step with curvature.py
+        "weather_factors": curvature.WEATHER_SPEED_FACTOR,
+        "weather_factors_provenance": (
+            "PLACEHOLDER estimates, not derived from TSR/RDSO data. Weather capping is "
+            "implemented; a live weather feed (OpenWeatherMap/IMD) is the next integration."
+        ),
+        "endpoints": ["/health", "/eta/{train_number}", "/eta/{train_number}/curvature",
+                      "/dashboard", "/admin", "/geometry/{train_number}"],
     }
 
 
@@ -78,6 +90,20 @@ def dashboard():
     # no-store, not just an ETag: without an explicit Cache-Control a browser is free to
     # apply heuristic freshness (~10% of the age since Last-Modified) and serve the page
     # from cache WITHOUT revalidating, so an edited dashboard looks like it never changed.
+    return FileResponse(path, media_type="text/html",
+                        headers={"Cache-Control": "no-store, must-revalidate"})
+
+
+@app.get("/admin")
+def admin():
+    """Serve the layer-by-layer model audit console (judge-facing).
+
+    Same static-file contract as /dashboard: no templating, no build step, and every
+    number on the page is fetched from the endpoints below rather than baked in.
+    """
+    path = os.path.join(HERE, "admin.html")
+    if not os.path.exists(path):
+        raise HTTPException(404, detail="admin.html not found next to api.py")
     return FileResponse(path, media_type="text/html",
                         headers={"Cache-Control": "no-store, must-revalidate"})
 
@@ -183,19 +209,24 @@ def geometry(
 @app.get("/health")
 def health():
     """Which trains/dates are available in the local cache, and whether they carry
-    a real delay signal (trackingMode='real-time') or are zero-echo."""
-    import glob, json, os
-    runs, real, echo = [], [], []
-    for p in sorted(glob.glob(os.path.join(eta_model.CACHE, "22229_live_20*.json"))):
-        d = os.path.basename(p).replace("22229_live_", "").replace(".json", "")
+    a real delay signal (trackingMode='real-time') or are zero-echo.
+
+    The real/zero-echo test MUST be the same one the delay layer applies, or this
+    endpoint contradicts the model it is meant to audit.  So it reuses
+    `eta_model.list_dated_runs()` and repeats the exact condition from
+    `historical_delay_increment_by_seq()` — a non-null `delayArrival` at the final
+    halt.  An earlier version re-globbed the cache itself and reached for
+    `payload["data"]["route"]`; the dated cache files store `route` at the TOP level,
+    so every halt list came back empty and all 9 dates were mislabelled zero-echo
+    while the delay layer was happily using 5 of them.
+    """
+    runs_by_date = eta_model.list_dated_runs()
+    runs, real, echo, modes = [], [], [], {}
+    for d, j in runs_by_date.items():
         runs.append(d)
-        try:
-            j = json.load(open(p)).get("data", {})
-        except Exception:
-            continue
-        # a date carries signal only if it actually reports non-null actual delays
+        modes[d] = j.get("trackingMode")
         halts = [s for s in j.get("route", []) if s.get("isHalt")]
-        if halts and halts[-1].get("delayArrival") is not None:
+        if len(halts) >= 2 and halts[-1].get("delayArrival") is not None:
             real.append(d)
         else:
             echo.append(d)
@@ -203,16 +234,19 @@ def health():
         "status": "ok",
         "cache_dir": eta_model.CACHE,
         "route_geometry_cached": os.path.exists(
-            os.path.join(eta_model.CACHE, "22229_route.json")
+            os.path.join(eta_model.CACHE, f"{eta_model.DEFAULT_TRAIN}_route.json")
         ),
         "cached_dated_runs": runs,
         "dates_with_real_delay_signal": real,
         "zero_echo_dates": echo,
+        "tracking_mode_by_date": modes,
+        "signal_test": "len(halts) >= 2 and halts[-1]['delayArrival'] is not None",
         "note": (
             f"{len(real)} of {len(runs)} cached dates return real actuals; the rest are "
             "zero-echo (trackingMode='none', actualArrival == scheduledArrival) and are "
             "SKIPPED by the delay layer rather than averaged in as zeros. delayArrival is "
-            "cumulative, so it is differenced along the halt chain before per-segment use."
+            "cumulative, so it is differenced along the halt chain before per-segment use. "
+            "The signal is per-date, not per-tier — always audit, never assume."
         ),
     }
 
@@ -261,25 +295,46 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
     res["curvature_mode"] = mode
 
     # predicted arrival clock time, anchored on the origin's scheduled departure
-    _, stations, _ = eta_model.load_schedule(train_number, date)
+    #
+    # load_schedule() deliberately falls back to ANY cached run when the requested
+    # date has no cache file — block timings are date-independent, so the DURATION
+    # stays valid.  But that file's ISO strings carry its OWN date prefix, so
+    # publishing them unshifted stamps the answer with the wrong day (asking for
+    # 2026-08-31 returned a 2026-08-08 arrival).  That is the same date-prefix trap
+    # as VERIFIED #4 v1.  Shift every clock field by whole days onto the requested
+    # date — whole days so any overnight departure→arrival offset is preserved — and
+    # declare the substitution in the payload rather than letting it pass silently.
+    _, stations, sched_src = eta_model.load_schedule(train_number, date)
     halts = [s for s in stations if s.get("isHalt")]
     dep_iso = halts[0].get("scheduledDeparture") if halts else None
+
+    src_match = re.search(r"(\d{4}-\d{2}-\d{2})", sched_src or "")
+    res["schedule_source_date"] = src_match.group(1) if src_match else None
+    res["schedule_date_substituted"] = bool(
+        date and res["schedule_source_date"] and date != res["schedule_source_date"]
+    )
+
     if dep_iso:
         dep_dt = datetime.fromisoformat(dep_iso)
-        res["origin_departure"] = dep_iso
-        res["predicted_arrival"] = (
-            dep_dt + timedelta(minutes=t["predicted_eta_min"])
-        ).isoformat()
+        shift = timedelta(0)
+        if date:
+            try:
+                shift = datetime.strptime(date, "%Y-%m-%d").date() - dep_dt.date()
+            except ValueError:
+                shift = timedelta(0)
+        dep_dt = dep_dt + shift
+        arr_dt = dep_dt + timedelta(minutes=t["predicted_eta_min"])
+        res["origin_departure"] = dep_dt.isoformat()
+        res["predicted_arrival"] = arr_dt.isoformat()
         sched_arr = halts[-1].get("scheduledArrival")
-        res["scheduled_arrival"] = sched_arr
         if sched_arr:
+            sched_arr_dt = datetime.fromisoformat(sched_arr) + shift
+            res["scheduled_arrival"] = sched_arr_dt.isoformat()
             res["arrival_delta_min"] = round(
-                (
-                    dep_dt + timedelta(minutes=t["predicted_eta_min"])
-                    - datetime.fromisoformat(sched_arr)
-                ).total_seconds() / 60,
-                1,
+                (arr_dt - sched_arr_dt).total_seconds() / 60, 1
             )
+        else:
+            res["scheduled_arrival"] = sched_arr
 
     res["comparison"] = {
         "naive_flat_speed_min": t["naive_flat_speed_min"],
@@ -348,6 +403,16 @@ def get_curvature(
     weta = sum(s["eta_seconds"] for s in window)
     wnaive = curvature.naive_eta(wdist, max_speed) if wdist else 0.0
 
+    # Route-wide penalty at a UNIFORM target speed — i.e. curvature vs `max_speed`
+    # everywhere, with no schedule baseline in the way.  This is the only framing in
+    # which the curvature layer changes the answer on 22229: /eta takes
+    # min(baseline, curve_cap), and the timetable's own 28-77 km/h baselines already
+    # sit below the RDSO caps almost everywhere, so there the layer is ~0.  Sweep
+    # max_speed here to ask "could this alignment support a faster path?" instead.
+    tdist = sum(s["distance_m"] for s in segs)
+    teta = sum(s["eta_seconds"] for s in segs)
+    tnaive = curvature.naive_eta(tdist, max_speed) if tdist else 0.0
+
     return {
         "train": train_number,
         "max_speed_kmh": max_speed,
@@ -356,6 +421,19 @@ def get_curvature(
         "binding_radius_threshold_m": round((max_speed / curvature.CURVE_SPEED_CONSTANT) ** 2, 1),
         "total_sub_segments": len(segs),
         "curve_capped_sub_segments": len(capped),
+        "route_wide_uniform_speed": {
+            "note": (
+                "curvature cost if the WHOLE route were run at max_speed_kmh (no schedule "
+                "baseline). Sweep max_speed to test whether the alignment could support a "
+                "faster path. Not the same as /eta's curvature contribution, which is ~0 "
+                "because min(baseline, curve_cap) picks the timetable baseline almost "
+                "everywhere."
+            ),
+            "distance_km": round(tdist / 1000, 1),
+            "flat_speed_min": round(tnaive / 60, 3),
+            "curvature_capped_min": round(teta / 60, 3),
+            "curvature_penalty_min": round((teta - tnaive) / 60, 3),
+        },
         "sharpest_curves": [
             {
                 "radius_m": s["radius_m"],

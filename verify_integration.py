@@ -8,7 +8,7 @@ import sys
 import json
 import urllib.request
 
-URL = "http://localhost:5001/api/trains/22229/live?weather=heavy_rain"
+URL = "http://localhost:5000/api/trains/22229/live?weather=heavy_rain"
 
 print("========================================================================")
 print("TESTING RAILRADAR DYNAMIC ETA INTEGRATION")

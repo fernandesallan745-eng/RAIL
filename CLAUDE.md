@@ -331,6 +331,104 @@ of 9–175 km — immaterial, but indices are forced monotonic rather than trust
 
 ---
 
+## 5b. Node/Express proxy + Leaflet live map (primary demo UI, added after Phase 8)
+
+The Python FastAPI (`api.py`, port 8000) is now fronted by a **Node/Express
+server (port 5000)** that serves a Leaflet map UI and proxies RailRadar. Two
+processes run side by side for the demo:
+
+```bash
+python3 -m uvicorn api:app --reload --port 8000   # ETA model (curvature/delay/dwell)
+npm run dev                                        # Node proxy + Leaflet UI on :5000
+```
+
+Open **http://localhost:5000**. The Node layer calls FastAPI at
+`http://127.0.0.1:8000/eta/{train}` and attaches the result as `curvatureEta`
+on the live-status payload, so the curvature/delay ETA is the *same* model
+documented above — just surfaced through the map UI instead of `dashboard.html`.
+`dashboard.html` (served by FastAPI `/dashboard`) still exists as the analytical
+static view; the Leaflet UI is the live-tracking view.
+
+**Files (under `src/` and `public/`):**
+- `src/server.js` — Express bootstrap; serves `public/`, mounts `/api`, auto-
+  increments the port on `EADDRINUSE`.
+- `src/config/env.js` — loads **all** `RAILRADAR_API_KEY=` lines from `.env`
+  into `apiKeys[]` for rotation. `PORT` defaults to 3001 in code, but the demo
+  `.env` sets **5000** (README, and `verify_integration.py` both use 5000).
+- `src/services/railradar.js` — axios client; **rotates API key on HTTP 429**
+  across all configured keys before surfacing the error. `getLiveFleet()` fans
+  out over a hardcoded **20-train Konkan list** and interpolates each train's
+  live position along its polyline.
+- `src/services/deadReckoning.js` — Phase-6 groundwork: `enhanceLiveData()` adds
+  a `deadReckoning` block when a train is running, its GPS is stale >3 min, and
+  it is within 15 km of a tunnel zone; position is interpolated and confidence
+  decays with staleness. **Honesty:** `src/data/tunnel-zones.json` coords and
+  `historicalAvgSpeedKmph` are **illustrative estimates**, not sourced from
+  official alignment data, and `speed-history.json` is empty (EMA recalibration
+  has never run). The UI labels this as prototype/estimated — keep it that way.
+- `src/controllers/train.controller.js` — orchestrates live-status + route +
+  FastAPI ETA, and **falls back to `.cache/` (in-memory then disk)** on upstream
+  429/failure so the demo survives a quota wall or offline network.
+- `src/middleware/cache.js` — node-cache TTL layer (live 300s, static 86400s);
+  `?refresh=true` or an `x-refresh` header bypasses it.
+- `public/index.html` + `public/app.js` — Leaflet UI (Esri satellite / CartoDB
+  dark / OpenRailwayMap tiles). **Offline-capable pipeline, pack not bundled** —
+  see the offline map pack below. Auto-refresh polls the **server** (fleet 60s,
+  selected train 20s) but does **not** send `?refresh=true`, so the 300s server
+  cache shields the RailRadar free tier — see the throttle notes in `app.js`.
+- `public/offline-tiles.js` — `createOfflineLayer()`, an offline-first
+  `L.TileLayer`. Requests `/tiles/<layer>/{z}/{x}/{y}.png` first and falls back
+  to the CDN **per tile**, so a partial pack works and a full pack needs no
+  network. Leaflet itself is loaded local-first (`/vendor/leaflet/`), with the
+  unpkg CDN injected dynamically (SRI kept) only if that 404s — *not* via
+  `document.write`, which Chrome may block outright on the slow connections this
+  feature exists for. A vendored copy makes the shell fully offline.
+  **Manifest-gated:** `loadPackManifest()` reads `/tiles/pack.json` once at
+  startup, and only layers listed there attempt a local tile. Without it every
+  tile ate a guaranteed 404 first (~350 console errors per load); measured after
+  the change, a pack-less load makes **1** local request instead of ~350, and
+  `maxNativeZoom` comes from the manifest so there is **no constant to hand-edit**
+  in `app.js`. `app.js` awaits the probe before `initMap()`.
+- `fetch_tiles.py` — builds the pack into `public/tiles/`. Cache-first and
+  resumable (existing tiles are skipped); `--dry-run` prints per-zoom tile counts
+  and a size estimate with **no** network access. Writes/merges `pack.json` on
+  every run that leaves tiles on disk — including the "already complete" early
+  exit, so a deleted manifest self-heals. The manifest records the preset *name*,
+  never the URL template, which carries the API key (`/tiles/pack.json` is
+  publicly served).
+
+### Offline map pack — current state (be precise about this)
+The **pipeline is built and verified; the tile bytes are not present.** Nothing
+in `public/tiles/` or `public/vendor/` is committed (both gitignored), and the
+dev sandbox has no network egress, so the bytes cannot be fetched there. Until
+someone runs the two commands in README → "Offline map pack" on a networked
+machine, **the map has no local tiles and the CDN serves it exactly as before.**
+Say "the map degrades gracefully and can be packed offline", never
+"the map works offline" — that is only true after the pack is built.
+
+Verified end-to-end 2026-08-30 with a synthetic pack (172 stub tiles at z4–z8,
+built via a `file://` `--url-template` since the sandbox blocks tile hosts, then
+deleted): the manifest was detected, `maxNativeZoom` auto-set to 8, the basemap
+painted from `public/tiles/` while `satellite-labels` (absent from the pack) went
+straight to Esri with zero local requests, and zooming to z11 clamped to z8 and
+upscaled rather than going blank. Pack-less load: 0 local tile requests, 36/36
+tiles from CDN.
+
+`fetch_tiles.py` **refuses** to bulk-download from Esri, CARTO and
+OpenRailwayMap: displaying those tiles interactively is fine, bundling them to
+disk breaks their terms. Use a provider that permits offline caching (MapTiler /
+Stadia / Thunderforest presets, keyed) or `--url-template`. The `osm` preset is
+gated to ≤5,000 tiles at concurrency 1 per the OSMF Tile Usage Policy. Verified
+default corridor plan (lat 12.5–19.3, lng 72.6–75.1): **z6–z11 = 855 tiles
+≈ 18 MB, z6–z12 = 3,204 tiles ≈ 69 MB** at 22 KB/tile.
+
+**Honesty carried over from §3/§8:** the fleet popup labels speed as
+"Speed (sched)" because it comes from `speedToNextStationKmph` (VERIFIED #3 —
+schedule-derived, not live GPS). Weather multipliers remain the untuned
+placeholders in `curvature.WEATHER_SPEED_FACTOR`.
+
+---
+
 ## 6. Build Phases
 
 - [x] **Phase 0:** RailRadar signup, key working, confirmed real data returns.
