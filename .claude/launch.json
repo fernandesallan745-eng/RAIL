@@ -2,17 +2,17 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "railsync-api",
+      "name": "gati-api",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "uvicorn", "api:app", "--host", "127.0.0.1", "--port", "8000", "--reload"],
+      "runtimeArgs": ["run_server.py", "8000"],
       "port": 8000,
       "autoPort": true
     },
     {
-      "name": "railsync-web",
+      "name": "gati-web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 5000,
+      "runtimeArgs": ["run", "server"],
+      "port": 5050,
       "autoPort": true
     }
   ]

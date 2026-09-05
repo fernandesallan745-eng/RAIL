@@ -44,7 +44,7 @@ app.use(errorHandler);
 const startServer = (portToTry) => {
   const server = app.listen(portToTry, () => {
     console.log(`
-  🚄 \x1b[36m\x1b[1mRailRadar Backend Server is running!\x1b[0m
+  🚄 \x1b[36m\x1b[1mGATI — dynamic ETA gateway is running!\x1b[0m
   --------------------------------------------------
   ➜ \x1b[32mLocal:\x1b[0m            http://localhost:${portToTry}
   ➜ \x1b[32mAPI Base:\x1b[0m         http://localhost:${portToTry}/api

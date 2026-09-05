@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>RailRadar Konkan — Live Train Tracker & ETA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>GATI — Live Train Tracker &amp; ETA</title>
   
   <!-- Fonts (network). All app.css font stacks end in system fallbacks
        (sans-serif / monospace), so a blocked Google Fonts degrades cleanly. -->
@@ -25,12 +27,12 @@
   <!-- Fullscreen Map Canvas -->
   <div id="map"></div>
 
-  <!-- Top Floating Search Bar (RailRadar UI) -->
+  <!-- Top Floating Search Bar (GATI UI) -->
   <div class="top-search-container">
     <div class="search-bar">
       <div class="logo-badge" onclick="map.flyTo([16.8, 73.5], 7)">
         <div class="logo-icon-svg">🚄</div>
-        <span class="logo-text">RailRadar <span style="color: #ec4899; font-weight: 800;">Konkan</span></span>
+        <span class="logo-text">GATI</span>
       </div>
       <input 
         type="text" 
@@ -67,6 +69,22 @@
     Model audit →
   </a>
 
+  <!-- Native iOS builds load this UI from the app bundle, so they need the Mac's
+       LAN address once to reach the live Node gateway. Browsers keep same-origin API calls. -->
+  <section id="serverSetup" class="server-setup" hidden aria-labelledby="serverSetupTitle">
+    <form id="serverSetupForm" class="server-setup-card">
+      <p class="server-setup-eyebrow">iPhone test connection</p>
+      <h1 id="serverSetupTitle">Connect to GATI</h1>
+      <p>Enter the address shown by <code>npm run ios:lan</code> while this iPhone and your Mac are on the same Wi-Fi.</p>
+      <label for="serverAddress">GATI server address</label>
+      <input id="serverAddress" type="url" inputmode="url" autocomplete="url"
+             placeholder="http://192.168.1.20:5050" required />
+      <p id="serverSetupError" class="server-setup-error" role="alert" hidden></p>
+      <button type="submit">Connect to live tracker</button>
+      <p class="server-setup-note">This setting stays on this device. Use the network button later to change it.</p>
+    </form>
+  </section>
+
   <!-- Bottom Left Fleet Status Badge -->
   <div class="fleet-status-pill">
     <div class="pulsing-green-dot"></div>
@@ -75,6 +93,7 @@
 
   <!-- Bottom Right Map Control Action Buttons -->
   <div class="map-controls-group">
+    <button id="serverSettingsBtn" class="ctrl-btn native-only" title="Server connection" hidden>⌁</button>
     <button id="recenterBtn" class="ctrl-btn" title="Center India">⌖</button>
     <button id="zoomInBtn" class="ctrl-btn" title="Zoom In">+</button>
     <button id="zoomOutBtn" class="ctrl-btn" title="Zoom Out">&minus;</button>
@@ -165,6 +184,58 @@
           <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 0.75rem; color: #fff; font-weight: 600; display: flex; justify-content: space-between;">
             <span>Engine Prediction:</span>
             <span id="etaEnginePrediction" style="color: #34d399;">-</span>
+          </div>
+        </div>
+
+        <!-- Shown instead of the panel above when the ETA model has no cache for
+             this train. Distinct from the model being down: a hidden panel with no
+             explanation reads as a broken UI, and "offline" would be a false claim
+             when the model is up and serving other trains. -->
+        <div id="curvatureEtaUnavailable" class="eta-insights-panel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2);">
+          <div style="font-weight: 700; color: #94a3b8; font-size: 0.8rem;">
+            🧠 Curvature &amp; Delay ETA Engine
+          </div>
+          <div id="curvatureEtaUnavailableText" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
+          </div>
+        </div>
+
+        <!-- Crossing / overtake conflict prediction on single line (USP #3) -->
+        <!-- Three states, driven entirely by renderConflictPanel() in app.js:
+               HELD          — we take the loop, N minutes lost (amber/red)
+               RIGHT OF WAY  — the other train is looped for us (green)
+               NO CROSSINGS  — nothing predicted on this run (dim)
+             Both sides are always shown, per the demo requirement: a crossing we
+             win is as much a prediction as one we lose. -->
+        <div id="conflictPanel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px;">
+          <div id="conflictPanelHeader" style="font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;"></div>
+          <div id="conflictPanelBody" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;"></div>
+
+          <!-- Provenance. Three separate caveats that must not be compressed into
+               "prototype data" — they are about different things, and each one is
+               a question a judge will ask:
+                 1. loop LOCATIONS are assumed (no track-count data exists here)
+                 2. the priority ladder is OUR heuristic, not IR precedence rules
+                 3. the other trains' times are SCHEDULED, only our delay is live -->
+          <div id="conflictPanelCaveat" style="font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; font-style: italic; line-height: 1.35;">
+            Crossing geometry is computed from the other trains' <strong>scheduled</strong>
+            times (static) against this train's <strong>live</strong> delay — we do not
+            poll other trains. Loop locations are <strong>assumed</strong> at every
+            timetable station on the single-line section; this source carries no
+            track-count data. Precedence is a <strong>heuristic over train type</strong>,
+            not official Indian Railways rules — the real call is a Section
+            Controller's. Prediction only; no dispatch action is issued.
+          </div>
+        </div>
+
+        <!-- Shown instead of the panel above when the conflict model could not be
+             reached or has no corridor entry for this train. An empty conflict
+             panel and "no crossings predicted" look identical but mean opposite
+             things, so the absent case is always named. -->
+        <div id="conflictUnavailable" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2);">
+          <div style="font-weight: 700; color: #94a3b8; font-size: 0.8rem;">
+            🔀 Crossing &amp; Overtake Prediction
+          </div>
+          <div id="conflictUnavailableText" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
           </div>
         </div>
       </div>

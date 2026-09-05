@@ -4,11 +4,19 @@ verify_integration.py — Integration test validating that all ETA factors
 and dead reckoning) are active and computed dynamically by the backend.
 """
 
+import os
 import sys
 import json
 import urllib.request
 
-URL = "http://localhost:5000/api/trains/22229/live?weather=heavy_rain"
+# Port is not hardcoded: server.js auto-increments on EADDRINUSE, so the gateway
+# does not always land on the configured port. Override with `GATI_PORT=... ` or
+# `python3 verify_integration.py <port>`. Default 5050 matches .env / launch.json
+# — NOT 5000, which macOS ControlCenter (AirPlay Receiver) occupies and answers
+# with a 403.
+PORT = os.environ.get("GATI_PORT") or (sys.argv[1] if len(sys.argv) > 1 else "5050")
+TIMEOUT_SECONDS = float(os.environ.get("GATI_TIMEOUT_SECONDS", "30"))
+URL = f"http://localhost:{PORT}/api/trains/22229/live?weather=heavy_rain"
 
 print("========================================================================")
 print("TESTING RAILRADAR DYNAMIC ETA INTEGRATION")
@@ -16,11 +24,14 @@ print("========================================================================"
 print(f"Connecting to live endpoint: {URL}...")
 
 try:
-    with urllib.request.urlopen(URL, timeout=5) as response:
+    # The gateway may wait for RailRadar's global rate limiter and retry a 429 before
+    # falling back to disk. Five seconds was shorter than that documented recovery path.
+    with urllib.request.urlopen(URL, timeout=TIMEOUT_SECONDS) as response:
         res_data = json.loads(response.read().decode())
 except Exception as e:
     print(f"❌ Connection failed: {e}")
     print("Is the local server running? Start it with: npm run dev")
+    print(f"If it bound to a different port, pass it: python3 verify_integration.py <port>")
     sys.exit(1)
 
 if not res_data.get("success"):
@@ -68,7 +79,11 @@ if not c_eta:
 
 print(f"✅ curvatureEta block present.")
 print(f"   FastAPI Schedule source: {c_eta.get('schedule_source')}")
-print(f"   Weather parameter: {c_eta.get('weather')} (Speed multiplier = {c_eta.get('weather_factor')})")
+weather_factor = c_eta.get("weather_factor")
+print(f"   Weather parameter: {c_eta.get('weather')} (Speed multiplier = {weather_factor})")
+if not isinstance(weather_factor, (int, float)) or weather_factor <= 0:
+    print("❌ Missing or invalid weather_factor in curvatureEta")
+    sys.exit(1)
 
 segments = c_eta.get("segments", [])
 print(f"   Total route blocks evaluated: {len(segments)}")

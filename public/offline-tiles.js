@@ -1,5 +1,5 @@
 /*
- * offline-tiles.js — offline-first raster tile layer for the RailSync live map.
+ * offline-tiles.js — offline-first raster tile layer for the GATI live map.
  *
  * WHY THIS EXISTS
  *   The 1 Sep demo room may have weak or no wifi. Basemap tiles normally come

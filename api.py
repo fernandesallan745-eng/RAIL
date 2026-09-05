@@ -18,6 +18,7 @@ Cache-first: the model reads .cache/*.json and makes no upstream API calls.
 """
 from datetime import datetime, timedelta
 import asyncio
+import glob
 import os
 import re
 
@@ -52,10 +53,13 @@ def root():
             "4. historical delay: mean INCREMENTAL delay per block, differenced from the "
             "cumulative delayArrival across cached runs that carry a real signal",
             "5. dwell: scheduledDeparture - scheduledArrival at the arriving halt",
+            "6. conflict holds: minutes standing in a loop while a higher-precedence "
+            "train crosses or overtakes on single line (Roha-Madgaon). Computed from "
+            "cached static timetables — no upstream request for any other train.",
         ],
         "formula": (
             "segment_eta = distance / min(baseline, curve_cap, weather_cap) "
-            "+ hist_avg_delay + dwell"
+            "+ hist_avg_delay + dwell + conflict_hold"
         ),
         "curvature_modes": {
             "vertex": "DEFAULT. Each sub-segment (median ~195 m) capped by its own radius, then "
@@ -77,6 +81,7 @@ def root():
             "implemented; a live weather feed (OpenWeatherMap/IMD) is the next integration."
         ),
         "endpoints": ["/health", "/eta/{train_number}", "/eta/{train_number}/curvature",
+                      "/conflicts/{train_number}",
                       "/dashboard", "/admin", "/geometry/{train_number}"],
     }
 
@@ -207,9 +212,9 @@ def geometry(
 
 
 @app.get("/health")
-def health():
-    """Which trains/dates are available in the local cache, and whether they carry
-    a real delay signal (trackingMode='real-time') or are zero-echo.
+def health(train: str = eta_model.DEFAULT_TRAIN):
+    """Which dates are available in the local cache for `train`, and whether they
+    carry a real delay signal (trackingMode='real-time') or are zero-echo.
 
     The real/zero-echo test MUST be the same one the delay layer applies, or this
     endpoint contradicts the model it is meant to audit.  So it reuses
@@ -219,8 +224,16 @@ def health():
     `payload["data"]["route"]`; the dated cache files store `route` at the TOP level,
     so every halt list came back empty and all 9 dates were mislabelled zero-echo
     while the delay layer was happily using 5 of them.
+
+    `train` is a QUERY PARAM because this endpoint was previously train-blind: it
+    called `list_dated_runs()` with no argument, which defaults to DEFAULT_TRAIN,
+    so a caller asking about 12051 was handed 22229's dates.  The Node gateway used
+    exactly that list to retry an uncached train on a "known-good" date and got a
+    second 404, which it then reported as "ETA model offline" — a healthy model
+    misdiagnosed as down.  `cached_trains` is returned alongside so a caller can
+    see which trains exist at all instead of inferring it from a date list.
     """
-    runs_by_date = eta_model.list_dated_runs()
+    runs_by_date = eta_model.list_dated_runs(train)
     runs, real, echo, modes = [], [], [], {}
     for d, j in runs_by_date.items():
         runs.append(d)
@@ -230,11 +243,39 @@ def health():
             real.append(d)
         else:
             echo.append(d)
+
+    # Every train with any cached live snapshot, dated or not — the set /eta can serve.
+    cached_trains = sorted({
+        os.path.basename(p).split("_live")[0]
+        for p in glob.glob(os.path.join(eta_model.CACHE, "*_live*.json"))
+        if os.path.basename(p).split("_live")[0].isdigit()
+    })
+
+    # Corridor cache: the static timetables the conflict layer crosses against.
+    # Reported separately from `cached_trains` because it is a different artifact
+    # with different needs — /conflicts wants a corridor file and no geometry,
+    # /eta wants geometry and a live snapshot. A train can be servable by one and
+    # not the other, and conflating them is what previously turned a partly-primed
+    # cache into a misleading "model offline".
+    corridor_trains = sorted(
+        os.path.basename(p)[:-5]
+        for p in glob.glob(os.path.join(eta_model.CACHE, "corridor", "*.json"))
+    )
+
     return {
         "status": "ok",
         "cache_dir": eta_model.CACHE,
+        "train": train,
+        "cached_trains": cached_trains,
+        "corridor_trains": corridor_trains,
+        "conflict_layer_available": train in corridor_trains,
+        "corridor_note": (
+            "Static timetables for crossing/overtake prediction, built offline by "
+            "scripts/build_corridor.py. Schedules do not expire, so these need no "
+            "refresh and cost no upstream request."
+        ),
         "route_geometry_cached": os.path.exists(
-            os.path.join(eta_model.CACHE, f"{eta_model.DEFAULT_TRAIN}_route.json")
+            os.path.join(eta_model.CACHE, f"{train}_route.json")
         ),
         "cached_dated_runs": runs,
         "dates_with_real_delay_signal": real,
@@ -242,11 +283,12 @@ def health():
         "tracking_mode_by_date": modes,
         "signal_test": "len(halts) >= 2 and halts[-1]['delayArrival'] is not None",
         "note": (
-            f"{len(real)} of {len(runs)} cached dates return real actuals; the rest are "
-            "zero-echo (trackingMode='none', actualArrival == scheduledArrival) and are "
-            "SKIPPED by the delay layer rather than averaged in as zeros. delayArrival is "
+            f"{len(real)} of {len(runs)} cached dates for {train} return real actuals; the "
+            "rest are zero-echo (trackingMode='none', actualArrival == scheduledArrival) and "
+            "are SKIPPED by the delay layer rather than averaged in as zeros. delayArrival is "
             "cumulative, so it is differenced along the halt chain before per-segment use. "
-            "The signal is per-date, not per-tier — always audit, never assume."
+            "The signal is per-date, not per-tier — always audit, never assume. Dates listed "
+            "here apply to `train` ONLY; they are not valid for any other train number."
         ),
     }
 
@@ -261,7 +303,9 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
     """
     if max_speed is None:
         max_speed = eta_model.MAX_SPEED_KMH
-    res = eta_model.compute_eta(train_number, date=date, weather=weather, max_speed=max_speed)
+    res = eta_model.compute_eta(train_number, date=date, weather=weather,
+                                max_speed=max_speed,
+                                conflicts=True, conflict_delay_min=0.0)
     t = res["totals"]
 
     # 'vertex' mode swaps the physics layer for per-vertex integration
@@ -270,7 +314,8 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
         for s in res["segments"]:
             s["running_min_applied"] = s["vertex_curve_running_min"]
             s["segment_eta_min"] = round(
-                s["vertex_curve_running_min"] + s["hist_delay_min"] + s["dwell_min"], 2
+                s["vertex_curve_running_min"] + s["hist_delay_min"]
+                + s["dwell_min"] + s["conflict_hold_min"], 2
             )
             # `effective_speed_kmh` is the BLOCK-mode speed: the block's sharpest
             # radius applied to its whole length.  In vertex mode only the sub-segments
@@ -281,7 +326,7 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
                 round(s["distance_km"] / (s["vertex_curve_running_min"] / 60.0), 1)
                 if s["vertex_curve_running_min"] > 0 else None
             )
-        total = vrun + t["historical_delay_min"] + t["dwell_min"]
+        total = vrun + t["historical_delay_min"] + t["dwell_min"] + t["conflict_hold_min"]
         t["running_min"] = round(vrun, 1)
         t["predicted_eta_min"] = round(total, 1)
         t["gap_vs_schedule_min"] = (
@@ -377,6 +422,48 @@ def get_eta(
             detail=(
                 f"No cached data for train {train_number}. This build is cache-first; "
                 f"prime .cache/ with {train_number}_route.json and {train_number}_live*.json. ({e})"
+            ),
+        )
+    return JSONResponse(res, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/conflicts/{train_number}")
+def get_conflicts(
+    train_number: str,
+    delay: float = Query(0.0, description="our train's current delay in minutes (carried forward, no recovery assumed)"),
+    offsets: str = Query("0,-1,-2", description="departure-day offsets to scan for other trains' instances"),
+):
+    """
+    Crossing & overtake prediction: where this train meets others on single line,
+    who takes precedence, and how many minutes the loser stands in a loop.
+
+    Costs **no upstream request**.  Other trains' times come from cached static
+    timetables (`.cache/corridor/`, built by scripts/build_corridor.py) — only
+    our own delay is live, and it is passed in.
+
+    Every assumption travels with the answer in `_meta`: loop locations are
+    assumed (this source has no track-count data), the priority ladder is a
+    heuristic over the train type string rather than official IR precedence, and
+    the output is decision support for a human controller, never a control action.
+    """
+    if delay < -720 or delay > 1440:
+        raise HTTPException(422, detail=f"delay must be between -720 and 1440 minutes, got {delay}")
+    try:
+        offs = tuple(int(o) for o in offsets.split(",") if o.strip())
+    except ValueError:
+        raise HTTPException(422, detail=f"offsets must be comma-separated integers, got {offsets!r}")
+    if not offs:
+        raise HTTPException(422, detail="offsets must contain at least one integer")
+
+    try:
+        import conflict as conflict_mod
+        res = conflict_mod.find_conflicts(train_number, delay, offs)
+    except FileNotFoundError as e:
+        raise HTTPException(
+            404,
+            detail=(
+                f"No corridor cache for train {train_number}. Build it with "
+                f"`python3 scripts/build_corridor.py` (offline, no API calls). ({e})"
             ),
         )
     return JSONResponse(res, headers={"Cache-Control": "no-store"})

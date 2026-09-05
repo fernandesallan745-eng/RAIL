@@ -424,6 +424,19 @@ async function sendUpstream(cfg) {
         if (err.status !== 429) throw err;
 
         recordRateLimit(err);
+
+        // A MONTHLY quota wall is the one case where rotating first is right.
+        // Backoff exists to ride out a per-minute burst limit; it can do nothing
+        // about an allowance that does not reset until next month. Waiting here
+        // would just burn the demo clock, so mark this key spent and move on.
+        if (err.isMonthlyQuota) {
+          console.warn(`\x1b[33m[RailRadar Service] Key #${keyIndex} monthly quota exhausted upstream (not a burst limit — backoff cannot recover it). Marking spent and rotating.\x1b[0m`);
+          quotaState.perKey[keyIndex] = Math.max(quotaState.perKey[keyIndex] || 0, monthlyPerKey);
+          quotaDirty = true;
+          scheduleQuotaFlush();
+          break;
+        }
+
         const delayMs = backoffDelayMs(attempt, backoffBaseMs, err.retryAfterSec);
         // Slow every other caller down too, not just this one.
         cooldownUntil = Math.max(cooldownUntil, Date.now() + delayMs);
@@ -438,7 +451,10 @@ async function sendUpstream(cfg) {
     tried.add(keyIndex);
     const next = pickKeyIndex(keyIndex + 1, keys.length, monthlyPerKey, guardEnabled, tried);
     if (next === -1) break;
-    console.warn(`\x1b[33m[RailRadar Service] Key #${keyIndex} still rate-limited after ${maxRetries + 1} attempts. Rotating to Key #${next} as a last resort...\x1b[0m`);
+    const why = lastError?.isMonthlyQuota
+      ? 'monthly quota exhausted'
+      : `still rate-limited after ${maxRetries + 1} attempts`;
+    console.warn(`\x1b[33m[RailRadar Service] Key #${keyIndex} ${why}. Rotating to Key #${next} as a last resort...\x1b[0m`);
     keyIndex = next;
   }
 
@@ -467,17 +483,32 @@ httpClient.interceptors.response.use(
     if (error.response) {
       customError.status = error.response.status;
       customError.data = error.response.data;
-      customError.message =
+      // RailRadar returns the reason in one of three shapes depending on
+      // endpoint: {error:{message}}, {message}, or a bare string {error}.
+      // Keep the raw text — the 429 branch below has to pattern-match on it.
+      const rawMsg =
+        error.response.data?.error?.message ||
         error.response.data?.message ||
-        error.response.data?.error ||
+        (typeof error.response.data?.error === 'string' ? error.response.data.error : null) ||
         `RailRadar API error (${error.response.status})`;
+      customError.message = rawMsg;
 
       if (error.response.status === 401) {
         customError.message = 'Invalid or missing RailRadar API key. Please check RAILRADAR_API_KEY in your .env file.';
       } else if (error.response.status === 404) {
         customError.message = 'Requested train or railway resource not found on RailRadar.';
       } else if (error.response.status === 429) {
-        customError.message = 'RailRadar rate limit exceeded. Please wait a moment or upgrade your plan.';
+        // 429 covers two different failures behind one status code, and they need
+        // opposite responses: a per-minute burst limit clears in seconds (back
+        // off), a monthly quota does not (rotate). The only way to tell them apart
+        // is the upstream's own wording, so keep that message rather than
+        // overwriting it with a generic one.
+        customError.isMonthlyQuota = Boolean(
+          typeof rawMsg === 'string' && rawMsg.toLowerCase().includes('monthly quota')
+        );
+        if (!customError.isMonthlyQuota) {
+          customError.message = 'RailRadar rate limit exceeded. Please wait a moment or upgrade your plan.';
+        }
         // Surfaced so sendUpstream() can honour the upstream's own pacing hint
         // instead of guessing with exponential backoff.
         customError.retryAfterSec = parseRetryAfter(error.response.headers?.['retry-after']);

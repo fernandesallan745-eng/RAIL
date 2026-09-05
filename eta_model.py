@@ -360,10 +360,17 @@ def _dt(iso):
     return datetime.fromisoformat(iso) if iso else None
 
 
-def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_SPEED_KMH):
+def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_SPEED_KMH,
+                conflicts=False, conflict_delay_min=0.0):
     """
     Build the per-segment breakdown and total predicted ETA.
     Returns a JSON-serialisable dict (used by both the CLI report and the API).
+
+    `conflicts=True` adds the crossing/overtake hold layer (conflict.py): minutes
+    this train is predicted to spend standing in a loop while a higher-precedence
+    train passes.  Off by default so every layer number recorded in CLAUDE.md
+    §4b stays reproducible, and so a missing corridor cache can never change an
+    existing result.
     """
     train_info, stations, sched_src = load_schedule(train, date)
     coords = load_route_coords(train)
@@ -384,6 +391,32 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
 
     segments = []
     sharpest = {"radius_m": math.inf, "lat": None, "segment": None}
+
+    # --- Conflict-hold layer (opt-in) ---------------------------------------
+    # Crossings are located on the continuous km axis, but this loop runs over
+    # halt-to-halt BLOCKS (11 halts on 12051), and every meet lands at a
+    # non-halt block station in between.  So each hold is bucketed into the
+    # block whose [d0, d1) km range contains the meet point.
+    # Imported lazily: the corridor cache is a separate artifact, and its
+    # absence must degrade this one layer, not break the whole model.
+    conflict_result, holds_by_block, conflict_error = None, {}, None
+    if conflicts:
+        try:
+            import conflict as conflict_mod
+            conflict_result = conflict_mod.find_conflicts(train, conflict_delay_min)
+            for c in conflict_result["conflicts"]:
+                if c["whoIsHeld"] != "us" or c["ourHoldMin"] <= 0:
+                    continue
+                for k in range(len(halts) - 1):
+                    d0, d1 = halts[k]["distance"], halts[k + 1]["distance"]
+                    last = k == len(halts) - 2
+                    if d0 <= c["meetKm"] < d1 or (last and c["meetKm"] == d1):
+                        holds_by_block.setdefault(k, []).append(c)
+                        break
+        except Exception as e:                      # noqa: BLE001
+            # Reported in the payload rather than silently yielding 0.0 — a
+            # zero-valued layer hides its own bugs (VERIFIED #9).
+            conflict_error = f"{type(e).__name__}: {e}"
 
     for k, (a, b) in enumerate(zip(halts[:-1], halts[1:])):
         d0, d1 = a["distance"], b["distance"]
@@ -412,13 +445,17 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
 
         hd_mean, hd_n = hist.get(b["sequence"], (0.0, 0))
 
+        # conflict holds falling inside this block (0.0 unless conflicts=True)
+        block_holds = holds_by_block.get(k, [])
+        hold_min = sum(c["ourHoldMin"] for c in block_holds)
+
         # physically-correct variant: integrate vertex-by-vertex (per-vertex cap)
         vrun_min, n_vseg, n_vcap = block_vertex_running_min(
             coords, cum_km, i0, i1, dist_km, baseline, max_speed, wfactor
         )
         physics_run_min = dist_km / physics_speed * 60.0
 
-        seg_eta = running_min + hd_mean + dwell_min
+        seg_eta = running_min + hd_mean + dwell_min + hold_min
         segments.append({
             "from": a["stationCode"], "to": b["stationCode"],
             "from_km": d0, "to_km": d1, "distance_km": round(dist_km, 1),
@@ -441,6 +478,13 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             "schedule_slack_min": round(slack_min, 1),
             "hist_delay_min": round(hd_mean, 2), "hist_delay_samples": hd_n,
             "dwell_min": round(dwell_min, 1),
+            "conflict_hold_min": round(hold_min, 1),
+            "conflict_holds": [
+                {"other_train": c["otherTrain"], "other_type": c["otherType"],
+                 "kind": c["kind"], "meet_km": c["meetKm"],
+                 "hold_station": c["holdStation"], "hold_min": c["ourHoldMin"]}
+                for c in block_holds
+            ],
             "segment_eta_min": round(seg_eta, 2),
         })
         if min_r < sharpest["radius_m"]:
@@ -452,6 +496,7 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
     total_running = sum(s["running_min"] for s in segments)
     total_dwell = sum(s["dwell_min"] for s in segments)
     total_delay = sum(s["hist_delay_min"] for s in segments)
+    total_hold = sum(s["conflict_hold_min"] for s in segments)
     total_slack = sum(s["schedule_slack_min"] for s in segments)
     total_eta = sum(s["segment_eta_min"] for s in segments)
     naive_min = total_km / max_speed * 60.0
@@ -460,7 +505,8 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
 
     return {
         "train": train, "train_name": train_info.get("name"),
-        "date": date, "weather": weather, "max_speed_kmh": max_speed,
+        "date": date, "weather": weather, "weather_factor": wfactor,
+        "max_speed_kmh": max_speed,
         "schedule_source": sched_src,
         "geometry_len_km": round(geom_len_km, 1), "schedule_len_km": round(sched_total_km, 1),
         "segments": segments,
@@ -470,6 +516,7 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             "running_min": round(total_running, 1),
             "historical_delay_min": round(total_delay, 1),
             "dwell_min": round(total_dwell, 1),
+            "conflict_hold_min": round(total_hold, 1),
             "schedule_slack_min": round(total_slack, 1),
             "predicted_eta_min": round(total_eta, 1),
             "scheduled_duration_min": sched_duration,
@@ -494,6 +541,33 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             ),
         },
         "geometry_resolution": geometry_resolution(coords),
+        # Crossing/overtake hold layer.  Always present so its absence is never
+        # ambiguous: `enabled: false` means "not asked for", an `error` means the
+        # corridor cache is missing or broken, and 0.0 with enabled=true is a
+        # real result (a high-precedence train is held by nobody).
+        "conflict_layer": {
+            "enabled": bool(conflicts),
+            "error": conflict_error,
+            "delay_min_applied": conflict_delay_min,
+            "total_hold_min": round(total_hold, 1),
+            "held_count": (conflict_result or {}).get("heldCount", 0),
+            "precedence_count": (conflict_result or {}).get("precedenceCount", 0),
+            "conflict_count": len((conflict_result or {}).get("conflicts", [])),
+            "note": (
+                "Minutes this train is predicted to stand in a loop while a "
+                "higher-precedence train passes. 0.0 for a Vande Bharat or "
+                "Shatabdi is the CORRECT result, not a wiring failure — they "
+                "take precedence over everything else on this corridor."
+            ),
+            "assumptions": None if not conflict_result else {
+                k: (conflict_result["_meta"] or {}).get(k) for k in (
+                    "loopBasis", "loopDataIsOfficial", "priorityBasis",
+                    "priorityIsOfficial", "reaccelMin", "delayModel",
+                    "otherTrainsAreScheduled", "decisionSupportOnly",
+                    "singleLineSectionKm", "singleLineBasis",
+                )
+            },
+        },
     }
 
 

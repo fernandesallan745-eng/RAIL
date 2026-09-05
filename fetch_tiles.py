@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-fetch_tiles.py — build the offline raster tile pack for the RailSync live map.
+fetch_tiles.py — build the offline raster tile pack for the GATI live map.
 
 WHY
     The 1 Sep demo may run on weak or no wifi. `public/offline-tiles.js` serves
@@ -61,7 +61,7 @@ DEFAULT_MAX_ZOOM = 12
 DEFAULT_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", "tiles")
 DEFAULT_AVG_TILE_KB = 22.0  # rough PNG basemap average; satellite runs larger
 
-USER_AGENT = "RailSync-SIH2026-offline-pack/1.0 (student project; contact via repo)"
+USER_AGENT = "GATI-SIH2026-offline-pack/1.0 (student project; contact via repo)"
 
 # ── Source presets ──────────────────────────────────────────────────────────
 # 'layer' is the default output directory name, chosen to line up with the layer
@@ -285,7 +285,7 @@ def parse_bbox(text: str):
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Build the offline raster tile pack for the RailSync live map.",
+        description="Build the offline raster tile pack for the GATI live map.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Run with --dry-run first: it prints tile counts and estimated size "
         "without touching the network.",
@@ -359,7 +359,7 @@ def main(argv=None) -> int:
     # ── Report the plan ──
     min_lat, min_lng, max_lat, max_lng = args.bbox
     print("=" * 72)
-    print("RailSync offline tile pack")
+    print("GATI offline tile pack")
     print("=" * 72)
     print(f"  source      : {args.source or 'custom --url-template'}")
     print(f"  layer (out) : {os.path.join(args.out, args.layer)}")

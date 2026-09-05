@@ -139,33 +139,99 @@ export const getTrainLiveStatus = async (req, res, next) => {
         }
       } catch (err) {
         if (err.response && err.response.status === 404) {
-          console.log(`[FastAPI integration] Train ${trainNumber} not in ETA cache. Fetching fallback...`);
-          const healthRes = await axios.get(`${config.modelApi.baseUrl}/health`, { timeout: 1000 });
-          const cachedDates = healthRes.data?.cached_dated_runs || [];
-          if (cachedDates.length > 0) {
-            const fallbackDate = cachedDates[cachedDates.length - 1];
-            const fallbackRes = await axios.get(fastApiUrl, {
-              params: { date: fallbackDate, weather: req.query.weather || 'clear' },
-              timeout: 1500,
-            });
-            if (fallbackRes.data) {
-              enhancedData.curvatureEta = fallbackRes.data;
-              enhancedData.curvatureEta.is_fallback_date = true;
-            }
-          }
+          // A 404 from /eta means the MODEL HAS NO CACHE FOR THIS TRAIN AT ALL —
+          // not that this particular date is missing. `eta_model.load_schedule`
+          // already substitutes any other cached date on its own, so a date retry
+          // cannot turn a 404 into a 200.
+          //
+          // This branch used to retry using /health's `cached_dated_runs`, but that
+          // list was 22229's (see the `train` param added to /health): asking for
+          // 12051 on 22229's dates produced a SECOND 404, thrown from inside this
+          // catch, which escaped to the outer handler and printed "ETA model offline
+          // or failed" for a model that was up and answering. Report the real cause.
+          const detail = err.response.data?.detail;
+          console.log(
+            `[FastAPI integration] No ETA model cache for train ${trainNumber} — ` +
+            `serving live tracking without the curvature/delay ETA. ` +
+            `Prime it with .cache/${trainNumber}_route.json and ${trainNumber}_live*.json.` +
+            (detail ? ` Model said: ${detail}` : '')
+          );
+          enhancedData.curvatureEtaUnavailable = {
+            reason: 'not-in-model-cache',
+            train: trainNumber,
+            detail: detail || null,
+            // The gateway is fine and the model is fine; only this train is absent.
+            // Named explicitly so the UI never renders "model offline" for this case.
+            modelReachable: true,
+          };
         } else {
           throw err;
         }
       }
     } catch (err) {
       console.warn(`[FastAPI integration] Curvature ETA model offline or failed: ${err.message}`);
+      enhancedData.curvatureEtaUnavailable = {
+        reason: 'model-unreachable',
+        train: trainNumber,
+        detail: err.message,
+        modelReachable: false,
+      };
+    }
+
+    // 4. Crossing / overtake conflict prediction (Phase 5).
+    //
+    // Kept as a SEPARATE call from /eta rather than folded into it, because the two
+    // have different inputs and different failure modes: /eta needs this train's
+    // route geometry, /conflicts needs only cached timetables. A train can be
+    // servable by one and not the other (12051 today is exactly that case), so
+    // bundling them would let a missing polyline suppress a working conflict layer.
+    //
+    // The live delay is what makes this predictive — the same crossing happens at a
+    // different place, against a different train, once we are running late. Other
+    // trains' times are SCHEDULED and cached, so this costs no upstream request.
+    const liveDelayMin = Number.isFinite(Number(liveData.delayMinutes))
+      ? Number(liveData.delayMinutes)
+      : 0;
+    try {
+      const conflictRes = await axios.get(
+        `${config.modelApi.baseUrl}/conflicts/${trainNumber}`,
+        { params: { delay: liveDelayMin }, timeout: 1500 }
+      );
+      if (conflictRes.data) {
+        enhancedData.conflicts = conflictRes.data;
+        enhancedData.conflicts.delayBasis = 'live';
+      }
+    } catch (err) {
+      // Never fatal: this layer is additive. Report WHY it is missing so the UI can
+      // say so, instead of silently rendering an empty conflict panel that looks
+      // identical to "no crossings predicted" — those two mean opposite things.
+      const is404 = err.response && err.response.status === 404;
+      enhancedData.conflictsUnavailable = {
+        reason: is404 ? 'not-in-corridor-cache' : 'model-unreachable',
+        train: trainNumber,
+        detail: is404 ? (err.response.data?.detail || null) : err.message,
+        modelReachable: Boolean(is404),
+      };
+      console.warn(
+        `[Conflict layer] Unavailable for ${trainNumber} ` +
+        `(${enhancedData.conflictsUnavailable.reason})` +
+        (is404 ? ' — run: python3 scripts/build_corridor.py' : `: ${err.message}`)
+      );
     }
 
     // Success path: Persist a copy of the enhanced train status to disk cache
     if (enhancedData) {
       try {
         const trainFile = path.join(FALLBACK_DIR, `train_${trainNumber}_live_fallback.json`);
-        fs.writeFileSync(trainFile, JSON.stringify(enhancedData, null, 2), 'utf-8');
+        // The conflict block is DERIVED from the delay that was live at this
+        // instant, so it must not be persisted. If it were, the fallback path
+        // would re-serve a prediction computed against a delay that is no longer
+        // current — meets at the wrong km, against the wrong train, with nothing
+        // in the payload saying so. It is recomputed on read instead, from the
+        // fallback's own delayMinutes, at no upstream cost. `conflictsUnavailable`
+        // is dropped for the same reason: the model may be back by then.
+        const { conflicts, conflictsUnavailable, ...persistable } = enhancedData;
+        fs.writeFileSync(trainFile, JSON.stringify(persistable, null, 2), 'utf-8');
       } catch (writeErr) {
         console.error(`[Controller] Failed to write disk fallback for train #${trainNumber}:`, writeErr.message);
       }
@@ -303,22 +369,63 @@ export const getTrainLiveStatus = async (req, res, next) => {
           }
         }
       } catch (err) {
-        // Fallback date query to FastAPI health check
-        try {
-          const healthRes = await axios.get(`${config.modelApi.baseUrl}/health`, { timeout: 1000 });
-          const cachedDates = healthRes.data?.cached_dated_runs || [];
-          if (cachedDates.length > 0) {
-            const fallbackDate = cachedDates[cachedDates.length - 1];
-            const fallbackRes = await axios.get(`${config.modelApi.baseUrl}/eta/${trainNumber}`, {
-              params: { date: fallbackDate, weather: req.query.weather || 'clear' },
-              timeout: 1500,
-            });
-            if (fallbackRes.data) {
-              enhancedData.curvatureEta = fallbackRes.data;
-              enhancedData.curvatureEta.is_fallback_date = true;
-            }
-          }
-        } catch (subErr) {}
+        // Same reasoning as the live path above: a 404 means this train has no
+        // model cache at all, and /health's date list belongs to whatever train it
+        // was asked about — so retrying on "a known-good date" cannot help. The old
+        // retry here also ended in `catch (subErr) {}`, which swallowed the second
+        // 404 entirely, so this path failed with no log line at all.
+        const is404 = err.response && err.response.status === 404;
+        enhancedData.curvatureEtaUnavailable = {
+          reason: is404 ? 'not-in-model-cache' : 'model-unreachable',
+          train: trainNumber,
+          detail: (is404 ? err.response.data?.detail : err.message) || null,
+          modelReachable: Boolean(is404),
+        };
+        console.log(
+          `[FastAPI integration] Cached-fallback path: no curvature ETA for train ` +
+          `${trainNumber} (${enhancedData.curvatureEtaUnavailable.reason}).`
+        );
+      }
+
+      // Recompute the conflict layer here rather than trusting a persisted copy
+      // (there isn't one — see the persist block above). The corridor schedules
+      // this reads are static, so the crossings are as valid as ever; what is
+      // stale is the DELAY driving them, which came off a cached position. That
+      // distinction is the whole point of delayBasis: 'cached' — the UI must be
+      // able to say "predicted from a cached delay", not imply a live fix.
+      const cachedDelayMin = Number.isFinite(Number(enhancedData.delayMinutes))
+        ? Number(enhancedData.delayMinutes)
+        : 0;
+      // Drop anything a previously-persisted copy may carry BEFORE recomputing.
+      // Older cache files (written before the persist block started stripping
+      // this) do contain a conflicts block, and enhanceLiveData spreads the
+      // fallback object through. Without this delete, a failed recompute would
+      // leave the stale block in place, the panel would render it as current, and
+      // the conflictsUnavailable notice set below would be ignored — the panel
+      // only consults it when `conflicts` is absent.
+      delete enhancedData.conflicts;
+      delete enhancedData.conflictsUnavailable;
+      try {
+        const conflictRes = await axios.get(
+          `${config.modelApi.baseUrl}/conflicts/${trainNumber}`,
+          { params: { delay: cachedDelayMin }, timeout: 1500 }
+        );
+        if (conflictRes.data) {
+          enhancedData.conflicts = conflictRes.data;
+          enhancedData.conflicts.delayBasis = 'cached';
+        }
+      } catch (err) {
+        const is404 = err.response && err.response.status === 404;
+        enhancedData.conflictsUnavailable = {
+          reason: is404 ? 'not-in-corridor-cache' : 'model-unreachable',
+          train: trainNumber,
+          detail: is404 ? (err.response.data?.detail || null) : err.message,
+          modelReachable: Boolean(is404),
+        };
+        console.log(
+          `[Conflict layer] Cached-fallback path: unavailable for ${trainNumber} ` +
+          `(${enhancedData.conflictsUnavailable.reason}).`
+        );
       }
 
       return res.json({

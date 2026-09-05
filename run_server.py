@@ -1,5 +1,5 @@
 """
-run_server.py — hardened launcher for the RailSync API.
+run_server.py — hardened launcher for the GATI API.
 
 Plain `uvicorn api:app` fails under a restricted sandbox: uvicorn imports its
 event loop, HTTP protocol and lifespan modules *lazily*, after the server starts.
@@ -50,12 +50,20 @@ import api                                         # noqa: E402
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
-    print(f"RailSync API — serving api:app on http://127.0.0.1:{port}")
-    print(f"  interactive docs : http://127.0.0.1:{port}/docs")
-    print(f"  reference train  : http://127.0.0.1:{port}/eta/22229")
+    # Loopback by default: the Node gateway on :5050 proxies this engine
+    # server-side, so nothing outside the Mac needs to reach :8000 for the live
+    # map (including the iOS app) to work. The consequence is that /dashboard and
+    # /admin are Mac-only — set GATI_MODEL_HOST=0.0.0.0 to open them to the LAN
+    # for on-device viewing, understanding that this exposes the model API to
+    # everything on that network.
+    host = os.environ.get("GATI_MODEL_HOST", "127.0.0.1")
+    shown = "localhost" if host in ("127.0.0.1", "0.0.0.0", "::") else host
+    print(f"GATI API — serving api:app on http://{shown}:{port}  (bind {host})")
+    print(f"  interactive docs : http://{shown}:{port}/docs")
+    print(f"  reference train  : http://{shown}:{port}/eta/22229")
     uvicorn.run(
         api.app,
-        host="127.0.0.1",
+        host=host,
         port=port,
         loop="asyncio",
         http="h11",

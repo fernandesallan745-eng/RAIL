@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  RailSync — Model Audit Console (Arka!)   served by FastAPI at GET /admin
+  GATI — Model Audit Console (Arka!)   served by FastAPI at GET /admin
 
   This is the JUDGE-FACING view. dashboard.html answers "what is the ETA?"; this page
   answers "why should I believe it?" — every layer is opened up, every intermediate
@@ -28,7 +28,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RailSync — Model Audit Console · Arka!</title>
+<title>GATI — Model Audit Console · Arka!</title>
 <style>
   :root{
     color-scheme:dark;
@@ -378,15 +378,21 @@
         service (<code>api.py</code>) — <code>/eta</code>, <code>/health</code>,
         <code>/geometry</code>, <code>/eta/{t}/curvature</code>, WebSocket push</span></li>
       <li class="d"><span class="st done">DONE</span><span class="t"><b>Phase 8</b> · operator
-        dashboard (<code>/dashboard</code>), Leaflet live map (Node proxy, port 5000), and
+        dashboard (<code>/dashboard</code>), Leaflet live map (Node proxy, port 5050), and
         this audit console</span></li>
       <li><span class="st next">NEXT</span><span class="t"><b>Phase 5</b> · block-level
         conflict-point prediction — needs a second train's live data on a shared section.
         <b>Not built: no conflict alerts are rendered anywhere.</b></span></li>
-      <li><span class="st todo">TODO</span><span class="t"><b>Phase 6</b> · tunnel / GPS-blind-spot
-        dead reckoning. Groundwork exists in <code>src/services/deadReckoning.js</code>, but
-        tunnel coordinates and average speeds there are <b>illustrative estimates</b> and the
-        EMA recalibration has never run.</span></li>
+      <li class="d"><span class="st done">DONE</span><span class="t"><b>Phase 6</b> · tunnel
+        identification + time-to-exit for GPS-blind zones. <b>69 real Konkan tunnels</b>
+        (OpenStreetMap way geometry, chord lengths within 1.1% of published KRCL figures —
+        <b>not</b> official alignment data), projected onto each train's chainage axis by
+        <code>src/services/tunnels.js</code> and drawn on the live map with containment
+        highlight, metres-to-exit and ~minutes-to-exit. Time-to-exit uses the
+        <b>schedule-derived</b> block speed: this data source carries no live speed. The EMA
+        speed recalibration path exists but <b>has never run</b>
+        (<code>speed-history.json</code> ships empty), so there is no observed-transit
+        data yet.</span></li>
       <li><span class="st todo">TODO</span><span class="t"><b>Phase 7</b> · crowdsourced hazard
         reporting + confidence scoring. <b>Not built: no hazard pins are rendered.</b></span></li>
       <li><span class="st next">NEXT</span><span class="t"><b>Live weather feed</b> ·

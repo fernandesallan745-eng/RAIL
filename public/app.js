@@ -9,6 +9,62 @@ const clientCache = {
   searches: new Map(),
 };
 
+const NATIVE_API_STORAGE_KEY = 'gati.native-api-base';
+let appStarted = false;
+
+function isNativeApp() {
+  return Boolean(window.Capacitor?.isNativePlatform?.());
+}
+
+// Turns whatever was typed on a phone keyboard into a usable API base, or throws a
+// message worth showing. Only caller is the server-setup form, which renders the
+// thrown message directly — so every failure path needs readable wording, not a
+// raw URL-constructor TypeError.
+function normaliseApiBase(value) {
+  const candidate = String(value || '').trim();
+  if (!candidate) {
+    throw new Error('Enter the address shown by `npm run ios:lan` on your Mac.');
+  }
+  // Check an explicit scheme BEFORE prepending. Blindly prefixing "http://" turns
+  // "ftp://host:5050" into "http://ftp//host:5050", which parses cleanly with
+  // hostname "ftp" — so the protocol test below would never fire and the user
+  // would get a misleading "gateway did not report healthy" instead.
+  const scheme = candidate.match(/^([a-z][a-z0-9+.-]*):\/\//i)?.[1]?.toLowerCase();
+  if (scheme && scheme !== 'http' && scheme !== 'https') {
+    throw new Error('Use an http:// or https:// address.');
+  }
+  const withProtocol = scheme ? candidate : `http://${candidate}`;
+  let url;
+  try {
+    url = new URL(withProtocol);
+  } catch {
+    throw new Error(`"${candidate}" is not a valid address. Example: http://192.168.0.100:5050`);
+  }
+  if (!url.hostname) {
+    throw new Error('That address has no host name. Example: http://192.168.0.100:5050');
+  }
+  return url.toString().replace(/\/$/, '');
+}
+
+function getApiBase() {
+  return isNativeApp() ? localStorage.getItem(NATIVE_API_STORAGE_KEY) || '' : '';
+}
+
+function apiUrl(path) {
+  const base = getApiBase();
+  return base ? `${base}${path}` : path;
+}
+
+async function fetchWithTimeout(url, timeoutMs = 5000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 // Poll / client-cache intervals (milliseconds).
 //
 // The server no longer caches live data (CACHE_TTL_LIVE=0), so these intervals ARE the upstream
@@ -41,6 +97,7 @@ let fleetMarkersLayer = null;
 let activeRouteLayer = null;
 let activeStationsLayer = null;
 let tunnelsLayer = null;
+let conflictLayer = null;
 let activeTrainMarker = null;
 
 let selectedTrainNumber = null;
@@ -55,6 +112,16 @@ let lastTrainUpdateTime = null;
 
 // Initialize Application
 async function bootstrapApp() {
+  if (appStarted) return;
+  if (isNativeApp() && !getApiBase()) {
+    if (window.location.origin && /^https?:\/\//i.test(window.location.origin)) {
+      localStorage.setItem(NATIVE_API_STORAGE_KEY, window.location.origin);
+    } else {
+      showServerSetup();
+      return;
+    }
+  }
+  appStarted = true;
   // Read /tiles/pack.json first so initMap knows which layers have local tiles
   // and to what zoom. One request; failure is non-fatal (→ CDN-only).
   if (typeof loadPackManifest === 'function') {
@@ -77,13 +144,15 @@ async function wireAuditLink() {
   const el = document.getElementById('auditLink');
   if (!el) return;
   try {
-    const res = await fetch('/api/health');
+    const res = await fetch(apiUrl('/api/health'));
     const j = await res.json();
     const base = j?.modelApi?.baseUrl;
     if (!base) return;
     const u = new URL(base);
     // 127.0.0.1/localhost is correct for the SERVER; for the browser, follow this page's host
-    if (u.hostname === '127.0.0.1' || u.hostname === 'localhost') u.hostname = location.hostname;
+    if (u.hostname === '127.0.0.1' || u.hostname === 'localhost') {
+      u.hostname = new URL(getApiBase() || location.href).hostname;
+    }
     u.pathname = '/admin';
     el.href = u.toString();
     el.hidden = false;
@@ -96,10 +165,72 @@ async function wireAuditLink() {
 // index.html loads this file via an injected <script>, which does NOT delay
 // DOMContentLoaded — so that event may already have fired by the time we run.
 // Check readyState instead of listening unconditionally, or the map never inits.
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bootstrapApp);
-} else {
+function showServerSetup(message = '') {
+  const panel = document.getElementById('serverSetup');
+  const error = document.getElementById('serverSetupError');
+  const address = document.getElementById('serverAddress');
+  if (!panel || !isNativeApp()) return;
+  panel.hidden = false;
+  address.value = getApiBase();
+  error.textContent = message;
+  error.hidden = !message;
+  setTimeout(() => address.focus(), 0);
+}
+
+function hideServerSetup() {
+  const panel = document.getElementById('serverSetup');
+  if (panel) panel.hidden = true;
+}
+
+function setupNativeServerConnection() {
+  if (!isNativeApp()) return;
+
+  const settingsButton = document.getElementById('serverSettingsBtn');
+  const form = document.getElementById('serverSetupForm');
+  settingsButton.hidden = false;
+  settingsButton.addEventListener('click', () => showServerSetup());
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const address = document.getElementById('serverAddress');
+    const error = document.getElementById('serverSetupError');
+    const submit = form.querySelector('button[type="submit"]');
+    let base;
+    try {
+      base = normaliseApiBase(address.value);
+    } catch (err) {
+      showServerSetup(err.message);
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = 'Checking connection...';
+    error.hidden = true;
+    try {
+      const response = await fetchWithTimeout(`${base}/api/health`);
+      const payload = await response.json();
+      if (!response.ok || !payload.success) throw new Error('The GATI gateway did not report healthy.');
+      localStorage.setItem(NATIVE_API_STORAGE_KEY, base);
+      hideServerSetup();
+      bootstrapApp();
+    } catch (err) {
+      showServerSetup(`Could not reach ${base}. Confirm both devices are on the same Wi-Fi and GATI is running on your Mac.`);
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Connect to live tracker';
+    }
+  });
+}
+
+function startApp() {
+  setupNativeServerConnection();
   bootstrapApp();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startApp);
+} else {
+  startApp();
 }
 
 // Map Initialization
@@ -170,6 +301,9 @@ function initMap() {
   activeStationsLayer = L.layerGroup().addTo(map);
   // Drawn above the route line so a tunnel reads as a section OF the route.
   tunnelsLayer = L.layerGroup().addTo(map);
+  // Meet points sit above the tunnels — a crossing is a point event, and it can
+  // legitimately fall inside a tunnel's span.
+  conflictLayer = L.layerGroup().addTo(map);
 }
 
 // Layer Switcher
@@ -224,7 +358,7 @@ async function loadLiveFleet(forceRefresh = false, forceServerRefresh = false) {
     // node-cache and hits RailRadar upstream (20 trains/call) every minute,
     // burning the 1,000 req/month free tier in hours. Server-cache bypass is
     // opt-in via forceServerRefresh (reserved for an explicit manual refresh).
-    const url = forceServerRefresh ? '/api/trains/radar/fleet?refresh=true' : '/api/trains/radar/fleet';
+    const url = apiUrl(forceServerRefresh ? '/api/trains/radar/fleet?refresh=true' : '/api/trains/radar/fleet');
     const res = await fetch(url);
     const json = await res.json();
     if (json.success && json.data?.fleet) {
@@ -317,7 +451,7 @@ async function selectTrain(trainNumber, forceRefresh = false, forceServerRefresh
       // forceRefresh bypasses only the client cache; ?refresh=true (server-cache
       // bypass → live RailRadar upstream hit) is gated behind forceServerRefresh so
       // the 20s auto-refresh reads the server's 300s cache instead of the live API.
-      const url = `/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson${forceServerRefresh ? '&refresh=true' : ''}`;
+      const url = apiUrl(`/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson${forceServerRefresh ? '&refresh=true' : ''}`);
       const res = await fetch(url);
       const json = await res.json();
       if (!res.ok || json.success === false) {
@@ -341,7 +475,7 @@ async function selectTrain(trainNumber, forceRefresh = false, forceServerRefresh
         routeGeoJson = liveGeom;
       } else {
         // Fallback: separate route endpoint
-        const res = await fetch(`/api/trains/${trainNumber}/route`);
+        const res = await fetch(apiUrl(`/api/trains/${trainNumber}/route`));
         const json = await res.json();
         routeGeoJson = json.data?.data || json.data;
       }
@@ -351,7 +485,7 @@ async function selectTrain(trainNumber, forceRefresh = false, forceServerRefresh
     // 3. Fetch coaches (long-lived cache — 24h)
     let coachesData = clientCache.trainCoaches.get(trainNumber);
     if (!coachesData) {
-      const res = await fetch(`/api/trains/${trainNumber}/coaches`);
+      const res = await fetch(apiUrl(`/api/trains/${trainNumber}/coaches`));
       const json = await res.json();
       coachesData = json.data?.data || json.data;
       if (coachesData) clientCache.trainCoaches.set(trainNumber, coachesData);
@@ -595,11 +729,205 @@ function renderTunnelPanel(liveData) {
   }
 }
 
+// ── Crossing / overtake meet points ─────────────────────────────────────────
+// One marker per predicted meet. Red = we take the loop, green = we hold
+// precedence and the other train waits.
+//
+// As with the tunnel layer, the client does NO conflict arithmetic. Meet km,
+// clock time, lat/lng, who is held, and the delay shift are all computed by
+// conflict.py — including the shift, which needs a second zero-delay run and so
+// cannot be derived from this payload alone.
+function renderConflicts(liveData) {
+  if (!conflictLayer) return;
+  const info = liveData.conflicts;
+  if (!info || !Array.isArray(info.conflicts)) return;
+
+  for (const c of info.conflicts) {
+    // Trains cached before the includeCoordinates fix have no station lat/lng,
+    // so some meets are unmappable. Skip them here; the panel still lists them
+    // and coordsNote says how many are missing — never silently drop the fact.
+    if (c.meetCoordsBasis !== 'interpolated' || c.meetLat == null) continue;
+
+    const held = c.whoIsHeld === 'us';
+    const colour = held ? '#f87171' : '#34d399';
+
+    conflictLayer.addLayer(
+      L.circleMarker([c.meetLat, c.meetLng], {
+        radius: 9,
+        color: colour,
+        weight: 2,
+        fillColor: colour,
+        fillOpacity: 0.25,
+      })
+    );
+
+    const marker = L.circleMarker([c.meetLat, c.meetLng], {
+      radius: 4.5,
+      color: '#0f172a',
+      weight: 1.5,
+      fillColor: colour,
+      fillOpacity: 1,
+    });
+
+    const holdLine = held
+      ? `<div style="color:#dc2626;font-weight:700;font-size:0.78rem;margin-top:5px">` +
+        `⏸ #${escapeHtml(c.ourTrain)} held ~${c.ourHoldMin} min at ${escapeHtml(c.holdStationName || c.holdStation || '?')}</div>`
+      : `<div style="color:#059669;font-weight:700;font-size:0.78rem;margin-top:5px">` +
+        `✓ #${escapeHtml(c.ourTrain)} has right of way — #${escapeHtml(c.otherTrain)} looped ~${c.theirHoldMin} min` +
+        `${c.holdStationName ? ` at ${escapeHtml(c.holdStationName)}` : ''}</div>`;
+
+    // "existsOnTime: false" means the delay CREATED this meet rather than moving
+    // it. Every overtake is of that kind (they are zero on the scheduled
+    // timetable), so the wording has to distinguish the two cases.
+    const shiftLine =
+      c.shiftKm != null && Math.abs(c.shiftKm) >= 0.1
+        ? `<div style="font-size:0.72rem;color:#b45309;margin-top:4px">Delay moved this meet ` +
+          `<strong>${Math.abs(c.shiftKm).toFixed(1)} km ${c.shiftKm < 0 ? 'earlier' : 'later'}</strong> ` +
+          `(on time: km ${c.scheduledMeetKm.toFixed(1)})</div>`
+        : c.existsOnTime === false
+          ? `<div style="font-size:0.72rem;color:#b45309;margin-top:4px">` +
+            `Does not occur on the scheduled timetable — created by the current delay.</div>`
+          : '';
+
+    marker.bindPopup(
+      `<div style="font-family:system-ui,sans-serif;min-width:220px">
+         <div style="font-weight:700;font-size:0.9rem">${c.kind === 'overtake' ? 'Overtake' : 'Head-on crossing'} · km ${c.meetKm.toFixed(1)}</div>
+         <div style="color:#64748b;font-size:0.72rem;margin-bottom:6px">${escapeHtml(c.betweenFrom)}–${escapeHtml(c.betweenTo)} · single line · ~${escapeHtml(c.meetClock)}</div>
+         <div style="font-size:0.78rem">vs <strong>#${escapeHtml(c.otherTrain)}</strong> ${escapeHtml(c.otherName || '')}</div>
+         <div style="font-size:0.74rem;color:#475569">${escapeHtml(c.otherType)} (rank ${c.otherPriority}) vs our ${escapeHtml(c.ourType)} (rank ${c.ourPriority})</div>
+         ${holdLine}
+         ${shiftLine}
+         ${c.precedenceNote ? `<div style="font-size:0.7rem;color:#64748b;margin-top:4px">${escapeHtml(c.precedenceNote)}</div>` : ''}
+         <div style="font-size:0.66rem;color:#94a3b8;margin-top:6px;font-style:italic">Loop location assumed; precedence is a type heuristic. Decision support only.</div>
+       </div>`
+    );
+
+    conflictLayer.addLayer(marker);
+  }
+}
+
+// ── Crossing / overtake panel ───────────────────────────────────────────────
+// Three states: HELD (we take the loop), RIGHT OF WAY (they do), and none
+// predicted. The third is a real result on a punctual premium train and must not
+// look like a failure — which is exactly why the *unavailable* case gets its own
+// block instead of reusing this one.
+function renderConflictPanel(liveData) {
+  const panel = document.getElementById('conflictPanel');
+  const header = document.getElementById('conflictPanelHeader');
+  const body = document.getElementById('conflictPanelBody');
+  const gapBlock = document.getElementById('conflictUnavailable');
+  const gapText = document.getElementById('conflictUnavailableText');
+  if (!panel) return;
+
+  const info = liveData.conflicts;
+  const gap = liveData.conflictsUnavailable;
+
+  if (!info) {
+    panel.style.display = 'none';
+    if (gapBlock && gapText && gap) {
+      gapBlock.style.display = 'block';
+      gapText.innerHTML =
+        gap.reason === 'not-in-corridor-cache'
+          ? `<strong>#${escapeHtml(gap.train)}</strong> is not in the corridor schedule cache, so ` +
+            `crossings cannot be computed for it. The model is running and serves the ` +
+            `Konkan corridor trains — this is a data-coverage gap, not an outage.`
+          : `The conflict model is not reachable, so crossing and overtake prediction is ` +
+            `unavailable. Live position and tunnel tracking above are unaffected.`;
+    } else if (gapBlock) {
+      gapBlock.style.display = 'none';
+    }
+    return;
+  }
+
+  if (gapBlock) gapBlock.style.display = 'none';
+  panel.style.display = 'block';
+
+  const rows = info.conflicts || [];
+  const held = info.heldCount || 0;
+  const total = info.totalHoldMin || 0;
+
+  // Amber/red only when WE lose time. A crossing we win is information, not an
+  // alert — colouring it red would train the operator to ignore the colour.
+  const accent = held ? '#f87171' : rows.length ? '#34d399' : '#94a3b8';
+  panel.style.background = held
+    ? 'rgba(239, 68, 68, 0.08)'
+    : rows.length
+      ? 'rgba(52, 211, 153, 0.07)'
+      : 'rgba(148, 163, 184, 0.06)';
+  panel.style.border = `1px solid ${accent}33`;
+  header.style.color = accent;
+
+  header.innerHTML = held
+    ? `🔀 LOOP HOLD PREDICTED — ~${total.toFixed(0)} min at ${held} crossing${held > 1 ? 's' : ''}`
+    : rows.length
+      ? `🔀 Right of way at all ${rows.length} crossing${rows.length > 1 ? 's' : ''}`
+      : '🔀 Crossing prediction';
+
+  const out = [];
+
+  if (!rows.length) {
+    out.push(
+      '<span style="color:var(--text-dim)">No crossings or overtakes predicted on the ' +
+        'single-line section for this run.</span>'
+    );
+  } else {
+    // The delay driving these meets is either a live fix or one recovered from
+    // the disk cache after an upstream failure. The crossings are equally valid
+    // either way — the corridor schedules are static — but a cached delay may no
+    // longer be the train's actual delay, which moves every meet. Saying "live"
+    // there would be the one false claim this panel could make.
+    const cachedDelay = info.delayBasis === 'cached';
+    const delayNote =
+      info.delayMinApplied
+        ? ` at ${cachedDelay ? 'a <strong style="color:#fbbf24">cached</strong>' : 'the <strong>live</strong>'} ` +
+          `delay of <strong style="color:#fbbf24">+${info.delayMinApplied} min</strong>`
+        : cachedDelay
+          ? ' at a cached on-time position'
+          : ' on the scheduled timetable';
+    out.push(
+      `<strong style="color:#fff">${rows.length}</strong> meet${rows.length > 1 ? 's' : ''} ` +
+        `predicted${delayNote} — ` +
+        `<strong style="color:#f87171">${held} held</strong> · ` +
+        `<strong style="color:#34d399">${info.precedenceCount || 0} we win</strong>`
+    );
+
+    for (const r of rows) {
+      const isHeld = r.whoIsHeld === 'us';
+      const icon = isHeld ? '⏸' : '✓';
+      const col = isHeld ? '#f87171' : '#34d399';
+      const what = isHeld
+        ? `<strong style="color:${col}">held ~${r.ourHoldMin} min</strong> at ${escapeHtml(r.holdStationName || r.holdStation || '?')}`
+        : `<strong style="color:${col}">#${escapeHtml(r.otherTrain)} looped ~${r.theirHoldMin} min</strong>`;
+      const shift =
+        r.shiftKm != null && Math.abs(r.shiftKm) >= 0.1
+          ? ` <span style="color:#fbbf24">(${Math.abs(r.shiftKm).toFixed(1)} km ${r.shiftKm < 0 ? 'earlier' : 'later'} than planned)</span>`
+          : r.existsOnTime === false
+            ? ' <span style="color:#fbbf24">(delay-created, not on the timetable)</span>'
+            : '';
+      out.push(
+        `<span style="color:${col}">${icon}</span> km ${r.meetKm.toFixed(1)} ~${escapeHtml(r.meetClock)} · ` +
+          `${r.kind === 'overtake' ? 'overtake' : 'crossing'} vs <strong style="color:#fff">#${escapeHtml(r.otherTrain)}</strong> ` +
+          `<span style="color:var(--text-dim)">${escapeHtml(r.otherType)}</span> → ${what}${shift}`
+      );
+    }
+  }
+
+  // Coordinate coverage. Some corridor trains were cached before the
+  // includeCoordinates fix (VERIFIED #13), so their meets have km and times but
+  // no lat/lng and cannot be drawn. Degrade loudly, exactly like axisBasis.
+  if (info.coordsNote) {
+    out.push(`<span style="color:#fbbf24">⚠ ${escapeHtml(info.coordsNote)}</span>`);
+  }
+
+  body.innerHTML = out.join('<br/>');
+}
+
 // Draw Track and Stations on Map
 function renderTrainOnMap(liveData, routeGeoJson, skipFlyTo = false) {
   activeRouteLayer.clearLayers();
   activeStationsLayer.clearLayers();
   tunnelsLayer.clearLayers();
+  if (conflictLayer) conflictLayer.clearLayers();
 
   const trainInfo = liveData.train || {};
   const currentLoc = liveData.currentLocation || {};
@@ -660,6 +988,11 @@ function renderTrainOnMap(liveData, routeGeoJson, skipFlyTo = false) {
       });
     }
   }
+
+  // Meet points are drawn from their own interpolated lat/lng, not from the
+  // polyline, so they render even when the route geometry is missing — and after
+  // the tunnels, so a crossing inside a bore stays visible on top of it.
+  renderConflicts(liveData);
 
 // Plot Station Halts — interpolated along the route polyline
   let currentTrainLat = null;
@@ -855,6 +1188,9 @@ function renderTrainDrawer(liveData, coachesData) {
   // 🚇 Tunnel tracking + GPS blind-spot panel
   renderTunnelPanel(liveData);
 
+  // 🔀 Crossing / overtake loop-hold prediction
+  renderConflictPanel(liveData);
+
   // 🧠 Curvature & Delay-Aware ETA Engine Panel UI Integration
   const etaPanel = document.getElementById('curvatureEtaPanel');
   const cEta = liveData.curvatureEta;
@@ -891,6 +1227,25 @@ function renderTrainDrawer(liveData, coachesData) {
     document.getElementById('etaEnginePrediction').innerText = `${totalPred.toFixed(1)} min (vs ${totalSched} min Sched)`;
   } else {
     etaPanel.style.display = 'none';
+  }
+
+  // Explain an absent ETA panel rather than just hiding it. The two reasons need
+  // different wording: "this train is not in the model cache" is a data-coverage
+  // gap with the model running fine, and saying "offline" there would be false.
+  const etaGap = document.getElementById('curvatureEtaUnavailable');
+  const etaGapText = document.getElementById('curvatureEtaUnavailableText');
+  const gap = liveData.curvatureEtaUnavailable;
+  if (!cEta && gap && etaGap && etaGapText) {
+    etaGap.style.display = 'block';
+    etaGapText.innerHTML = gap.modelReachable
+      ? `No cached run for <strong>#${gap.train}</strong>, so the curvature, dwell and ` +
+        `historical-delay layers cannot be computed for it. The model is running and ` +
+        `serves other trains — this is a data-coverage gap, not an outage. ` +
+        `Live position and tunnel tracking above are unaffected.`
+      : `The ETA model is not reachable, so the curvature, dwell and historical-delay ` +
+        `layers are unavailable. Live position and tunnel tracking above are unaffected.`;
+  } else if (etaGap) {
+    etaGap.style.display = 'none';
   }
 
   // Current Position
@@ -1050,6 +1405,9 @@ function openDrawerLoading(num) {
   document.getElementById('tunnelPanel').style.display = 'none';
   document.getElementById('deadReckoningPanel').style.display = 'none';
   document.getElementById('curvatureEtaPanel').style.display = 'none';
+  document.getElementById('curvatureEtaUnavailable').style.display = 'none';
+  document.getElementById('conflictPanel').style.display = 'none';
+  document.getElementById('conflictUnavailable').style.display = 'none';
   
   // Reset progress bar
   document.getElementById('drawerProgressFill').style.width = '0%';
@@ -1088,7 +1446,7 @@ function setupSearch() {
       }
 
       try {
-        const res = await fetch(`/api/trains/search?q=${encodeURIComponent(val)}`);
+        const res = await fetch(apiUrl(`/api/trains/search?q=${encodeURIComponent(val)}`));
         const json = await res.json();
         const results = json.data?.data || json.data || [];
         clientCache.searches.set(val, results);
