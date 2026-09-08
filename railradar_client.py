@@ -78,6 +78,33 @@ class RailRadarClient:
             raise RuntimeError(f"RailRadar error: {payload.get('error')}")
         return payload["data"]
 
+    def get_station_trains(self, station_code: str) -> dict:
+        """
+        Station train board: every train that HALTS at this station.
+
+        Note what this does NOT return: a train that passes through without
+        stopping is absent, and on single line such a train can still force a
+        crossing hold — often it is the highest-priority train on the section.
+        Cover those with `get_trains_between` over consecutive checkpoints.
+        """
+        url = f"{BASE_URL}/stations/{station_code}/trains"
+        resp = self.session.get(url, timeout=15)
+        resp.raise_for_status()
+        payload = resp.json()
+        if not payload.get("success"):
+            raise RuntimeError(f"RailRadar error: {payload.get('error')}")
+        return payload["data"]
+
+    def get_train_categories(self) -> dict:
+        """Train category metadata (drives the precedence ladder in conflict.py)."""
+        url = f"{BASE_URL}/lookup/trains/categories"
+        resp = self.session.get(url, timeout=15)
+        resp.raise_for_status()
+        payload = resp.json()
+        if not payload.get("success"):
+            raise RuntimeError(f"RailRadar error: {payload.get('error')}")
+        return payload["data"]
+
 
 if __name__ == "__main__":
     # Quick smoke test — CSMT-Madgaon Vande Bharat (22229 down / 22230 up)

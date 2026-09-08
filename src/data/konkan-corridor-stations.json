@@ -1,0 +1,1063 @@
+{
+  "_meta": {
+    "built": "2026-09-08",
+    "purpose": "Konkan Railway corridor station list for crossing/precedence conflict prediction.",
+    "stationCount": 115,
+    "derivation": "Every code is READ from cached RailRadar route payloads under .cache/corridor/ \u2014 none is typed from memory or from a published timetable. CSMT..NIDI comes from 22229 (which terminates at MAO and therefore cannot supply the southern arm); ROHA..TOK is the union of 5 trains that run the whole line, ordered on 12619 Matsyagandha as the spine.",
+    "spine": "12619",
+    "throughTrainsUsed": [
+      "12619",
+      "16345",
+      "16346",
+      "12617",
+      "12618"
+    ],
+    "singleLineFrom": "ROHA",
+    "singleLineNote": "CSMT->ROHA is Central Railway DOUBLE line: a meet there needs no hold and is not a conflict (CLAUDE.md VERIFIED #17). Only ROHA onward can produce a loop hold.",
+    "kmNote": "kmFromRoha is rebased so ROHA = 0. Raw cached km are per-train absolute chainage \u2014 12618 shows Karmali at km 2003 on a 2300 km run \u2014 so raw km are NOT comparable across trains and must never be used as corridor position.",
+    "codeCorrections": {
+      "BTJL": "Bhatkal. NOT BTKL, which was the guessed code in the original task brief.",
+      "NAND": "Nandikoor. Real, but seen on 12617 only. The guessed code NDKR does not exist."
+    },
+    "singleSourceWarning": "Stations with seenOnCachedTrains == 1 are flagged confidence=single-source: plausible minor halts, but one payload cannot distinguish a genuine halt from a bad code. A 404 on these is informative, not a failure.",
+    "sourceIsOfficial": false,
+    "sourceNote": "RailRadar route payloads (crowdsourced-GPS tier), not official Indian Railways or KRCL station data."
+  },
+  "stations": [
+    {
+      "seq": 1,
+      "code": "CSMT",
+      "name": "Mumbai CSMT",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -142.2,
+      "seenOnCachedTrains": 6,
+      "confidence": "verified"
+    },
+    {
+      "seq": 2,
+      "code": "MSD",
+      "name": "Masjid",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -140.9,
+      "seenOnCachedTrains": 6,
+      "confidence": "verified"
+    },
+    {
+      "seq": 3,
+      "code": "SNRD",
+      "name": "Sandhurst Road",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -139.9,
+      "seenOnCachedTrains": 6,
+      "confidence": "verified"
+    },
+    {
+      "seq": 4,
+      "code": "BY",
+      "name": "Byculla",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -138.0,
+      "seenOnCachedTrains": 6,
+      "confidence": "verified"
+    },
+    {
+      "seq": 5,
+      "code": "CHG",
+      "name": "Bby Chinchpkili",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -136.8,
+      "seenOnCachedTrains": 6,
+      "confidence": "verified"
+    },
+    {
+      "seq": 6,
+      "code": "CRD",
+      "name": "Bmby Currey Road",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -136.1,
+      "seenOnCachedTrains": 6,
+      "confidence": "verified"
+    },
+    {
+      "seq": 7,
+      "code": "PR",
+      "name": "Parel",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -134.3,
+      "seenOnCachedTrains": 6,
+      "confidence": "verified"
+    },
+    {
+      "seq": 8,
+      "code": "DR",
+      "name": "Dadar",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -133.3,
+      "seenOnCachedTrains": 6,
+      "confidence": "verified"
+    },
+    {
+      "seq": 9,
+      "code": "MTN",
+      "name": "Matunga",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -131.9,
+      "seenOnCachedTrains": 6,
+      "confidence": "verified"
+    },
+    {
+      "seq": 10,
+      "code": "SION",
+      "name": "Sion",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -129.4,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 11,
+      "code": "CLA",
+      "name": "Kurla Local",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -126.7,
+      "seenOnCachedTrains": 6,
+      "confidence": "verified"
+    },
+    {
+      "seq": 12,
+      "code": "VVH",
+      "name": "Vidyavihar",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -124.3,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 13,
+      "code": "GC",
+      "name": "Ghatkopar",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -122.9,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 14,
+      "code": "VK",
+      "name": "Vikhroli",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -119.3,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 15,
+      "code": "KJRD",
+      "name": "Kanjur Marg",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -117.4,
+      "seenOnCachedTrains": 7,
+      "confidence": "verified"
+    },
+    {
+      "seq": 16,
+      "code": "BND",
+      "name": "Bhandup",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -115.5,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 17,
+      "code": "NHU",
+      "name": "Nahur",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -113.9,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 18,
+      "code": "MLND",
+      "name": "Mulund",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -111.6,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 19,
+      "code": "TNA",
+      "name": "Thane",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -109.1,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 20,
+      "code": "DIGH",
+      "name": "Digha Gaon",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -105.3,
+      "seenOnCachedTrains": 3,
+      "confidence": "verified"
+    },
+    {
+      "seq": 21,
+      "code": "AIRL",
+      "name": "Airoli",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -103.2,
+      "seenOnCachedTrains": 8,
+      "confidence": "verified"
+    },
+    {
+      "seq": 22,
+      "code": "RABE",
+      "name": "Rabale",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -100.7,
+      "seenOnCachedTrains": 8,
+      "confidence": "verified"
+    },
+    {
+      "seq": 23,
+      "code": "GNSL",
+      "name": "Ghansoli",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -98.4,
+      "seenOnCachedTrains": 8,
+      "confidence": "verified"
+    },
+    {
+      "seq": 24,
+      "code": "KPHN",
+      "name": "Kopar Khairna",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -96.9,
+      "seenOnCachedTrains": 8,
+      "confidence": "verified"
+    },
+    {
+      "seq": 25,
+      "code": "TUH",
+      "name": "Turbhe",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -93.7,
+      "seenOnCachedTrains": 8,
+      "confidence": "verified"
+    },
+    {
+      "seq": 26,
+      "code": "JNJ",
+      "name": "Jui Nagar",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -91.4,
+      "seenOnCachedTrains": 8,
+      "confidence": "verified"
+    },
+    {
+      "seq": 27,
+      "code": "NEU",
+      "name": "Nerul",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -88.9,
+      "seenOnCachedTrains": 8,
+      "confidence": "verified"
+    },
+    {
+      "seq": 28,
+      "code": "SWDK",
+      "name": "Seawoods- Darave Karave",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -87.5,
+      "seenOnCachedTrains": 3,
+      "confidence": "verified"
+    },
+    {
+      "seq": 29,
+      "code": "BEPR",
+      "name": "Belapur Cbd",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -85.1,
+      "seenOnCachedTrains": 8,
+      "confidence": "verified"
+    },
+    {
+      "seq": 30,
+      "code": "KHAG",
+      "name": "Kharghar",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -82.8,
+      "seenOnCachedTrains": 8,
+      "confidence": "verified"
+    },
+    {
+      "seq": 31,
+      "code": "MANR",
+      "name": "Mansarovar",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -79.9,
+      "seenOnCachedTrains": 3,
+      "confidence": "verified"
+    },
+    {
+      "seq": 32,
+      "code": "KNDS",
+      "name": "Khandeshwar",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -78.0,
+      "seenOnCachedTrains": 8,
+      "confidence": "verified"
+    },
+    {
+      "seq": 33,
+      "code": "PNVL",
+      "name": "Panvel",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -74.4,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 34,
+      "code": "SMNE",
+      "name": "Somatne",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -69.3,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 35,
+      "code": "RSYI",
+      "name": "Rasayani",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -62.7,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 36,
+      "code": "APTA",
+      "name": "Apta",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -59.3,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 37,
+      "code": "JITE",
+      "name": "Jite",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -49.6,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 38,
+      "code": "HMRR",
+      "name": "Hamarapur",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -45.3,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 39,
+      "code": "PEN",
+      "name": "Pen",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -39.5,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 40,
+      "code": "KASU",
+      "name": "Kasu",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -26.0,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 41,
+      "code": "NGTN",
+      "name": "Nagothane",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -12.6,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 42,
+      "code": "NIDI",
+      "name": "Nidi",
+      "section": "central-railway-double-line",
+      "kmFromRoha": -4.1,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 43,
+      "code": "ROHA",
+      "name": "Roha",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 0.0,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 44,
+      "code": "KOL",
+      "name": "Kolad",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 13.0,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 45,
+      "code": "INP",
+      "name": "Indapur",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 23.8,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 46,
+      "code": "MNI",
+      "name": "Mangaon",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 30.5,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 47,
+      "code": "GNO",
+      "name": "Goregaon Road",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 40.9,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 48,
+      "code": "VEER",
+      "name": "Veer",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 47.1,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 49,
+      "code": "SAPE",
+      "name": "Sape Wamane",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 55.1,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 50,
+      "code": "KFD",
+      "name": "Karanjadi",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 62.8,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 51,
+      "code": "VINH",
+      "name": "Vinhere",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 72.9,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 52,
+      "code": "DWV",
+      "name": "Diwankhavati",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 80.8,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 53,
+      "code": "KLBN",
+      "name": "Kalambani Budruk",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 91.0,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 54,
+      "code": "KHED",
+      "name": "Khed",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 98.5,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 55,
+      "code": "ANO",
+      "name": "Anjani",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 111.9,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 56,
+      "code": "CHI",
+      "name": "Chiplun",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 128.2,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 57,
+      "code": "KMAH",
+      "name": "Kamathe",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 137.9,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 58,
+      "code": "SVX",
+      "name": "Sawarda",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 146.6,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 59,
+      "code": "AVRD",
+      "name": "Aravali Road",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 157.0,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 60,
+      "code": "KDVI",
+      "name": "Kadavai",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 163.5,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 61,
+      "code": "SGR",
+      "name": "Sangameshwar Road",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 171.0,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 62,
+      "code": "UKC",
+      "name": "Ukshi",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 184.6,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 63,
+      "code": "BOKE",
+      "name": "Bhoke",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 197.2,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 64,
+      "code": "RN",
+      "name": "Ratnagiri",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 203.8,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 65,
+      "code": "NIV",
+      "name": "Nivasar",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 219.1,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 66,
+      "code": "ADVI",
+      "name": "Adavali",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 235.4,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 67,
+      "code": "VRLI",
+      "name": "Veravali",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 245.5,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 68,
+      "code": "VID",
+      "name": "Vilavade",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 250.9,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 69,
+      "code": "SUAL",
+      "name": "Saundal (H)",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 260.3,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 70,
+      "code": "RAJP",
+      "name": "Rajapur Road",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 267.6,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 71,
+      "code": "KRPN",
+      "name": "Kharepatan Road",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 276.1,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 72,
+      "code": "VBW",
+      "name": "Vaibhavwadi Road",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 284.2,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 73,
+      "code": "ACRN",
+      "name": "Achirne",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 293.1,
+      "seenOnCachedTrains": 9,
+      "confidence": "verified"
+    },
+    {
+      "seq": 74,
+      "code": "NAN",
+      "name": "Nandgaon Road",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 299.9,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 75,
+      "code": "KKW",
+      "name": "Kankavli",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 315.4,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 76,
+      "code": "SNDD",
+      "name": "Sindhudurg",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 333.0,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 77,
+      "code": "KUDL",
+      "name": "Kudal",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 343.6,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 78,
+      "code": "ZARP",
+      "name": "Zarap",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 353.9,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 79,
+      "code": "SWV",
+      "name": "Sawantwadi Road",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 364.5,
+      "seenOnCachedTrains": 11,
+      "confidence": "verified"
+    },
+    {
+      "seq": 80,
+      "code": "MADR",
+      "name": "Madure",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 372.2,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 81,
+      "code": "PERN",
+      "name": "Pernem",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 383.0,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 82,
+      "code": "THVM",
+      "name": "Thivim",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 394.0,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 83,
+      "code": "KRMI",
+      "name": "Karmali",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 411.4,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 84,
+      "code": "VEN",
+      "name": "Verna",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 427.5,
+      "seenOnCachedTrains": 10,
+      "confidence": "verified"
+    },
+    {
+      "seq": 85,
+      "code": "MJO",
+      "name": "Majorda Jn",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 432.5,
+      "seenOnCachedTrains": 12,
+      "confidence": "verified"
+    },
+    {
+      "seq": 86,
+      "code": "SRVX",
+      "name": "Suravali (H)",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 435.6,
+      "seenOnCachedTrains": 12,
+      "confidence": "verified"
+    },
+    {
+      "seq": 87,
+      "code": "MAO",
+      "name": "Madgaon Jn",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 440.1,
+      "seenOnCachedTrains": 12,
+      "confidence": "verified"
+    },
+    {
+      "seq": 88,
+      "code": "BLLI",
+      "name": "Balli",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 456.5,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 89,
+      "code": "CNO",
+      "name": "Canacona",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 473.1,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 90,
+      "code": "LOL",
+      "name": "Loliem",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 483.0,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 91,
+      "code": "AT",
+      "name": "Asnoti",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 492.5,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 92,
+      "code": "KAWR",
+      "name": "Karwar",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 500.3,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 93,
+      "code": "HAA",
+      "name": "Harwada",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 514.0,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 94,
+      "code": "ANKL",
+      "name": "Ankola",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 529.1,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 95,
+      "code": "GOK",
+      "name": "Gokarna Road",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 536.4,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 96,
+      "code": "MRJN",
+      "name": "Mirjan",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": null,
+      "seenOnCachedTrains": 1,
+      "confidence": "single-source"
+    },
+    {
+      "seq": 97,
+      "code": "KT",
+      "name": "Kumta",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 555.5,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 98,
+      "code": "HNA",
+      "name": "Honnavar",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 569.1,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 99,
+      "code": "MANK",
+      "name": "Manki",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 587.2,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 100,
+      "code": "MRDW",
+      "name": "Murdeshwar",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 595.6,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 101,
+      "code": "CTTP",
+      "name": "Chitrapur (H)",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 603.9,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 102,
+      "code": "BTJL",
+      "name": "Bhatkal",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 610.3,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 103,
+      "code": "SHMI",
+      "name": "Shiroor",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 618.0,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 104,
+      "code": "BYNR",
+      "name": "Mookambika Road Byndoor (H)",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 625.7,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 105,
+      "code": "BIJR",
+      "name": "Bijoor",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 632.1,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 106,
+      "code": "SEN",
+      "name": "Senapura",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 644.8,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 107,
+      "code": "KUDA",
+      "name": "Kundapura",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 659.1,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 108,
+      "code": "BKJ",
+      "name": "Barkur",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 674.8,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 109,
+      "code": "UD",
+      "name": "Udupi",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 690.9,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 110,
+      "code": "INJ",
+      "name": "Innanje",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 700.5,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 111,
+      "code": "PDD",
+      "name": "Padubidri",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 707.3,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 112,
+      "code": "NAND",
+      "name": "Nandikoor",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": null,
+      "seenOnCachedTrains": 1,
+      "confidence": "single-source"
+    },
+    {
+      "seq": 113,
+      "code": "MULK",
+      "name": "Mulki",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 723.8,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 114,
+      "code": "SL",
+      "name": "Surathkal",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 732.5,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    },
+    {
+      "seq": 115,
+      "code": "TOK",
+      "name": "Thokur",
+      "section": "konkan-railway-single-line",
+      "kmFromRoha": 737.1,
+      "seenOnCachedTrains": 5,
+      "confidence": "verified"
+    }
+  ]
+}
