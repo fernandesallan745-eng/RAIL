@@ -47,7 +47,7 @@ function normaliseApiBase(value) {
 }
 
 function getApiBase() {
-  return isNativeApp() ? localStorage.getItem(NATIVE_API_STORAGE_KEY) || '' : '';
+  return localStorage.getItem(NATIVE_API_STORAGE_KEY) || '';
 }
 
 function apiUrl(path) {
@@ -169,7 +169,7 @@ function showServerSetup(message = '') {
   const panel = document.getElementById('serverSetup');
   const error = document.getElementById('serverSetupError');
   const address = document.getElementById('serverAddress');
-  if (!panel || !isNativeApp()) return;
+  if (!panel) return;
   panel.hidden = false;
   address.value = getApiBase();
   error.textContent = message;
@@ -183,12 +183,12 @@ function hideServerSetup() {
 }
 
 function setupNativeServerConnection() {
-  if (!isNativeApp()) return;
-
   const settingsButton = document.getElementById('serverSettingsBtn');
   const form = document.getElementById('serverSetupForm');
-  settingsButton.hidden = false;
-  settingsButton.addEventListener('click', () => showServerSetup());
+  if (settingsButton) {
+    settingsButton.hidden = false;
+    settingsButton.addEventListener('click', () => showServerSetup());
+  }
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
