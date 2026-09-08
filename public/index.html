@@ -16,11 +16,11 @@
   <!-- Leaflet CSS — local vendored copy first, CDN as fallback.
        Both are listed; the vendored file wins when present and the CDN link is
        harmless duplication when it isn't. See README "Offline map pack". -->
-  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css"/>
+  <link rel="stylesheet" href="./vendor/leaflet/leaflet.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
   <!-- App Stylesheet -->
-  <link rel="stylesheet" href="/app.css">
+  <link rel="stylesheet" href="./app.css">
 </head>
 <body>
 
@@ -262,7 +262,7 @@
        Leaflet loads from the local vendored copy when present, else from the CDN.
        offline-tiles.js and app.js both need `L` to already exist, so they are
        chained after it rather than declared as plain <script> tags. -->
-  <script src="/vendor/leaflet/leaflet.js"></script>
+  <script src="./vendor/leaflet/leaflet.js"></script>
   <script>
     (function () {
       // async = false keeps injected scripts executing in insertion order.
