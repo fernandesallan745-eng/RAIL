@@ -14,30 +14,52 @@ const __dirname = path.dirname(__filename);
 const apiKeys = [];
 try {
   const envPath = path.join(__dirname, '../../.env');
-  const envContent = fs.readFileSync(envPath, 'utf-8');
-  const lines = envContent.split('\n');
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
-      const idx = trimmed.indexOf('=');
-      const key = trimmed.slice(0, idx).trim();
-      const val = trimmed.slice(idx + 1).trim();
-      if (key === 'RAILRADAR_API_KEY' && val) {
-        // Strip quotes if present
-        const cleanVal = val.replace(/^["']|["']$/g, '').trim();
-        if (cleanVal && !apiKeys.includes(cleanVal)) {
-          apiKeys.push(cleanVal);
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf-8');
+    const lines = envContent.split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+        const idx = trimmed.indexOf('=');
+        const key = trimmed.slice(0, idx).trim();
+        const val = trimmed.slice(idx + 1).trim();
+        if ((key === 'RAILRADAR_API_KEY' || key.startsWith('RAILRADAR_API_KEY_') || key === 'RAILRADAR_API_KEYS') && val) {
+          // Strip quotes if present and split by comma if multiple
+          const cleanVal = val.replace(/^["']|["']$/g, '').trim();
+          const splitKeys = cleanVal.split(/[,\s\n]+/).map(k => k.trim()).filter(Boolean);
+          for (const k of splitKeys) {
+            if (k && !apiKeys.includes(k)) {
+              apiKeys.push(k);
+            }
+          }
         }
       }
     }
   }
 } catch (e) {
-  // fallback to standard single key
+  // fallback to environment variables
 }
 
-// Ensure we have at least standard dotenv parsed key if manual parsing failed
-if (apiKeys.length === 0 && process.env.RAILRADAR_API_KEY) {
-  apiKeys.push(process.env.RAILRADAR_API_KEY.trim());
+// Support cloud environment variables (e.g. Render, Railway, Docker)
+const envKeySources = [
+  process.env.RAILRADAR_API_KEYS,
+  process.env.RAILRADAR_API_KEY,
+  process.env.RAILRADAR_API_KEY_1,
+  process.env.RAILRADAR_API_KEY_2,
+  process.env.RAILRADAR_API_KEY_3,
+  process.env.RAILRADAR_API_KEY_4,
+  process.env.RAILRADAR_API_KEY_5,
+];
+
+for (const src of envKeySources) {
+  if (src && typeof src === 'string') {
+    const splitKeys = src.split(/[,\s\n]+/).map(k => k.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+    for (const k of splitKeys) {
+      if (k && !apiKeys.includes(k)) {
+        apiKeys.push(k);
+      }
+    }
+  }
 }
 
 // Every knob below is an integer read from .env, and a typo'd value must not silently become
