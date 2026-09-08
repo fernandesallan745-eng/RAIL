@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: gati-backend
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RAILRADAR_API_KEY
+        sync: false
+      - key: RAILRADAR_BASE_URL
+        value: https://api.railradar.in/v1
+      - key: CACHE_TTL_LIVE
+        value: 0
+      - key: CACHE_TTL_STATIC
+        value: 86400
+      - key: FLEET_MAX_TRAINS
+        value: 1
+      - key: RAILRADAR_CONCURRENCY
+        value: 1
+      - key: RAILRADAR_PER_MINUTE
+        value: 9
+      - key: RAILRADAR_MIN_SPACING_MS
+        value: 1500
+      - key: RAILRADAR_QUOTA_GUARD
+        value: "true"
