@@ -57,6 +57,7 @@ import os, sys, json, glob, argparse
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, ".cache")
 CORRIDOR = os.path.join(CACHE, "corridor")
+FULL_DATASET_PATH = os.path.join(CACHE, "konkan_full_corridor_trains.json")
 
 # --- Modelling constants (assumptions — all surfaced in the payload) ---------
 
@@ -123,22 +124,134 @@ def normalise_type(raw):
 
 # --- Loading -----------------------------------------------------------------
 
+# Full dataset (206 conflict-relevant trains) — loaded once and cached here.
+_full_dataset_cache = None
+
+
+def _load_full_dataset():
+    """Load konkan_full_corridor_trains.json once; return dict keyed by train_number."""
+    global _full_dataset_cache
+    if _full_dataset_cache is not None:
+        return _full_dataset_cache
+    if not os.path.exists(FULL_DATASET_PATH):
+        _full_dataset_cache = {}
+        return _full_dataset_cache
+    with open(FULL_DATASET_PATH) as f:
+        raw = json.load(f)
+    _full_dataset_cache = {
+        str(r["train_number"]): r
+        for r in raw.get("trains", [])
+        if r.get("conflict_relevant")
+    }
+    return _full_dataset_cache
+
+
+def _hhmm_to_min(hhmm, day=1):
+    """'HH:MM' + 1-based journey day -> day-normalised integer minutes."""
+    if not hhmm:
+        return None
+    try:
+        h, m = map(int, str(hhmm).strip().split(":"))
+        return (int(day) - 1) * 1440 + h * 60 + m
+    except (ValueError, AttributeError):
+        return None
+
+
+def adapt_full_dataset_train(record):
+    """Convert a konkan_full_corridor_trains record to the format conflict.py expects.
+
+    The two formats differ in three ways:
+    - km axis: new format has `trainKm` inside `scheduled`; model wants top-level `km`
+    - times: new format has 'HH:MM' strings + arrDay/depDay integers; model wants
+      day-normalised integer minutes as `arrMin`/`depMin`
+    - lat/lng: not present in the new format; meet coords degrade to 'unavailable'
+      (that path is already handled at conflict.py:363-364)
+
+    Only corridor_stations (halt stations) are available — non-halt pass-through
+    stations are absent.  That is fine: the conflict walk only needs enough shared
+    stations to bracket a sign flip, and every halt on the single-line section is
+    included.
+    """
+    stations = []
+    for s in record.get("corridor_stations", []):
+        sched = s.get("scheduled") or {}
+        arr_day = sched.get("arrDay", sched.get("day", 1))
+        dep_day = sched.get("depDay", sched.get("day", 1))
+        arr_min = _hhmm_to_min(sched.get("arr"), arr_day)
+        dep_min = _hhmm_to_min(sched.get("dep"), dep_day)
+        if arr_min is None and dep_min is None:
+            continue                                 # no usable time — skip
+        km_val = sched.get("trainKm")
+        if km_val is None:
+            continue                                 # no km — can't place on axis
+        stations.append({
+            "code":    s["code"],
+            "name":    s.get("name", ""),
+            "km":      float(km_val),
+            "arrMin":  arr_min,
+            "depMin":  dep_min,
+            "isHalt":  sched.get("stopType", "halt") != "pass",
+            # lat/lng absent — meet coords will report 'unavailable' for these trains
+        })
+
+    # Prefer the train payload type for precedence (resolves 12051/12052 rank change).
+    train_type = record.get("category_train_payload") or record.get("category")
+
+    return {
+        "number":      record["train_number"],
+        "name":        record.get("train_name"),
+        "type":        train_type,
+        "category":    record.get("category_station_board"),
+        "run_days":    record.get("run_days"),
+        "source":      record.get("origin"),
+        "destination": record.get("destination"),
+        "stations":    stations,
+        "_source":     "full-dataset",              # audit trail
+    }
+
+
 def load_corridor_train(number):
+    """Load one train's schedule in the format the conflict model expects.
+
+    Preference order:
+    1. `.cache/corridor/{number}.json` — built by build_corridor.py from a live
+       fallback.  Richer: includes non-halt pass-through stations and lat/lng.
+    2. `konkan_full_corridor_trains.json` — the complete 206-train roster built
+       by fetch_konkan_corridor + build_konkan_dataset.  Halt stations only, no
+       lat/lng, but covers 189 trains the corridor cache does not have.
+    """
     path = os.path.join(CORRIDOR, f"{number}.json")
-    if not os.path.exists(path):
-        raise FileNotFoundError(
-            f"Missing corridor cache: {path}\n"
-            f"Run: python3 scripts/build_corridor.py"
-        )
-    with open(path) as f:
-        return json.load(f)
+    if os.path.exists(path):
+        with open(path) as f:
+            return json.load(f)
+
+    full = _load_full_dataset()
+    record = full.get(str(number))
+    if record is not None:
+        return adapt_full_dataset_train(record)
+
+    raise FileNotFoundError(
+        f"Train {number} not found in corridor cache ({CORRIDOR}) "
+        f"or full dataset ({FULL_DATASET_PATH}).\n"
+        f"Run: python3 scripts/build_corridor.py  (for the 17 live-tracked trains)\n"
+        f"Run: python3 scripts/build_konkan_dataset.py  (for the full 206-train roster)"
+    )
 
 
 def list_corridor_trains():
-    return sorted(
+    """All train numbers available to the conflict model.
+
+    Returns numbers from both sources, deduplicated, with the corridor cache
+    (richer format) preferred for any train in both.  fleet_fallback is excluded
+    by the glob pattern (it is not named like a train number).
+    """
+    from_corridor = {
         os.path.basename(p)[:-5]
         for p in glob.glob(os.path.join(CORRIDOR, "*.json"))
-    )
+        if os.path.basename(p) != "fleet_fallback.json"
+    }
+    from_full = set(_load_full_dataset().keys())
+    return sorted(from_corridor | from_full)
 
 
 def station_time(s):

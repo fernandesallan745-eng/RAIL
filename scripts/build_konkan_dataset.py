@@ -456,6 +456,21 @@ def main():
         print(f"    3. the station board returned a shape coerce_trains() missed — "
               f"grep the raw file for the number")
 
+    if divergences:
+        rel_divs = [d for d in divergences if d["conflictRelevant"]]
+        print(f"\nTYPE DIVERGENCES ({len(divergences)} total, {len(rel_divs)} conflict-relevant) — "
+              f"station board and train payload disagree on rank:")
+        print(f"  {'number':<8}{'board type':<22}{'board rank':>10}  "
+              f"{'payload type':<22}{'payload rank':>12}  {'conflict?'}")
+        for d in sorted(divergences, key=lambda x: (not x["conflictRelevant"], x["train_number"])):
+            cr = "YES" if d["conflictRelevant"] else "no"
+            print(f"  {d['train_number']:<8}{d['stationBoardType']:<22}"
+                  f"{d['stationBoardRank']:>10}  "
+                  f"{d['trainPayloadType']:<22}{d['trainPayloadRank']:>12}  {cr}")
+        print(f"  Train payload wins for precedence (see load_train_payload_types docstring).")
+    else:
+        print(f"\nTYPE DIVERGENCES: none — station boards and train payloads agree on all ranks.")
+
     if args.dry_run:
         print(f"\n--dry-run: nothing written.")
         return 0
@@ -517,6 +532,7 @@ def main():
             "notLive": ("Positions and delays are NOT here. This is the static corridor "
                         "roster; only our own train's delay is ever live (VERIFIED #15)."),
             "sanityChecks": sanity,
+            "typeDivergences": divergences,
         },
         "trains": sorted(trains.values(), key=lambda r: r["train_number"]),
     }
