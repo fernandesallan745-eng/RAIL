@@ -658,7 +658,7 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             "scheduled_duration_min": sched_duration,
             "gap_vs_schedule_min": round(total_eta - sched_duration, 1) if sched_duration else None,
         },
-        "sharpest_curve": sharpest,
+        "sharpest_curve": (None if math.isinf(sharpest["radius_m"]) else sharpest),
         "curvature_layer_contribution_min": round(
             sum(x["vertex_curve_penalty_min"] for x in segments
                 if x["vertex_curve_penalty_min"] is not None), 5) if has_geometry else None,

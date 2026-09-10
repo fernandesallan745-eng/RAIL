@@ -308,8 +308,11 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
                                 conflicts=True, conflict_delay_min=0.0)
     t = res["totals"]
 
-    # 'vertex' mode swaps the physics layer for per-vertex integration
-    if mode == "vertex":
+    # 'vertex' mode swaps the physics layer for per-vertex integration.
+    # When geometry is unavailable, vertex_curve_running_min is None for every
+    # segment — fall through to the block-mode path, which uses running_min.
+    has_geometry = res.get("curvature_available", False)
+    if mode == "vertex" and has_geometry:
         vrun = sum(s["vertex_curve_running_min"] for s in res["segments"])
         for s in res["segments"]:
             s["running_min_applied"] = s["vertex_curve_running_min"]

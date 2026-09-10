@@ -1,7 +1,11 @@
 import { spawn } from 'node:child_process';
 
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 const watch = process.argv.includes('--watch');
-const python = process.env.PYTHON || 'python3';
+const venvPython = resolve(process.cwd(), '.venv/bin/python3');
+const python = process.env.PYTHON || (existsSync(venvPython) ? venvPython : 'python3');
 const nodeArgs = watch ? ['--watch', 'src/server.js'] : ['src/server.js'];
 const children = [
   spawn(python, ['run_server.py'], { cwd: process.cwd(), stdio: 'inherit' }),

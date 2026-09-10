@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "gati-api",
-      "runtimeExecutable": "python3",
+      "runtimeExecutable": ".venv/bin/python3",
       "runtimeArgs": ["run_server.py", "8000"],
       "port": 8000,
       "autoPort": true

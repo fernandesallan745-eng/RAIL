@@ -1191,63 +1191,6 @@ function renderTrainDrawer(liveData, coachesData) {
   // 🔀 Crossing / overtake loop-hold prediction
   renderConflictPanel(liveData);
 
-  // 🧠 Curvature & Delay-Aware ETA Engine Panel UI Integration
-  const etaPanel = document.getElementById('curvatureEtaPanel');
-  const cEta = liveData.curvatureEta;
-
-  if (cEta) {
-    etaPanel.style.display = 'block';
-
-    const segments = cEta.segments || [];
-    // Compute summary metrics from segment details
-    const activeSegIndex = Math.min(
-      currentLoc.sequence ? currentLoc.sequence - 1 : 0,
-      segments.length - 1
-    );
-    const activeSeg = segments[activeSegIndex] || {};
-
-    const sharpestR = cEta.sharpest_radius_m || activeSeg.min_radius_m || 'N/A';
-    const curveSpd = cEta.sharpest_capped_speed_kmh || activeSeg.curve_capped_speed_kmh || '80';
-    document.getElementById('etaSharpestCurve').innerText = sharpestR !== 'N/A' 
-      ? `R=${sharpestR}m (${curveSpd} km/h)` 
-      : 'No curve cap';
-
-    const weatherVal = cEta.weather || 'clear';
-    const weatherCapVal = activeSeg.weather_capped_speed_kmh || '80';
-    document.getElementById('etaWeatherCap').innerText = `${weatherVal.toUpperCase()} (${weatherCapVal} km/h)`;
-
-    const totalSlack = segments.reduce((sum, s) => sum + (s.schedule_slack_min || 0), 0);
-    document.getElementById('etaScheduleSlack').innerText = `${totalSlack.toFixed(1)} min`;
-
-    const totalHistDelay = segments.reduce((sum, s) => sum + (s.hist_delay_min || 0), 0);
-    document.getElementById('etaHistDelay').innerText = `+${totalHistDelay.toFixed(1)} min`;
-
-    const totalPred = cEta.total_predicted_min || segments.reduce((sum, s) => sum + (s.segment_eta_min || 0), 0);
-    const totalSched = cEta.actual_scheduled_min || 635;
-    document.getElementById('etaEnginePrediction').innerText = `${totalPred.toFixed(1)} min (vs ${totalSched} min Sched)`;
-  } else {
-    etaPanel.style.display = 'none';
-  }
-
-  // Explain an absent ETA panel rather than just hiding it. The two reasons need
-  // different wording: "this train is not in the model cache" is a data-coverage
-  // gap with the model running fine, and saying "offline" there would be false.
-  const etaGap = document.getElementById('curvatureEtaUnavailable');
-  const etaGapText = document.getElementById('curvatureEtaUnavailableText');
-  const gap = liveData.curvatureEtaUnavailable;
-  if (!cEta && gap && etaGap && etaGapText) {
-    etaGap.style.display = 'block';
-    etaGapText.innerHTML = gap.modelReachable
-      ? `No cached run for <strong>#${gap.train}</strong>, so the curvature, dwell and ` +
-        `historical-delay layers cannot be computed for it. The model is running and ` +
-        `serves other trains — this is a data-coverage gap, not an outage. ` +
-        `Live position and tunnel tracking above are unaffected.`
-      : `The ETA model is not reachable, so the curvature, dwell and historical-delay ` +
-        `layers are unavailable. Live position and tunnel tracking above are unaffected.`;
-  } else if (etaGap) {
-    etaGap.style.display = 'none';
-  }
-
   // Current Position
   const posText = currentLoc.stationName
     ? `${currentLoc.status === 'departed' ? 'Departed from' : 'Approaching'} ${currentLoc.stationName}`
@@ -1404,8 +1347,6 @@ function openDrawerLoading(num) {
   document.getElementById('drawerDrBadge').style.display = 'none';
   document.getElementById('tunnelPanel').style.display = 'none';
   document.getElementById('deadReckoningPanel').style.display = 'none';
-  document.getElementById('curvatureEtaPanel').style.display = 'none';
-  document.getElementById('curvatureEtaUnavailable').style.display = 'none';
   document.getElementById('conflictPanel').style.display = 'none';
   document.getElementById('conflictUnavailable').style.display = 'none';
   

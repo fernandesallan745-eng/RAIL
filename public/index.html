@@ -159,44 +159,6 @@
             Confidence: <span id="drConfidence" style="color: #fbbf24; font-weight: 600;">-</span>
           </div>
 
-          <!-- Provenance. Geometry is now real (OSM), speed still is not live —
-               the wording must keep those two apart. Do not shorten to
-               "prototype data": that hides which half is sourced. -->
-          <div id="tunnelPanelCaveat" style="font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; font-style: italic; line-height: 1.35;">
-            Tunnel geometry: OpenStreetMap way data, chord lengths within 1.1% of
-            published KRCL figures — not official alignment data. Time-to-exit uses
-            the <strong>schedule-derived</strong> block speed; this source carries no
-            live speed.
-          </div>
-        </div>
-
-        <!-- Curvature & Delay-Aware ETA Engine Insights -->
-        <div id="curvatureEtaPanel" class="eta-insights-panel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2);">
-          <div style="font-weight: 700; color: #60a5fa; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;">
-            🧠 Dynamic Curvature & Delay ETA Engine
-          </div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-            <div>RDSO Curve Capped Speed: <br/><strong id="etaSharpestCurve" style="color: #fff;">-</strong></div>
-            <div>Weather Cap (Clear): <br/><strong id="etaWeatherCap" style="color: #fff;">-</strong></div>
-            <div>Timetable Slack: <br/><strong id="etaScheduleSlack" style="color: #fff;">-</strong></div>
-            <div>Mean Historical Delay: <br/><strong id="etaHistDelay" style="color: #fbbf24;">-</strong></div>
-          </div>
-          <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 0.75rem; color: #fff; font-weight: 600; display: flex; justify-content: space-between;">
-            <span>Engine Prediction:</span>
-            <span id="etaEnginePrediction" style="color: #34d399;">-</span>
-          </div>
-        </div>
-
-        <!-- Shown instead of the panel above when the ETA model has no cache for
-             this train. Distinct from the model being down: a hidden panel with no
-             explanation reads as a broken UI, and "offline" would be a false claim
-             when the model is up and serving other trains. -->
-        <div id="curvatureEtaUnavailable" class="eta-insights-panel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2);">
-          <div style="font-weight: 700; color: #94a3b8; font-size: 0.8rem;">
-            🧠 Curvature &amp; Delay ETA Engine
-          </div>
-          <div id="curvatureEtaUnavailableText" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
-          </div>
         </div>
 
         <!-- Crossing / overtake conflict prediction on single line (USP #3) -->
