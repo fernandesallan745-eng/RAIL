@@ -1,0 +1,2938 @@
+{
+ "number": "22308",
+ "name": "Bikaner - Howrah SF Express",
+ "type": "SUPERFAST",
+ "category": "Express",
+ "avgSpeed": 61.9,
+ "source": {
+  "code": "BKN",
+  "name": "Bikaner Jn.",
+  "lat": 28.0152443,
+  "lng": 73.3156415
+ },
+ "destination": {
+  "code": "HWH",
+  "name": "Howrah",
+  "lat": 22.5828709,
+  "lng": 88.3428112
+ },
+ "stations": [
+  {
+   "code": "BKN",
+   "name": "Bikaner Jn.",
+   "km": 0.0,
+   "arrMin": null,
+   "depMin": 1350,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "UMS",
+   "name": "Udramsar",
+   "km": 11.4,
+   "arrMin": 1359,
+   "depMin": 1359,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PAE",
+   "name": "Palana",
+   "km": 22.2,
+   "arrMin": 1368,
+   "depMin": 1368,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DSO",
+   "name": "Deshnoke",
+   "km": 32.2,
+   "arrMin": 1376,
+   "depMin": 1378,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SPO",
+   "name": "Surpura",
+   "km": 47.0,
+   "arrMin": 1388,
+   "depMin": 1388,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NOK",
+   "name": "Nokha",
+   "km": 64.4,
+   "arrMin": 1400,
+   "depMin": 1402,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CLO",
+   "name": "Chilo",
+   "km": 78.0,
+   "arrMin": 1410,
+   "depMin": 1410,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SBLJ",
+   "name": "Shri Balaji",
+   "km": 81.5,
+   "arrMin": 1412,
+   "depMin": 1412,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ALAI",
+   "name": "Alai",
+   "km": 93.1,
+   "arrMin": 1419,
+   "depMin": 1419,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BWS",
+   "name": "Badwasi",
+   "km": 101.3,
+   "arrMin": 1423,
+   "depMin": 1423,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NGO",
+   "name": "Nagaur",
+   "km": 115.9,
+   "arrMin": 1432,
+   "depMin": 1437,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MDW",
+   "name": "Marwar Mundwa",
+   "km": 133.7,
+   "arrMin": 1456,
+   "depMin": 1456,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KJW",
+   "name": "Khajwana",
+   "km": 149.9,
+   "arrMin": 1474,
+   "depMin": 1474,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DSL",
+   "name": "Deswal HALT",
+   "km": 159.2,
+   "arrMin": 1484,
+   "depMin": 1484,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MCPE",
+   "name": "Marwar Chhapari",
+   "km": 166.5,
+   "arrMin": 1492,
+   "depMin": 1492,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MTDB",
+   "name": "Merta Road Bypass",
+   "km": 171.9,
+   "arrMin": 1498,
+   "depMin": 1503,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KQW",
+   "name": "Kheduli",
+   "km": 181.6,
+   "arrMin": 1510,
+   "depMin": 1510,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "REN",
+   "name": "Ren",
+   "km": 188.7,
+   "arrMin": 1516,
+   "depMin": 1516,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JAC",
+   "name": "Jalsu",
+   "km": 202.5,
+   "arrMin": 1526,
+   "depMin": 1526,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JACN",
+   "name": "Jalsu Nanak HALT",
+   "km": 208.1,
+   "arrMin": 1530,
+   "depMin": 1530,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DNA",
+   "name": "Degana Jn.",
+   "km": 215.5,
+   "arrMin": 1536,
+   "depMin": 1539,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GCH",
+   "name": "Gachhipura",
+   "km": 230.5,
+   "arrMin": 1550,
+   "depMin": 1550,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BSRL",
+   "name": "Besroli",
+   "km": 241.9,
+   "arrMin": 1558,
+   "depMin": 1558,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BOW",
+   "name": "Borawar",
+   "km": 253.5,
+   "arrMin": 1566,
+   "depMin": 1566,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MKN",
+   "name": "Makrana Jn.",
+   "km": 259.2,
+   "arrMin": 1570,
+   "depMin": 1573,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KMNC",
+   "name": "Kuchaman City",
+   "km": 273.1,
+   "arrMin": 1586,
+   "depMin": 1588,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "THMR",
+   "name": "Thathana Mithri HALT",
+   "km": 277.9,
+   "arrMin": 1592,
+   "depMin": 1592,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NYK",
+   "name": "Naya Kharadia",
+   "km": 282.3,
+   "arrMin": 1596,
+   "depMin": 1596,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NAC",
+   "name": "Nawa City",
+   "km": 288.8,
+   "arrMin": 1602,
+   "depMin": 1604,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GVMR",
+   "name": "Govindi Marwar",
+   "km": 298.0,
+   "arrMin": 1615,
+   "depMin": 1615,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GA",
+   "name": "Gudha",
+   "km": 308.7,
+   "arrMin": 1628,
+   "depMin": 1628,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SBR",
+   "name": "Sambhar Lake",
+   "km": 316.5,
+   "arrMin": 1637,
+   "depMin": 1637,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "FL",
+   "name": "Phulera Jn.",
+   "km": 324.0,
+   "arrMin": 1646,
+   "depMin": 1646,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HDA",
+   "name": "Hirnoda",
+   "km": 332.3,
+   "arrMin": 1655,
+   "depMin": 1655,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DHND",
+   "name": "Dhinda",
+   "km": 336.5,
+   "arrMin": 1660,
+   "depMin": 1660,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JOB",
+   "name": "AsaLpur Jobner",
+   "km": 342.0,
+   "arrMin": 1667,
+   "depMin": 1667,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BOBS",
+   "name": "Bobas",
+   "km": 349.4,
+   "arrMin": 1676,
+   "depMin": 1676,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SHNX",
+   "name": "Sheosinghpura",
+   "km": 356.3,
+   "arrMin": 1684,
+   "depMin": 1684,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DNK",
+   "name": "Dhanakya",
+   "km": 360.1,
+   "arrMin": 1688,
+   "depMin": 1688,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BDYK",
+   "name": "Bindayaka",
+   "km": 364.7,
+   "arrMin": 1694,
+   "depMin": 1694,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KKU",
+   "name": "Kanakpura",
+   "km": 369.9,
+   "arrMin": 1700,
+   "depMin": 1700,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JP",
+   "name": "Jaipur Jn.",
+   "km": 378.5,
+   "arrMin": 1710,
+   "depMin": 1720,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GADJ",
+   "name": "Gandhinagar Jaipur",
+   "km": 384.1,
+   "arrMin": 1725,
+   "depMin": 1725,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GTJT",
+   "name": "Getor Jagatpura",
+   "km": 389.4,
+   "arrMin": 1731,
+   "depMin": 1731,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KWP",
+   "name": "Khatipura",
+   "km": 395.4,
+   "arrMin": 1736,
+   "depMin": 1736,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KUT",
+   "name": "Kanauta",
+   "km": 401.9,
+   "arrMin": 1743,
+   "depMin": 1743,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BAI",
+   "name": "Bassi",
+   "km": 411.1,
+   "arrMin": 1752,
+   "depMin": 1752,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JHIR",
+   "name": "Jhir",
+   "km": 418.0,
+   "arrMin": 1759,
+   "depMin": 1759,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BSKO",
+   "name": "Banskho",
+   "km": 423.2,
+   "arrMin": 1764,
+   "depMin": 1764,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JW",
+   "name": "Jatwara",
+   "km": 428.3,
+   "arrMin": 1769,
+   "depMin": 1769,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DO",
+   "name": "Dausa junction",
+   "km": 440.0,
+   "arrMin": 1780,
+   "depMin": 1780,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BAK",
+   "name": "Bhan Kari",
+   "km": 450.7,
+   "arrMin": 1790,
+   "depMin": 1790,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KVGM",
+   "name": "Kolvagram",
+   "km": 457.4,
+   "arrMin": 1797,
+   "depMin": 1797,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ARNA",
+   "name": "Arniya",
+   "km": 462.7,
+   "arrMin": 1802,
+   "depMin": 1802,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BKI",
+   "name": "Bandikui Jn.",
+   "km": 468.7,
+   "arrMin": 1808,
+   "depMin": 1810,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SHGN",
+   "name": "Shri Ghasi Nagar",
+   "km": 478.8,
+   "arrMin": 1818,
+   "depMin": 1818,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BW",
+   "name": "Biwai",
+   "km": 484.0,
+   "arrMin": 1822,
+   "depMin": 1822,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BJRA",
+   "name": "Bhajera",
+   "km": 488.3,
+   "arrMin": 1825,
+   "depMin": 1825,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KPO",
+   "name": "Karanpura",
+   "km": 492.3,
+   "arrMin": 1828,
+   "depMin": 1828,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BUDA",
+   "name": "Bhuda",
+   "km": 495.9,
+   "arrMin": 1831,
+   "depMin": 1831,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MURD",
+   "name": "Mandawar Mahwa Road",
+   "km": 500.7,
+   "arrMin": 1835,
+   "depMin": 1835,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GOS",
+   "name": "Ghosrana",
+   "km": 507.9,
+   "arrMin": 1840,
+   "depMin": 1840,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DTF",
+   "name": "Dantia",
+   "km": 512.5,
+   "arrMin": 1844,
+   "depMin": 1844,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KL",
+   "name": "Kherli",
+   "km": 520.2,
+   "arrMin": 1850,
+   "depMin": 1850,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TBL",
+   "name": "Tarchhera Baraoliran",
+   "km": 528.9,
+   "arrMin": 1857,
+   "depMin": 1857,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NBI",
+   "name": "Nadbai",
+   "km": 537.0,
+   "arrMin": 1863,
+   "depMin": 1863,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PPEA",
+   "name": "Paparera",
+   "km": 546.7,
+   "arrMin": 1870,
+   "depMin": 1870,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HK",
+   "name": "Helak",
+   "km": 553.8,
+   "arrMin": 1876,
+   "depMin": 1876,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BTE",
+   "name": "BHARATPUR",
+   "km": 565.5,
+   "arrMin": 1885,
+   "depMin": 1890,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NHB",
+   "name": "Nohbachhamadi",
+   "km": 572.3,
+   "arrMin": 1895,
+   "depMin": 1895,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "IK",
+   "name": "Ikran",
+   "km": 577.7,
+   "arrMin": 1899,
+   "depMin": 1899,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CIK",
+   "name": "Chikasana",
+   "km": 583.2,
+   "arrMin": 1903,
+   "depMin": 1903,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AH",
+   "name": "Achhnera Jn.",
+   "km": 592.9,
+   "arrMin": 1910,
+   "depMin": 1912,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RAI",
+   "name": "Raibha",
+   "km": 599.1,
+   "arrMin": 1921,
+   "depMin": 1921,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BCP",
+   "name": "Bichpuri",
+   "km": 608.4,
+   "arrMin": 1933,
+   "depMin": 1933,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "IDH",
+   "name": "Idgah Junction",
+   "km": 616.9,
+   "arrMin": 1945,
+   "depMin": 1955,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AF",
+   "name": "AGRA FORT",
+   "km": 619.1,
+   "arrMin": 1962,
+   "depMin": 1962,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JAB",
+   "name": "YAMUNA BRIDGE",
+   "km": 621.4,
+   "arrMin": 1969,
+   "depMin": 1969,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CHLR",
+   "name": "Chhalesar",
+   "km": 627.0,
+   "arrMin": 1985,
+   "depMin": 1985,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KBP",
+   "name": "Kuberpur",
+   "km": 631.2,
+   "arrMin": 1998,
+   "depMin": 1998,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ETUE",
+   "name": "Etmadpur",
+   "km": 638.0,
+   "arrMin": 2019,
+   "depMin": 2019,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TDL",
+   "name": "Tundla Jn.",
+   "km": 641.8,
+   "arrMin": 2030,
+   "depMin": 2035,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HNG",
+   "name": "Hirangaon",
+   "km": 650.6,
+   "arrMin": 2041,
+   "depMin": 2041,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "FZD",
+   "name": "Firozabad",
+   "km": 658.3,
+   "arrMin": 2046,
+   "depMin": 2046,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MNR",
+   "name": "Makkhanpur",
+   "km": 668.6,
+   "arrMin": 2053,
+   "depMin": 2053,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SKB",
+   "name": "Shikohabad Jn.",
+   "km": 678.3,
+   "arrMin": 2059,
+   "depMin": 2059,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KAA",
+   "name": "Kaurara",
+   "km": 689.2,
+   "arrMin": 2066,
+   "depMin": 2066,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BDN",
+   "name": "Bhadan",
+   "km": 698.3,
+   "arrMin": 2072,
+   "depMin": 2072,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BBL",
+   "name": "Balrai",
+   "km": 709.0,
+   "arrMin": 2079,
+   "depMin": 2079,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JGR",
+   "name": "Jaswantnagar",
+   "km": 717.8,
+   "arrMin": 2085,
+   "depMin": 2085,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SB",
+   "name": "Sarai Bhopat",
+   "km": 725.4,
+   "arrMin": 2090,
+   "depMin": 2090,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ETW",
+   "name": "Etawah",
+   "km": 733.6,
+   "arrMin": 2095,
+   "depMin": 2097,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "EKL",
+   "name": "Ekdil",
+   "km": 743.7,
+   "arrMin": 2106,
+   "depMin": 2106,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BNT",
+   "name": "Bharthana",
+   "km": 753.6,
+   "arrMin": 2115,
+   "depMin": 2115,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SHW",
+   "name": "Samhon",
+   "km": 764.0,
+   "arrMin": 2124,
+   "depMin": 2124,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GHSR",
+   "name": "Ghasara Halt",
+   "km": 767.7,
+   "arrMin": 2127,
+   "depMin": 2127,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ULD",
+   "name": "Achalda",
+   "km": 773.1,
+   "arrMin": 2132,
+   "depMin": 2132,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PATA",
+   "name": "Pata",
+   "km": 781.6,
+   "arrMin": 2139,
+   "depMin": 2139,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PHD",
+   "name": "Phaphund",
+   "km": 790.0,
+   "arrMin": 2147,
+   "depMin": 2147,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KNS",
+   "name": "Kanchausi",
+   "km": 798.8,
+   "arrMin": 2154,
+   "depMin": 2154,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PJY",
+   "name": "Parjani Halt",
+   "km": 804.1,
+   "arrMin": 2159,
+   "depMin": 2159,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JJK",
+   "name": "Jhinjhak",
+   "km": 809.8,
+   "arrMin": 2164,
+   "depMin": 2164,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AAP",
+   "name": "Ambiapur",
+   "km": 820.0,
+   "arrMin": 2173,
+   "depMin": 2173,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RURA",
+   "name": "Rura",
+   "km": 828.8,
+   "arrMin": 2181,
+   "depMin": 2181,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RMW",
+   "name": "Roshan Mau Halt",
+   "km": 836.5,
+   "arrMin": 2188,
+   "depMin": 2188,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MTO",
+   "name": "Maitha",
+   "km": 840.5,
+   "arrMin": 2191,
+   "depMin": 2191,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BPU",
+   "name": "Bhaupur",
+   "km": 850.5,
+   "arrMin": 2200,
+   "depMin": 2200,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PNKD",
+   "name": "Panki DHAM",
+   "km": 861.8,
+   "arrMin": 2210,
+   "depMin": 2210,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GOY",
+   "name": "Govindpuri",
+   "km": 869.3,
+   "arrMin": 2217,
+   "depMin": 2217,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CNB",
+   "name": "Kanpur Central Jn.",
+   "km": 873.1,
+   "arrMin": 2220,
+   "depMin": 2230,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CNBI",
+   "name": "Chandari",
+   "km": 877.6,
+   "arrMin": 2233,
+   "depMin": 2233,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CHK",
+   "name": "Chakeri",
+   "km": 884.9,
+   "arrMin": 2239,
+   "depMin": 2239,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RXM",
+   "name": "Rooma",
+   "km": 889.1,
+   "arrMin": 2242,
+   "depMin": 2242,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SSL",
+   "name": "Sirsaul",
+   "km": 895.9,
+   "arrMin": 2248,
+   "depMin": 2248,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PMPR",
+   "name": "Prempur",
+   "km": 901.8,
+   "arrMin": 2252,
+   "depMin": 2252,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KBN",
+   "name": "Karbigwan",
+   "km": 907.6,
+   "arrMin": 2257,
+   "depMin": 2257,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AUNG",
+   "name": "Aung",
+   "km": 913.4,
+   "arrMin": 2261,
+   "depMin": 2261,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BKO",
+   "name": "Bindki Road",
+   "km": 919.5,
+   "arrMin": 2266,
+   "depMin": 2266,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KSQ",
+   "name": "Kanspur Gugauli",
+   "km": 927.3,
+   "arrMin": 2272,
+   "depMin": 2272,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MWH",
+   "name": "Malwan",
+   "km": 934.7,
+   "arrMin": 2278,
+   "depMin": 2278,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KKS",
+   "name": "Kurasti Kalan",
+   "km": 943.8,
+   "arrMin": 2285,
+   "depMin": 2285,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "FTP",
+   "name": "Fatehpur",
+   "km": 950.8,
+   "arrMin": 2290,
+   "depMin": 2292,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RAMA",
+   "name": "Ramva",
+   "km": 956.7,
+   "arrMin": 2296,
+   "depMin": 2296,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "FYZ",
+   "name": "Faizullapur",
+   "km": 961.9,
+   "arrMin": 2300,
+   "depMin": 2300,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RUB",
+   "name": "Rasulabad",
+   "km": 971.0,
+   "arrMin": 2307,
+   "depMin": 2307,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SNIE",
+   "name": "Sath Naraini",
+   "km": 978.2,
+   "arrMin": 2313,
+   "depMin": 2313,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KGA",
+   "name": "Khaga",
+   "km": 985.4,
+   "arrMin": 2318,
+   "depMin": 2318,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KTCE",
+   "name": "Katoghan",
+   "km": 992.4,
+   "arrMin": 2323,
+   "depMin": 2323,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KUW",
+   "name": "Kunwar",
+   "km": 998.5,
+   "arrMin": 2328,
+   "depMin": 2328,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ASCE",
+   "name": "Athsarai",
+   "km": 1004.0,
+   "arrMin": 2332,
+   "depMin": 2332,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SRO",
+   "name": "Sirathu",
+   "km": 1010.7,
+   "arrMin": 2337,
+   "depMin": 2337,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SJT",
+   "name": "Shujatpur",
+   "km": 1020.2,
+   "arrMin": 2344,
+   "depMin": 2344,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BDNP",
+   "name": "Bidanpur",
+   "km": 1024.8,
+   "arrMin": 2348,
+   "depMin": 2348,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BRE",
+   "name": "Bharwari",
+   "km": 1030.4,
+   "arrMin": 2352,
+   "depMin": 2352,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MNJ",
+   "name": "Manoharganj",
+   "km": 1038.3,
+   "arrMin": 2358,
+   "depMin": 2358,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SYWN",
+   "name": "Saiyid Sarawan",
+   "km": 1045.8,
+   "arrMin": 2364,
+   "depMin": 2364,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MRE",
+   "name": "Manauri",
+   "km": 1050.3,
+   "arrMin": 2367,
+   "depMin": 2367,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BMU",
+   "name": "Bamhrauli",
+   "km": 1058.7,
+   "arrMin": 2373,
+   "depMin": 2373,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SFG",
+   "name": "Subedarganj",
+   "km": 1063.9,
+   "arrMin": 2377,
+   "depMin": 2377,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PRYJ",
+   "name": "PRAYAGRAJ JUNCTION",
+   "km": 1067.5,
+   "arrMin": 2380,
+   "depMin": 2385,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NYN",
+   "name": "Naini Jn.",
+   "km": 1074.9,
+   "arrMin": 2390,
+   "depMin": 2390,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PCOI",
+   "name": "PRAYAGRAJ CHHEOKI",
+   "km": 1076.9,
+   "arrMin": 2392,
+   "depMin": 2392,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KCN",
+   "name": "Karchana",
+   "km": 1085.5,
+   "arrMin": 2398,
+   "depMin": 2398,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BEP",
+   "name": "Bheerpur",
+   "km": 1094.6,
+   "arrMin": 2404,
+   "depMin": 2404,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MJA",
+   "name": "Meja Road",
+   "km": 1105.7,
+   "arrMin": 2412,
+   "depMin": 2412,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "UND",
+   "name": "Unchdih",
+   "km": 1114.0,
+   "arrMin": 2418,
+   "depMin": 2418,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MNF",
+   "name": "Manda Road",
+   "km": 1122.1,
+   "arrMin": 2423,
+   "depMin": 2423,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JIA",
+   "name": "Jigna",
+   "km": 1130.4,
+   "arrMin": 2429,
+   "depMin": 2429,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GAE",
+   "name": "Gaipura",
+   "km": 1137.4,
+   "arrMin": 2434,
+   "depMin": 2434,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BEO",
+   "name": "Birohe",
+   "km": 1144.9,
+   "arrMin": 2440,
+   "depMin": 2440,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BDL",
+   "name": "Vindhyachal",
+   "km": 1149.7,
+   "arrMin": 2443,
+   "depMin": 2443,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MZP",
+   "name": "Mirzapur",
+   "km": 1156.9,
+   "arrMin": 2448,
+   "depMin": 2450,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JHG",
+   "name": "Jhingura",
+   "km": 1165.6,
+   "arrMin": 2461,
+   "depMin": 2461,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PRE",
+   "name": "Pahara",
+   "km": 1172.7,
+   "arrMin": 2471,
+   "depMin": 2471,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DAP",
+   "name": "Dagmagpur",
+   "km": 1180.9,
+   "arrMin": 2481,
+   "depMin": 2481,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CAR",
+   "name": "Chunar Jn.",
+   "km": 1188.2,
+   "arrMin": 2491,
+   "depMin": 2491,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KYT",
+   "name": "Kailahat",
+   "km": 1198.0,
+   "arrMin": 2504,
+   "depMin": 2504,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ARW",
+   "name": "Ahraura Road",
+   "km": 1206.5,
+   "arrMin": 2515,
+   "depMin": 2515,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JEP",
+   "name": "Jeonathpur",
+   "km": 1212.4,
+   "arrMin": 2523,
+   "depMin": 2523,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DDU",
+   "name": "PT.DEEN DAYAL UPADHYAYA JN.",
+   "km": 1220.3,
+   "arrMin": 2533,
+   "depMin": 2540,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JTHT",
+   "name": "JUNCTION HUT (DDU)",
+   "km": 1224.6,
+   "arrMin": 2543,
+   "depMin": 2543,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GAQ",
+   "name": "GANJ KHWAJA",
+   "km": 1228.9,
+   "arrMin": 2546,
+   "depMin": 2546,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CDMR",
+   "name": "Chandauli Majhwar",
+   "km": 1237.5,
+   "arrMin": 2553,
+   "depMin": 2553,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SYJ",
+   "name": "Saidraja",
+   "km": 1246.0,
+   "arrMin": 2559,
+   "depMin": 2559,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KMS",
+   "name": "Karamnasa",
+   "km": 1254.1,
+   "arrMin": 2565,
+   "depMin": 2565,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DCX",
+   "name": "Dhaniachha",
+   "km": 1260.3,
+   "arrMin": 2569,
+   "depMin": 2569,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DGO",
+   "name": "Durgauti",
+   "km": 1265.8,
+   "arrMin": 2573,
+   "depMin": 2573,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BBU",
+   "name": "Bhabua Road",
+   "km": 1274.8,
+   "arrMin": 2580,
+   "depMin": 2582,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MTGE",
+   "name": "Muthani",
+   "km": 1280.2,
+   "arrMin": 2585,
+   "depMin": 2585,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PSE",
+   "name": "Pusauli",
+   "km": 1288.0,
+   "arrMin": 2589,
+   "depMin": 2589,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KTQ",
+   "name": "KUDRA",
+   "km": 1296.9,
+   "arrMin": 2594,
+   "depMin": 2594,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KMGE",
+   "name": "Kumahu",
+   "km": 1303.4,
+   "arrMin": 2598,
+   "depMin": 2598,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SSG",
+   "name": "Shiu Sagar Road",
+   "km": 1312.6,
+   "arrMin": 2603,
+   "depMin": 2603,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KVD",
+   "name": "Khurmabad Road",
+   "km": 1318.2,
+   "arrMin": 2606,
+   "depMin": 2606,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SSM",
+   "name": "Sasaram",
+   "km": 1326.1,
+   "arrMin": 2610,
+   "depMin": 2612,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KWD",
+   "name": "Karwandiya",
+   "km": 1333.5,
+   "arrMin": 2619,
+   "depMin": 2619,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PHE",
+   "name": "Pahaleja",
+   "km": 1339.3,
+   "arrMin": 2625,
+   "depMin": 2625,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DOS",
+   "name": "Dehri-on-Son",
+   "km": 1343.9,
+   "arrMin": 2630,
+   "depMin": 2632,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SEB",
+   "name": "Son Nagar jn.",
+   "km": 1349.7,
+   "arrMin": 2638,
+   "depMin": 2638,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CPBH",
+   "name": "CHIRAILLA PAUTHU",
+   "km": 1355.4,
+   "arrMin": 2643,
+   "depMin": 2643,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AUBR",
+   "name": "Anugrah Narayan Road",
+   "km": 1360.4,
+   "arrMin": 2648,
+   "depMin": 2650,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PES",
+   "name": "Phesar",
+   "km": 1369.4,
+   "arrMin": 2658,
+   "depMin": 2658,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BHKH",
+   "name": "Baghoikusa",
+   "km": 1373.7,
+   "arrMin": 2662,
+   "depMin": 2662,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JHN",
+   "name": "Jakhim",
+   "km": 1380.5,
+   "arrMin": 2668,
+   "depMin": 2668,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DORD",
+   "name": "Deo Road",
+   "km": 1384.4,
+   "arrMin": 2671,
+   "depMin": 2671,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RFJ",
+   "name": "Rafiganj",
+   "km": 1391.5,
+   "arrMin": 2677,
+   "depMin": 2677,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "IMGE",
+   "name": "Ismailpur",
+   "km": 1400.6,
+   "arrMin": 2685,
+   "depMin": 2685,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GRRU",
+   "name": "Guraru",
+   "km": 1407.4,
+   "arrMin": 2691,
+   "depMin": 2691,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PRY",
+   "name": "Paraiya",
+   "km": 1413.4,
+   "arrMin": 2696,
+   "depMin": 2696,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KSTA",
+   "name": "Kastha",
+   "km": 1420.6,
+   "arrMin": 2703,
+   "depMin": 2703,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GAYA",
+   "name": "Gaya Jn.",
+   "km": 1428.9,
+   "arrMin": 2710,
+   "depMin": 2715,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SICY",
+   "name": "SAHEED ISHWAR CHOWDHARY HALT",
+   "km": 1432.5,
+   "arrMin": 2718,
+   "depMin": 2718,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MPO",
+   "name": "Manpur Jn.",
+   "km": 1434.1,
+   "arrMin": 2720,
+   "depMin": 2720,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BNF",
+   "name": "Bandhua",
+   "km": 1441.2,
+   "arrMin": 2726,
+   "depMin": 2726,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TKN",
+   "name": "Tankuppa",
+   "km": 1448.9,
+   "arrMin": 2733,
+   "depMin": 2733,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BNSL",
+   "name": "Bansinala Halt",
+   "km": 1454.9,
+   "arrMin": 2739,
+   "depMin": 2739,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PRP",
+   "name": "Paharpur",
+   "km": 1461.3,
+   "arrMin": 2744,
+   "depMin": 2744,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GAP",
+   "name": "Gurpa",
+   "km": 1473.0,
+   "arrMin": 2755,
+   "depMin": 2755,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "YGM",
+   "name": "YADUGRAM BH",
+   "km": 1476.4,
+   "arrMin": 2758,
+   "depMin": 2758,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BSCP",
+   "name": "BASKATWA B. H.",
+   "km": 1480.9,
+   "arrMin": 2762,
+   "depMin": 2762,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NGY",
+   "name": "Nathganj",
+   "km": 1482.5,
+   "arrMin": 2764,
+   "depMin": 2764,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DLW",
+   "name": "Dilwa",
+   "km": 1488.4,
+   "arrMin": 2769,
+   "depMin": 2769,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "LBZ",
+   "name": "Lalbagh",
+   "km": 1493.1,
+   "arrMin": 2773,
+   "depMin": 2773,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GJD",
+   "name": "Gujhandi",
+   "km": 1495.1,
+   "arrMin": 2775,
+   "depMin": 2775,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KQR",
+   "name": "koderma jn.",
+   "km": 1505.0,
+   "arrMin": 2784,
+   "depMin": 2786,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "LRB",
+   "name": "LARABAD BH",
+   "km": 1508.7,
+   "arrMin": 2788,
+   "depMin": 2788,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HRE",
+   "name": "Hirodih",
+   "km": 1514.2,
+   "arrMin": 2791,
+   "depMin": 2791,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SMND",
+   "name": "Sarmatanr",
+   "km": 1522.0,
+   "arrMin": 2795,
+   "depMin": 2795,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "YDD",
+   "name": "Yadudih",
+   "km": 1526.7,
+   "arrMin": 2798,
+   "depMin": 2798,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PSB",
+   "name": "Parsabad",
+   "km": 1531.3,
+   "arrMin": 2801,
+   "depMin": 2801,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DSME",
+   "name": "Dasara",
+   "km": 1537.8,
+   "arrMin": 2804,
+   "depMin": 2804,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CBH",
+   "name": "Chaube",
+   "km": 1542.8,
+   "arrMin": 2807,
+   "depMin": 2807,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KSHR",
+   "name": "KESHWARI BH",
+   "km": 1547.6,
+   "arrMin": 2810,
+   "depMin": 2810,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HZD",
+   "name": "Hazaribagh Road",
+   "km": 1553.3,
+   "arrMin": 2813,
+   "depMin": 2813,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GRBH",
+   "name": "Garea Bihar",
+   "km": 1558.5,
+   "arrMin": 2816,
+   "depMin": 2816,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CCK",
+   "name": "Chichaki",
+   "km": 1563.1,
+   "arrMin": 2818,
+   "depMin": 2818,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KRMB",
+   "name": "Karmabad",
+   "km": 1567.4,
+   "arrMin": 2821,
+   "depMin": 2821,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CDB",
+   "name": "Chaudhuribandh",
+   "km": 1571.2,
+   "arrMin": 2823,
+   "depMin": 2823,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CEME",
+   "name": "Chegro",
+   "km": 1576.3,
+   "arrMin": 2826,
+   "depMin": 2826,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PNME",
+   "name": "Parasnath",
+   "km": 1580.5,
+   "arrMin": 2828,
+   "depMin": 2830,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NMG",
+   "name": "Nimiaghat",
+   "km": 1588.1,
+   "arrMin": 2839,
+   "depMin": 2839,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BLME",
+   "name": "Bholidih",
+   "km": 1593.6,
+   "arrMin": 2845,
+   "depMin": 2845,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GMO",
+   "name": "NSC BOSE J GOMO",
+   "km": 1598.3,
+   "arrMin": 2851,
+   "depMin": 2851,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MRQ",
+   "name": "Matari",
+   "km": 1607.8,
+   "arrMin": 2862,
+   "depMin": 2862,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NPJE",
+   "name": "Nichitpur",
+   "km": 1613.0,
+   "arrMin": 2868,
+   "depMin": 2868,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TET",
+   "name": "Tetulmari",
+   "km": 1618.9,
+   "arrMin": 2874,
+   "depMin": 2874,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BHN",
+   "name": "Bhuli",
+   "km": 1624.3,
+   "arrMin": 2881,
+   "depMin": 2881,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DHN",
+   "name": "Dhanbad Jn.",
+   "km": 1628.1,
+   "arrMin": 2885,
+   "depMin": 2895,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DOKM",
+   "name": "DOKRA BH",
+   "km": 1633.0,
+   "arrMin": 2901,
+   "depMin": 2901,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PKA",
+   "name": "Pradhan Khunta",
+   "km": 1637.1,
+   "arrMin": 2906,
+   "depMin": 2906,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CAM",
+   "name": "Chhota Ambana",
+   "km": 1643.1,
+   "arrMin": 2914,
+   "depMin": 2914,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KAO",
+   "name": "Kalubathan",
+   "km": 1652.3,
+   "arrMin": 2926,
+   "depMin": 2926,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TNW",
+   "name": "Thaparnagar",
+   "km": 1656.5,
+   "arrMin": 2931,
+   "depMin": 2931,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MMU",
+   "name": "Mugma",
+   "km": 1661.8,
+   "arrMin": 2938,
+   "depMin": 2938,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KMME",
+   "name": "Kumardubi",
+   "km": 1666.6,
+   "arrMin": 2944,
+   "depMin": 2944,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BRR",
+   "name": "Barakar",
+   "km": 1669.0,
+   "arrMin": 2947,
+   "depMin": 2947,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ULT",
+   "name": "Kulti",
+   "km": 1672.2,
+   "arrMin": 2951,
+   "depMin": 2951,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "STN",
+   "name": "Sitarampur",
+   "km": 1677.4,
+   "arrMin": 2958,
+   "depMin": 2958,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BCQ",
+   "name": "Barachak",
+   "km": 1681.1,
+   "arrMin": 2963,
+   "depMin": 2963,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ASN",
+   "name": "Asansol Jn.",
+   "km": 1686.1,
+   "arrMin": 2969,
+   "depMin": 2974,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KPK",
+   "name": "Kalipahari",
+   "km": 1691.4,
+   "arrMin": 2978,
+   "depMin": 2978,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NMC",
+   "name": "Nimcha B.H.",
+   "km": 1699.9,
+   "arrMin": 2985,
+   "depMin": 2985,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RNG",
+   "name": "Raniganj",
+   "km": 1704.6,
+   "arrMin": 2989,
+   "depMin": 2989,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BQT",
+   "name": "Bakhtarnagar",
+   "km": 1708.7,
+   "arrMin": 2992,
+   "depMin": 2992,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "UDLW",
+   "name": "ANDAL WEST CABIN",
+   "km": 1710.9,
+   "arrMin": 2994,
+   "depMin": 2994,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "UDL",
+   "name": "Andal Jn.",
+   "km": 1711.5,
+   "arrMin": 2995,
+   "depMin": 2995,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "POL",
+   "name": "Pinjrapol BH",
+   "km": 1717.0,
+   "arrMin": 2999,
+   "depMin": 2999,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "OYR",
+   "name": "Waria",
+   "km": 1719.5,
+   "arrMin": 3001,
+   "depMin": 3001,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DGR",
+   "name": "Durgapur",
+   "km": 1728.3,
+   "arrMin": 3008,
+   "depMin": 3008,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RBH",
+   "name": "Rajbandh",
+   "km": 1736.6,
+   "arrMin": 3015,
+   "depMin": 3015,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PAN",
+   "name": "Panagarh",
+   "km": 1744.0,
+   "arrMin": 3021,
+   "depMin": 3021,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MNAE",
+   "name": "Mankar",
+   "km": 1754.2,
+   "arrMin": 3029,
+   "depMin": 3029,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PAJ",
+   "name": "Paraj",
+   "km": 1762.5,
+   "arrMin": 3036,
+   "depMin": 3036,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GLI",
+   "name": "Galsi",
+   "km": 1768.9,
+   "arrMin": 3041,
+   "depMin": 3041,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "INCI",
+   "name": "Ishan Chandi Halt",
+   "km": 1775.4,
+   "arrMin": 3047,
+   "depMin": 3047,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KAN",
+   "name": "Khana Jn.",
+   "km": 1778.8,
+   "arrMin": 3049,
+   "depMin": 3049,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TIT",
+   "name": "Talit",
+   "km": 1784.7,
+   "arrMin": 3054,
+   "depMin": 3054,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BWND",
+   "name": "BARDDHAMAN DN YARD",
+   "km": 1791.9,
+   "arrMin": 3060,
+   "depMin": 3060,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BWN",
+   "name": "Barddhaman",
+   "km": 1792.0,
+   "arrMin": 3060,
+   "depMin": 3062,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GRP",
+   "name": "Gangpur",
+   "km": 1798.8,
+   "arrMin": 3070,
+   "depMin": 3070,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SKG",
+   "name": "Saktigarh",
+   "km": 1803.5,
+   "arrMin": 3076,
+   "depMin": 3076,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PRAE",
+   "name": "Palla Road",
+   "km": 1808.8,
+   "arrMin": 3083,
+   "depMin": 3083,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CHC",
+   "name": "Chanchal H",
+   "km": 1811.7,
+   "arrMin": 3086,
+   "depMin": 3086,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MSAE",
+   "name": "Masagram",
+   "km": 1814.8,
+   "arrMin": 3090,
+   "depMin": 3090,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NBAE",
+   "name": "Nabagram",
+   "km": 1817.8,
+   "arrMin": 3094,
+   "depMin": 3094,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JRAE",
+   "name": "Jaugram",
+   "km": 1822.1,
+   "arrMin": 3099,
+   "depMin": 3099,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JPQ",
+   "name": "Jhapandanga",
+   "km": 1824.2,
+   "arrMin": 3102,
+   "depMin": 3102,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GRAE",
+   "name": "Gurap",
+   "km": 1829.0,
+   "arrMin": 3108,
+   "depMin": 3108,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HIH",
+   "name": "Hajigarh",
+   "km": 1831.3,
+   "arrMin": 3111,
+   "depMin": 3111,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CRAE",
+   "name": "Cheragram",
+   "km": 1833.4,
+   "arrMin": 3113,
+   "depMin": 3113,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SHBC",
+   "name": "Sibaichandi",
+   "km": 1835.0,
+   "arrMin": 3115,
+   "depMin": 3115,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DNHL",
+   "name": "DHANIAKHALI HALT",
+   "km": 1837.9,
+   "arrMin": 3119,
+   "depMin": 3119,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BMAE",
+   "name": "Belmuri",
+   "km": 1840.1,
+   "arrMin": 3122,
+   "depMin": 3122,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PBZ",
+   "name": "Porabazar",
+   "km": 1841.9,
+   "arrMin": 3124,
+   "depMin": 3124,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CDAE",
+   "name": "Chandanpur",
+   "km": 1846.3,
+   "arrMin": 3129,
+   "depMin": 3129,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MDSE",
+   "name": "Madhu Sudanpur",
+   "km": 1850.6,
+   "arrMin": 3135,
+   "depMin": 3135,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KQLS",
+   "name": "Kamarkundu (Lower)",
+   "km": 1853.5,
+   "arrMin": 3138,
+   "depMin": 3138,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BLAE",
+   "name": "Balarambati",
+   "km": 1854.7,
+   "arrMin": 3140,
+   "depMin": 3140,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MBE",
+   "name": "Mirzapur-Bankipur",
+   "km": 1856.7,
+   "arrMin": 3142,
+   "depMin": 3142,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BRPA",
+   "name": "Barui para",
+   "km": 1857.3,
+   "arrMin": 3143,
+   "depMin": 3143,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BPAE",
+   "name": "Begampur",
+   "km": 1861.0,
+   "arrMin": 3147,
+   "depMin": 3147,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JOX",
+   "name": "Janai Road",
+   "km": 1863.2,
+   "arrMin": 3150,
+   "depMin": 3150,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GBRA",
+   "name": "Gobra",
+   "km": 1866.3,
+   "arrMin": 3154,
+   "depMin": 3154,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DKAE",
+   "name": "DANKUNI",
+   "km": 1868.7,
+   "arrMin": 3157,
+   "depMin": 3157,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BZL",
+   "name": "Belanagar",
+   "km": 1872.2,
+   "arrMin": 3161,
+   "depMin": 3161,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BLYC",
+   "name": "Bally Chord",
+   "km": 1874.8,
+   "arrMin": 3164,
+   "depMin": 3164,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BEQ",
+   "name": "Belur",
+   "km": 1876.9,
+   "arrMin": 3167,
+   "depMin": 3167,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "LLH",
+   "name": "Liluah",
+   "km": 1878.6,
+   "arrMin": 3169,
+   "depMin": 3169,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SYAE",
+   "name": "LILUAH SORTING YARD CABIN",
+   "km": 1880.4,
+   "arrMin": 3171,
+   "depMin": 3171,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HJN",
+   "name": "HOWRAH JN. CABIN",
+   "km": 1882.5,
+   "arrMin": 3174,
+   "depMin": 3174,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HWH",
+   "name": "Howrah",
+   "km": 1883.3,
+   "arrMin": 3175,
+   "depMin": null,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  }
+ ],
+ "_meta": {
+  "builtFrom": "train_22308_live_fallback.json",
+  "builtAt": "2026-09-05T11:03:35",
+  "timeBasis": "day-normalised minutes: (journeyDay-1)*1440 + hh*60+mm",
+  "timesAreScheduled": true,
+  "note": "Scheduled times only \u2014 this file carries NO live data and needs no refresh to stay correct.  The cached run's own service date is deliberately discarded (see day_minutes)."
+ }
+}

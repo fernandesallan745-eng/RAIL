@@ -1,0 +1,5406 @@
+{
+  "trainNumber": "01132",
+  "trainName": "Sawantwadi Road - Mumbai LTT Special",
+  "startDate": "2026-08-30",
+  "status": "completed",
+  "train": {
+    "number": "01132",
+    "name": "Sawantwadi Road - Mumbai LTT Special",
+    "type": "MAIL/EXPRESS",
+    "category": "Special",
+    "source": {
+      "code": "SWV",
+      "name": "Sawantwadi Road",
+      "lat": 15.8664634,
+      "lng": 73.785083
+    },
+    "destination": {
+      "code": "LTT",
+      "name": "Mumbai LTT",
+      "lat": 19.0694658,
+      "lng": 72.8919779
+    },
+    "runDays": [
+      "thu",
+      "sun"
+    ],
+    "distance": 490,
+    "duration": 745,
+    "avgSpeed": 39.5,
+    "maxSpeed": 87.8,
+    "totalHalts": 22,
+    "returnTrain": "01131",
+    "coachPosition": "ENG-SLR-GS-GS-GS-GS-GS-S1-S2-S3-S4-S5-S6-S7-S8-S9-S10-S11-S12-B1-B2-GS-SLR"
+  },
+  "isLive": false,
+  "trackingMode": "none",
+  "currentLocation": {
+    "stationCode": "LTT",
+    "sequence": 61,
+    "status": "at-station",
+    "isHalt": true,
+    "isActualPosition": false,
+    "distanceFromOriginKm": 490,
+    "distanceFromLastStationKm": 0,
+    "delayMinutes": 0,
+    "stationName": "Mumbai LTT"
+  },
+  "previousHalt": {
+    "stationCode": "TNA",
+    "stationName": "Thane",
+    "sequence": 54,
+    "distance": 473.6
+  },
+  "delayMinutes": 0,
+  "route": [
+    {
+      "sequence": 1,
+      "stationCode": "SWV",
+      "stationName": "Sawantwadi Road",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledDeparture": "2026-08-30T23:20:00+05:30",
+      "departureDay": 1,
+      "distance": 0,
+      "speedToNextStationKmph": 64.8,
+      "actualDeparture": "2026-08-30T23:20:00+05:30"
+    },
+    {
+      "sequence": 2,
+      "stationCode": "ZARP",
+      "stationName": "Zarap",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-30T23:30:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-08-30T23:32:00+05:30",
+      "departureDay": 1,
+      "distance": 10.8,
+      "speedToNextStationKmph": 60,
+      "actualArrival": "2026-08-30T23:30:00+05:30",
+      "actualDeparture": "2026-08-30T23:32:00+05:30"
+    },
+    {
+      "sequence": 3,
+      "stationCode": "KUDL",
+      "stationName": "Kudal",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-30T23:42:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-08-30T23:44:00+05:30",
+      "departureDay": 1,
+      "distance": 20.8,
+      "speedToNextStationKmph": 82.5,
+      "actualArrival": "2026-08-30T23:42:00+05:30",
+      "actualDeparture": "2026-08-30T23:44:00+05:30"
+    },
+    {
+      "sequence": 4,
+      "stationCode": "SNDD",
+      "stationName": "Sindhudurg",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-30T23:52:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-08-30T23:54:00+05:30",
+      "departureDay": 1,
+      "distance": 31.8,
+      "speedToNextStationKmph": 64.9,
+      "actualArrival": "2026-08-30T23:52:00+05:30",
+      "actualDeparture": "2026-08-30T23:54:00+05:30"
+    },
+    {
+      "sequence": 5,
+      "stationCode": "KKW",
+      "stationName": "Kankavli",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T00:10:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T00:12:00+05:30",
+      "departureDay": 2,
+      "distance": 49.1,
+      "speedToNextStationKmph": 68.1,
+      "actualArrival": "2026-08-31T00:10:00+05:30",
+      "actualDeparture": "2026-08-31T00:12:00+05:30"
+    },
+    {
+      "sequence": 6,
+      "stationCode": "NAN",
+      "stationName": "Nandgaon Road",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T00:26:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T00:28:00+05:30",
+      "departureDay": 2,
+      "distance": 65,
+      "speedToNextStationKmph": 66.4,
+      "actualArrival": "2026-08-31T00:26:00+05:30",
+      "actualDeparture": "2026-08-31T00:28:00+05:30"
+    },
+    {
+      "sequence": 7,
+      "stationCode": "ACRN",
+      "stationName": "Achirne",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T00:34:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T00:34:00+05:30",
+      "departureDay": 2,
+      "distance": 71.3,
+      "speedToNextStationKmph": 66.4,
+      "actualArrival": "2026-08-31T00:34:00+05:30",
+      "actualDeparture": "2026-08-31T00:34:00+05:30"
+    },
+    {
+      "sequence": 8,
+      "stationCode": "VBW",
+      "stationName": "Vaibhavwadi Road",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T00:42:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T00:44:00+05:30",
+      "departureDay": 2,
+      "distance": 80.5,
+      "speedToNextStationKmph": 37.6,
+      "actualArrival": "2026-08-31T00:42:00+05:30",
+      "actualDeparture": "2026-08-31T00:44:00+05:30"
+    },
+    {
+      "sequence": 9,
+      "stationCode": "RAJP",
+      "stationName": "Rajapur Road",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T01:10:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T01:12:00+05:30",
+      "departureDay": 2,
+      "distance": 96.8,
+      "speedToNextStationKmph": 55.7,
+      "actualArrival": "2026-08-31T01:10:00+05:30",
+      "actualDeparture": "2026-08-31T01:12:00+05:30"
+    },
+    {
+      "sequence": 10,
+      "stationCode": "VID",
+      "stationName": "Vilavade",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T01:30:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T01:32:00+05:30",
+      "departureDay": 2,
+      "distance": 113.5,
+      "speedToNextStationKmph": 52,
+      "actualArrival": "2026-08-31T01:30:00+05:30",
+      "actualDeparture": "2026-08-31T01:32:00+05:30"
+    },
+    {
+      "sequence": 11,
+      "stationCode": "VRLI",
+      "stationName": "Veravali",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T01:38:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T01:38:00+05:30",
+      "departureDay": 2,
+      "distance": 119,
+      "speedToNextStationKmph": 52,
+      "actualArrival": "2026-08-31T01:38:00+05:30",
+      "actualDeparture": "2026-08-31T01:38:00+05:30"
+    },
+    {
+      "sequence": 12,
+      "stationCode": "ADVI",
+      "stationName": "Adavali",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T01:50:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T01:52:00+05:30",
+      "departureDay": 2,
+      "distance": 129.1,
+      "speedToNextStationKmph": 28.2,
+      "actualArrival": "2026-08-31T01:50:00+05:30",
+      "actualDeparture": "2026-08-31T01:52:00+05:30"
+    },
+    {
+      "sequence": 13,
+      "stationCode": "NIV",
+      "stationName": "Nivasar",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T02:27:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T02:27:00+05:30",
+      "departureDay": 2,
+      "distance": 145.4,
+      "speedToNextStationKmph": 28.2,
+      "actualArrival": "2026-08-31T02:27:00+05:30",
+      "actualDeparture": "2026-08-31T02:27:00+05:30"
+    },
+    {
+      "sequence": 14,
+      "stationCode": "RN",
+      "stationName": "Ratnagiri",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T03:00:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T03:05:00+05:30",
+      "departureDay": 2,
+      "distance": 161.1,
+      "speedToNextStationKmph": 35.6,
+      "actualArrival": "2026-08-31T03:00:00+05:30",
+      "actualDeparture": "2026-08-31T03:05:00+05:30"
+    },
+    {
+      "sequence": 15,
+      "stationCode": "BOKE",
+      "stationName": "Bhoke",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T03:16:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T03:16:00+05:30",
+      "departureDay": 2,
+      "distance": 167.4,
+      "speedToNextStationKmph": 35.6,
+      "actualArrival": "2026-08-31T03:16:00+05:30",
+      "actualDeparture": "2026-08-31T03:16:00+05:30"
+    },
+    {
+      "sequence": 16,
+      "stationCode": "UKC",
+      "stationName": "Ukshi",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T03:37:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T03:37:00+05:30",
+      "departureDay": 2,
+      "distance": 180,
+      "speedToNextStationKmph": 35.6,
+      "actualArrival": "2026-08-31T03:37:00+05:30",
+      "actualDeparture": "2026-08-31T03:37:00+05:30"
+    },
+    {
+      "sequence": 17,
+      "stationCode": "SGR",
+      "stationName": "Sangameshwar Road",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T04:00:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T04:02:00+05:30",
+      "departureDay": 2,
+      "distance": 193.7,
+      "speedToNextStationKmph": 46,
+      "actualArrival": "2026-08-31T04:00:00+05:30",
+      "actualDeparture": "2026-08-31T04:02:00+05:30"
+    },
+    {
+      "sequence": 18,
+      "stationCode": "AVRD",
+      "stationName": "Aravali Road",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T04:20:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T04:22:00+05:30",
+      "departureDay": 2,
+      "distance": 207.5,
+      "speedToNextStationKmph": 48,
+      "actualArrival": "2026-08-31T04:20:00+05:30",
+      "actualDeparture": "2026-08-31T04:22:00+05:30"
+    },
+    {
+      "sequence": 19,
+      "stationCode": "SVX",
+      "stationName": "Sawarda",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T04:35:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T04:37:00+05:30",
+      "departureDay": 2,
+      "distance": 217.9,
+      "speedToNextStationKmph": 33.5,
+      "actualArrival": "2026-08-31T04:35:00+05:30",
+      "actualDeparture": "2026-08-31T04:37:00+05:30"
+    },
+    {
+      "sequence": 20,
+      "stationCode": "KMAH",
+      "stationName": "Kamathe",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T04:53:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T04:53:00+05:30",
+      "departureDay": 2,
+      "distance": 226.7,
+      "speedToNextStationKmph": 33.5,
+      "actualArrival": "2026-08-31T04:53:00+05:30",
+      "actualDeparture": "2026-08-31T04:53:00+05:30"
+    },
+    {
+      "sequence": 21,
+      "stationCode": "CHI",
+      "stationName": "Chiplun",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T05:10:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T05:12:00+05:30",
+      "departureDay": 2,
+      "distance": 236.3,
+      "speedToNextStationKmph": 46.1,
+      "actualArrival": "2026-08-31T05:10:00+05:30",
+      "actualDeparture": "2026-08-31T05:12:00+05:30"
+    },
+    {
+      "sequence": 22,
+      "stationCode": "ANO",
+      "stationName": "Anjani",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T05:33:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T05:33:00+05:30",
+      "departureDay": 2,
+      "distance": 252.5,
+      "speedToNextStationKmph": 46.1,
+      "actualArrival": "2026-08-31T05:33:00+05:30",
+      "actualDeparture": "2026-08-31T05:33:00+05:30"
+    },
+    {
+      "sequence": 23,
+      "stationCode": "KHED",
+      "stationName": "Khed",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T05:50:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T05:52:00+05:30",
+      "departureDay": 2,
+      "distance": 265.5,
+      "speedToNextStationKmph": 42.2,
+      "actualArrival": "2026-08-31T05:50:00+05:30",
+      "actualDeparture": "2026-08-31T05:52:00+05:30"
+    },
+    {
+      "sequence": 24,
+      "stationCode": "KLBN",
+      "stationName": "Kalambani Budruk",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T06:04:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T06:04:00+05:30",
+      "departureDay": 2,
+      "distance": 273.6,
+      "speedToNextStationKmph": 42.2,
+      "actualArrival": "2026-08-31T06:04:00+05:30",
+      "actualDeparture": "2026-08-31T06:04:00+05:30"
+    },
+    {
+      "sequence": 25,
+      "stationCode": "DWV",
+      "stationName": "Diwankhavati",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T06:18:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T06:18:00+05:30",
+      "departureDay": 2,
+      "distance": 283.6,
+      "speedToNextStationKmph": 42.2,
+      "actualArrival": "2026-08-31T06:18:00+05:30",
+      "actualDeparture": "2026-08-31T06:18:00+05:30"
+    },
+    {
+      "sequence": 26,
+      "stationCode": "KFD",
+      "stationName": "Karanjadi",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T06:43:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T06:43:00+05:30",
+      "departureDay": 2,
+      "distance": 301.5,
+      "speedToNextStationKmph": 42.2,
+      "actualArrival": "2026-08-31T06:43:00+05:30",
+      "actualDeparture": "2026-08-31T06:43:00+05:30"
+    },
+    {
+      "sequence": 27,
+      "stationCode": "SAPE",
+      "stationName": "Sape Wamane",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T06:54:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T06:54:00+05:30",
+      "departureDay": 2,
+      "distance": 308.9,
+      "speedToNextStationKmph": 42.2,
+      "actualArrival": "2026-08-31T06:54:00+05:30",
+      "actualDeparture": "2026-08-31T06:54:00+05:30"
+    },
+    {
+      "sequence": 28,
+      "stationCode": "VEER",
+      "stationName": "Veer",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T07:06:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T07:06:00+05:30",
+      "departureDay": 2,
+      "distance": 317.4,
+      "speedToNextStationKmph": 42.2,
+      "actualArrival": "2026-08-31T07:06:00+05:30",
+      "actualDeparture": "2026-08-31T07:06:00+05:30"
+    },
+    {
+      "sequence": 29,
+      "stationCode": "GNO",
+      "stationName": "Goregaon Road",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T07:15:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T07:15:00+05:30",
+      "departureDay": 2,
+      "distance": 323.6,
+      "speedToNextStationKmph": 42.2,
+      "actualArrival": "2026-08-31T07:15:00+05:30",
+      "actualDeparture": "2026-08-31T07:15:00+05:30"
+    },
+    {
+      "sequence": 30,
+      "stationCode": "MNI",
+      "stationName": "Mangaon",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T07:30:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T07:32:00+05:30",
+      "departureDay": 2,
+      "distance": 334.4,
+      "speedToNextStationKmph": 21.7,
+      "actualArrival": "2026-08-31T07:30:00+05:30",
+      "actualDeparture": "2026-08-31T07:32:00+05:30"
+    },
+    {
+      "sequence": 31,
+      "stationCode": "INP",
+      "stationName": "Indapur",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T07:51:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T07:51:00+05:30",
+      "departureDay": 2,
+      "distance": 341.1,
+      "speedToNextStationKmph": 21.7,
+      "actualArrival": "2026-08-31T07:51:00+05:30",
+      "actualDeparture": "2026-08-31T07:51:00+05:30"
+    },
+    {
+      "sequence": 32,
+      "stationCode": "KOL",
+      "stationName": "Kolad",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T08:19:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T08:19:00+05:30",
+      "departureDay": 2,
+      "distance": 351.4,
+      "speedToNextStationKmph": 21.7,
+      "actualArrival": "2026-08-31T08:19:00+05:30",
+      "actualDeparture": "2026-08-31T08:19:00+05:30"
+    },
+    {
+      "sequence": 33,
+      "stationCode": "ROHA",
+      "stationName": "Roha",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T08:55:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T09:00:00+05:30",
+      "departureDay": 2,
+      "distance": 364.4,
+      "speedToNextStationKmph": 87.8,
+      "actualArrival": "2026-08-31T08:55:00+05:30",
+      "actualDeparture": "2026-08-31T09:00:00+05:30"
+    },
+    {
+      "sequence": 34,
+      "stationCode": "NIDI",
+      "stationName": "Nidi",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T09:03:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T09:03:00+05:30",
+      "departureDay": 2,
+      "distance": 368.4,
+      "speedToNextStationKmph": 87.8,
+      "actualArrival": "2026-08-31T09:03:00+05:30",
+      "actualDeparture": "2026-08-31T09:03:00+05:30"
+    },
+    {
+      "sequence": 35,
+      "stationCode": "NGTN",
+      "stationName": "Nagothane",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T09:09:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T09:09:00+05:30",
+      "departureDay": 2,
+      "distance": 377.1,
+      "speedToNextStationKmph": 87.8,
+      "actualArrival": "2026-08-31T09:09:00+05:30",
+      "actualDeparture": "2026-08-31T09:09:00+05:30"
+    },
+    {
+      "sequence": 36,
+      "stationCode": "KASU",
+      "stationName": "Kasu",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T09:18:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T09:18:00+05:30",
+      "departureDay": 2,
+      "distance": 390.2,
+      "speedToNextStationKmph": 87.8,
+      "actualArrival": "2026-08-31T09:18:00+05:30",
+      "actualDeparture": "2026-08-31T09:18:00+05:30"
+    },
+    {
+      "sequence": 37,
+      "stationCode": "PEN",
+      "stationName": "Pen",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T09:27:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T09:30:00+05:30",
+      "departureDay": 2,
+      "distance": 403.9,
+      "speedToNextStationKmph": 52.5,
+      "actualArrival": "2026-08-31T09:27:00+05:30",
+      "actualDeparture": "2026-08-31T09:30:00+05:30"
+    },
+    {
+      "sequence": 38,
+      "stationCode": "HMRR",
+      "stationName": "Hamarapur",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T09:37:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T09:37:00+05:30",
+      "departureDay": 2,
+      "distance": 410,
+      "speedToNextStationKmph": 52.5,
+      "actualArrival": "2026-08-31T09:37:00+05:30",
+      "actualDeparture": "2026-08-31T09:37:00+05:30"
+    },
+    {
+      "sequence": 39,
+      "stationCode": "JITE",
+      "stationName": "Jite",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T09:42:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T09:42:00+05:30",
+      "departureDay": 2,
+      "distance": 414,
+      "speedToNextStationKmph": 52.5,
+      "actualArrival": "2026-08-31T09:42:00+05:30",
+      "actualDeparture": "2026-08-31T09:42:00+05:30"
+    },
+    {
+      "sequence": 40,
+      "stationCode": "APTA",
+      "stationName": "Apta",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T09:53:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T09:53:00+05:30",
+      "departureDay": 2,
+      "distance": 423.8,
+      "speedToNextStationKmph": 52.5,
+      "actualArrival": "2026-08-31T09:53:00+05:30",
+      "actualDeparture": "2026-08-31T09:53:00+05:30"
+    },
+    {
+      "sequence": 41,
+      "stationCode": "RSYI",
+      "stationName": "Rasayani",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T09:56:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T09:56:00+05:30",
+      "departureDay": 2,
+      "distance": 426.8,
+      "speedToNextStationKmph": 52.5,
+      "actualArrival": "2026-08-31T09:56:00+05:30",
+      "actualDeparture": "2026-08-31T09:56:00+05:30"
+    },
+    {
+      "sequence": 42,
+      "stationCode": "SMNE",
+      "stationName": "Somatne",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:04:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:04:00+05:30",
+      "departureDay": 2,
+      "distance": 433.7,
+      "speedToNextStationKmph": 52.5,
+      "actualArrival": "2026-08-31T10:04:00+05:30",
+      "actualDeparture": "2026-08-31T10:04:00+05:30"
+    },
+    {
+      "sequence": 43,
+      "stationCode": "PNVL",
+      "stationName": "Panvel",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:10:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:15:00+05:30",
+      "departureDay": 2,
+      "distance": 438.9,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:10:00+05:30",
+      "actualDeparture": "2026-08-31T10:15:00+05:30"
+    },
+    {
+      "sequence": 44,
+      "stationCode": "KNDS",
+      "stationName": "Khandeshwar",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:21:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:21:00+05:30",
+      "departureDay": 2,
+      "distance": 442.6,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:21:00+05:30",
+      "actualDeparture": "2026-08-31T10:21:00+05:30"
+    },
+    {
+      "sequence": 45,
+      "stationCode": "KHAG",
+      "stationName": "Kharghar",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:27:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:27:00+05:30",
+      "departureDay": 2,
+      "distance": 447.1,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:27:00+05:30",
+      "actualDeparture": "2026-08-31T10:27:00+05:30"
+    },
+    {
+      "sequence": 46,
+      "stationCode": "BEPR",
+      "stationName": "Belapur Cbd",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:31:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:31:00+05:30",
+      "departureDay": 2,
+      "distance": 449.7,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:31:00+05:30",
+      "actualDeparture": "2026-08-31T10:31:00+05:30"
+    },
+    {
+      "sequence": 47,
+      "stationCode": "NEU",
+      "stationName": "Nerul",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:37:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:37:00+05:30",
+      "departureDay": 2,
+      "distance": 453.3,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:37:00+05:30",
+      "actualDeparture": "2026-08-31T10:37:00+05:30"
+    },
+    {
+      "sequence": 48,
+      "stationCode": "JNJ",
+      "stationName": "Jui Nagar",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:40:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:40:00+05:30",
+      "departureDay": 2,
+      "distance": 455.9,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:40:00+05:30",
+      "actualDeparture": "2026-08-31T10:40:00+05:30"
+    },
+    {
+      "sequence": 49,
+      "stationCode": "TUH",
+      "stationName": "Turbhe",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:44:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:44:00+05:30",
+      "departureDay": 2,
+      "distance": 458.2,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:44:00+05:30",
+      "actualDeparture": "2026-08-31T10:44:00+05:30"
+    },
+    {
+      "sequence": 50,
+      "stationCode": "KPHN",
+      "stationName": "Kopar Khairna",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:49:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:49:00+05:30",
+      "departureDay": 2,
+      "distance": 461.3,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:49:00+05:30",
+      "actualDeparture": "2026-08-31T10:49:00+05:30"
+    },
+    {
+      "sequence": 51,
+      "stationCode": "GNSL",
+      "stationName": "Ghansoli",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:51:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:51:00+05:30",
+      "departureDay": 2,
+      "distance": 463,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:51:00+05:30",
+      "actualDeparture": "2026-08-31T10:51:00+05:30"
+    },
+    {
+      "sequence": 52,
+      "stationCode": "RABE",
+      "stationName": "Rabale",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:54:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:54:00+05:30",
+      "departureDay": 2,
+      "distance": 465,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:54:00+05:30",
+      "actualDeparture": "2026-08-31T10:54:00+05:30"
+    },
+    {
+      "sequence": 53,
+      "stationCode": "AIRL",
+      "stationName": "Airoli",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T10:58:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T10:58:00+05:30",
+      "departureDay": 2,
+      "distance": 467.4,
+      "speedToNextStationKmph": 40,
+      "actualArrival": "2026-08-31T10:58:00+05:30",
+      "actualDeparture": "2026-08-31T10:58:00+05:30"
+    },
+    {
+      "sequence": 54,
+      "stationCode": "TNA",
+      "stationName": "Thane",
+      "isHalt": true,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T11:07:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T11:10:00+05:30",
+      "departureDay": 2,
+      "distance": 473.6,
+      "speedToNextStationKmph": 28.1,
+      "actualArrival": "2026-08-31T11:07:00+05:30",
+      "actualDeparture": "2026-08-31T11:10:00+05:30"
+    },
+    {
+      "sequence": 55,
+      "stationCode": "MLND",
+      "stationName": "Mulund",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T11:15:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T11:15:00+05:30",
+      "departureDay": 2,
+      "distance": 476.1,
+      "speedToNextStationKmph": 28.1,
+      "actualArrival": "2026-08-31T11:15:00+05:30",
+      "actualDeparture": "2026-08-31T11:15:00+05:30"
+    },
+    {
+      "sequence": 56,
+      "stationCode": "BND",
+      "stationName": "Bhandup",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T11:24:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T11:24:00+05:30",
+      "departureDay": 2,
+      "distance": 480,
+      "speedToNextStationKmph": 28.1,
+      "actualArrival": "2026-08-31T11:24:00+05:30",
+      "actualDeparture": "2026-08-31T11:24:00+05:30"
+    },
+    {
+      "sequence": 57,
+      "stationCode": "KJRD",
+      "stationName": "Kanjur Marg",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T11:28:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T11:28:00+05:30",
+      "departureDay": 2,
+      "distance": 481.9,
+      "speedToNextStationKmph": 28.1,
+      "actualArrival": "2026-08-31T11:28:00+05:30",
+      "actualDeparture": "2026-08-31T11:28:00+05:30"
+    },
+    {
+      "sequence": 58,
+      "stationCode": "VK",
+      "stationName": "Vikhroli",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T11:32:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T11:32:00+05:30",
+      "departureDay": 2,
+      "distance": 483.7,
+      "speedToNextStationKmph": 28.1,
+      "actualArrival": "2026-08-31T11:32:00+05:30",
+      "actualDeparture": "2026-08-31T11:32:00+05:30"
+    },
+    {
+      "sequence": 59,
+      "stationCode": "GC",
+      "stationName": "Ghatkopar",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T11:39:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T11:39:00+05:30",
+      "departureDay": 2,
+      "distance": 487.2,
+      "speedToNextStationKmph": 28.1,
+      "actualArrival": "2026-08-31T11:39:00+05:30",
+      "actualDeparture": "2026-08-31T11:39:00+05:30"
+    },
+    {
+      "sequence": 60,
+      "stationCode": "VVH",
+      "stationName": "Vidyavihar",
+      "isHalt": false,
+      "status": "departed",
+      "scheduledArrival": "2026-08-31T11:42:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-08-31T11:42:00+05:30",
+      "departureDay": 2,
+      "distance": 488.8,
+      "speedToNextStationKmph": 28.1,
+      "actualArrival": "2026-08-31T11:42:00+05:30",
+      "actualDeparture": "2026-08-31T11:42:00+05:30"
+    },
+    {
+      "sequence": 61,
+      "stationCode": "LTT",
+      "stationName": "Mumbai LTT",
+      "isHalt": true,
+      "status": "at-station",
+      "scheduledArrival": "2026-08-31T11:45:00+05:30",
+      "arrivalDay": 2,
+      "distance": 490,
+      "actualArrival": "2026-08-31T11:45:00+05:30"
+    }
+  ],
+  "geometry": {
+    "trainNumber": "01132",
+    "format": "geojson",
+    "geojson": {
+      "type": "Feature",
+      "properties": {
+        "trainNumber": "01132"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            73.78508,
+            15.86646
+          ],
+          [
+            73.78304,
+            15.87023
+          ],
+          [
+            73.76999,
+            15.89059
+          ],
+          [
+            73.7604,
+            15.90576
+          ],
+          [
+            73.74875,
+            15.92428
+          ],
+          [
+            73.73415,
+            15.94836
+          ],
+          [
+            73.73049,
+            15.95379
+          ],
+          [
+            73.73001,
+            15.95439
+          ],
+          [
+            73.72845,
+            15.95583
+          ],
+          [
+            73.70348,
+            15.97312
+          ],
+          [
+            73.70165,
+            15.97459
+          ],
+          [
+            73.70033,
+            15.97596
+          ],
+          [
+            73.69403,
+            15.98297
+          ],
+          [
+            73.68616,
+            15.99156
+          ],
+          [
+            73.68513,
+            15.99251
+          ],
+          [
+            73.6807,
+            15.9961
+          ],
+          [
+            73.68001,
+            15.99684
+          ],
+          [
+            73.67913,
+            15.99806
+          ],
+          [
+            73.67823,
+            15.99965
+          ],
+          [
+            73.6777,
+            16.00113
+          ],
+          [
+            73.67737,
+            16.00249
+          ],
+          [
+            73.67727,
+            16.00398
+          ],
+          [
+            73.67733,
+            16.00582
+          ],
+          [
+            73.67776,
+            16.01531
+          ],
+          [
+            73.67805,
+            16.01723
+          ],
+          [
+            73.67796,
+            16.02054
+          ],
+          [
+            73.67847,
+            16.03283
+          ],
+          [
+            73.67959,
+            16.10574
+          ],
+          [
+            73.67985,
+            16.11219
+          ],
+          [
+            73.67977,
+            16.11643
+          ],
+          [
+            73.68013,
+            16.14004
+          ],
+          [
+            73.68016,
+            16.14134
+          ],
+          [
+            73.68028,
+            16.14223
+          ],
+          [
+            73.68069,
+            16.14391
+          ],
+          [
+            73.68128,
+            16.14527
+          ],
+          [
+            73.68181,
+            16.14621
+          ],
+          [
+            73.69975,
+            16.17266
+          ],
+          [
+            73.70232,
+            16.17582
+          ],
+          [
+            73.70325,
+            16.17678
+          ],
+          [
+            73.70847,
+            16.18285
+          ],
+          [
+            73.71131,
+            16.186
+          ],
+          [
+            73.71196,
+            16.18696
+          ],
+          [
+            73.71294,
+            16.18891
+          ],
+          [
+            73.71334,
+            16.19042
+          ],
+          [
+            73.71356,
+            16.19194
+          ],
+          [
+            73.71351,
+            16.194
+          ],
+          [
+            73.71304,
+            16.19633
+          ],
+          [
+            73.71203,
+            16.19953
+          ],
+          [
+            73.71173,
+            16.20104
+          ],
+          [
+            73.7116,
+            16.20287
+          ],
+          [
+            73.71189,
+            16.20481
+          ],
+          [
+            73.71292,
+            16.20988
+          ],
+          [
+            73.7131,
+            16.21136
+          ],
+          [
+            73.71219,
+            16.24006
+          ],
+          [
+            73.71217,
+            16.24136
+          ],
+          [
+            73.71233,
+            16.24281
+          ],
+          [
+            73.71264,
+            16.2441
+          ],
+          [
+            73.71302,
+            16.24506
+          ],
+          [
+            73.71796,
+            16.25485
+          ],
+          [
+            73.71995,
+            16.25943
+          ],
+          [
+            73.73189,
+            16.28228
+          ],
+          [
+            73.73377,
+            16.28613
+          ],
+          [
+            73.73425,
+            16.28762
+          ],
+          [
+            73.7344,
+            16.28842
+          ],
+          [
+            73.73452,
+            16.28972
+          ],
+          [
+            73.73456,
+            16.30797
+          ],
+          [
+            73.73443,
+            16.30968
+          ],
+          [
+            73.73403,
+            16.31125
+          ],
+          [
+            73.73339,
+            16.31283
+          ],
+          [
+            73.73299,
+            16.31354
+          ],
+          [
+            73.71651,
+            16.33954
+          ],
+          [
+            73.71558,
+            16.34152
+          ],
+          [
+            73.71526,
+            16.34261
+          ],
+          [
+            73.71495,
+            16.34459
+          ],
+          [
+            73.71495,
+            16.34566
+          ],
+          [
+            73.71517,
+            16.34723
+          ],
+          [
+            73.7154,
+            16.34817
+          ],
+          [
+            73.71601,
+            16.34993
+          ],
+          [
+            73.73088,
+            16.38763
+          ],
+          [
+            73.73363,
+            16.39426
+          ],
+          [
+            73.73816,
+            16.40587
+          ],
+          [
+            73.73869,
+            16.40758
+          ],
+          [
+            73.74112,
+            16.42322
+          ],
+          [
+            73.74334,
+            16.43801
+          ],
+          [
+            73.74348,
+            16.43939
+          ],
+          [
+            73.74389,
+            16.44668
+          ],
+          [
+            73.74388,
+            16.46506
+          ],
+          [
+            73.74339,
+            16.46834
+          ],
+          [
+            73.73923,
+            16.48633
+          ],
+          [
+            73.7387,
+            16.48776
+          ],
+          [
+            73.73792,
+            16.4891
+          ],
+          [
+            73.73687,
+            16.49048
+          ],
+          [
+            73.73605,
+            16.49139
+          ],
+          [
+            73.73489,
+            16.49236
+          ],
+          [
+            73.71188,
+            16.50911
+          ],
+          [
+            73.70794,
+            16.51231
+          ],
+          [
+            73.70464,
+            16.5144
+          ],
+          [
+            73.69724,
+            16.51983
+          ],
+          [
+            73.69633,
+            16.52067
+          ],
+          [
+            73.69483,
+            16.52253
+          ],
+          [
+            73.68816,
+            16.53158
+          ],
+          [
+            73.66844,
+            16.55865
+          ],
+          [
+            73.66028,
+            16.56944
+          ],
+          [
+            73.65647,
+            16.57469
+          ],
+          [
+            73.63751,
+            16.59983
+          ],
+          [
+            73.63431,
+            16.60446
+          ],
+          [
+            73.63218,
+            16.60809
+          ],
+          [
+            73.63161,
+            16.60921
+          ],
+          [
+            73.63099,
+            16.61081
+          ],
+          [
+            73.63007,
+            16.61387
+          ],
+          [
+            73.62878,
+            16.62274
+          ],
+          [
+            73.62767,
+            16.63182
+          ],
+          [
+            73.6268,
+            16.63563
+          ],
+          [
+            73.62695,
+            16.63715
+          ],
+          [
+            73.62675,
+            16.63908
+          ],
+          [
+            73.6222,
+            16.67382
+          ],
+          [
+            73.61976,
+            16.69376
+          ],
+          [
+            73.61968,
+            16.69508
+          ],
+          [
+            73.61977,
+            16.70075
+          ],
+          [
+            73.61954,
+            16.70614
+          ],
+          [
+            73.61994,
+            16.71023
+          ],
+          [
+            73.61996,
+            16.71778
+          ],
+          [
+            73.62051,
+            16.75242
+          ],
+          [
+            73.62061,
+            16.75417
+          ],
+          [
+            73.62049,
+            16.75686
+          ],
+          [
+            73.62073,
+            16.76021
+          ],
+          [
+            73.61916,
+            16.78568
+          ],
+          [
+            73.61859,
+            16.78955
+          ],
+          [
+            73.61779,
+            16.8006
+          ],
+          [
+            73.61575,
+            16.82456
+          ],
+          [
+            73.61533,
+            16.82808
+          ],
+          [
+            73.61524,
+            16.83079
+          ],
+          [
+            73.61525,
+            16.83383
+          ],
+          [
+            73.6141,
+            16.8453
+          ],
+          [
+            73.61363,
+            16.84796
+          ],
+          [
+            73.61242,
+            16.85364
+          ],
+          [
+            73.60614,
+            16.89658
+          ],
+          [
+            73.60575,
+            16.8983
+          ],
+          [
+            73.60538,
+            16.89932
+          ],
+          [
+            73.60437,
+            16.90145
+          ],
+          [
+            73.60149,
+            16.90667
+          ],
+          [
+            73.59397,
+            16.92012
+          ],
+          [
+            73.59281,
+            16.92155
+          ],
+          [
+            73.59125,
+            16.92491
+          ],
+          [
+            73.58861,
+            16.92945
+          ],
+          [
+            73.58817,
+            16.93008
+          ],
+          [
+            73.58689,
+            16.93158
+          ],
+          [
+            73.58495,
+            16.93329
+          ],
+          [
+            73.57408,
+            16.94149
+          ],
+          [
+            73.5719,
+            16.94339
+          ],
+          [
+            73.56941,
+            16.9452
+          ],
+          [
+            73.5671,
+            16.94636
+          ],
+          [
+            73.56497,
+            16.94693
+          ],
+          [
+            73.56332,
+            16.94708
+          ],
+          [
+            73.56139,
+            16.94703
+          ],
+          [
+            73.50329,
+            16.93882
+          ],
+          [
+            73.50159,
+            16.93867
+          ],
+          [
+            73.4998,
+            16.93863
+          ],
+          [
+            73.49777,
+            16.93871
+          ],
+          [
+            73.49507,
+            16.93893
+          ],
+          [
+            73.48178,
+            16.93972
+          ],
+          [
+            73.48052,
+            16.93965
+          ],
+          [
+            73.47141,
+            16.93869
+          ],
+          [
+            73.47014,
+            16.93871
+          ],
+          [
+            73.4687,
+            16.93892
+          ],
+          [
+            73.4671,
+            16.93934
+          ],
+          [
+            73.46514,
+            16.94022
+          ],
+          [
+            73.46415,
+            16.94082
+          ],
+          [
+            73.45733,
+            16.94534
+          ],
+          [
+            73.45545,
+            16.94696
+          ],
+          [
+            73.45483,
+            16.94725
+          ],
+          [
+            73.45453,
+            16.9476
+          ],
+          [
+            73.45287,
+            16.94834
+          ],
+          [
+            73.45187,
+            16.94888
+          ],
+          [
+            73.44219,
+            16.955
+          ],
+          [
+            73.44118,
+            16.95581
+          ],
+          [
+            73.43886,
+            16.95734
+          ],
+          [
+            73.40124,
+            16.97814
+          ],
+          [
+            73.39987,
+            16.97878
+          ],
+          [
+            73.39839,
+            16.97934
+          ],
+          [
+            73.39485,
+            16.98026
+          ],
+          [
+            73.39177,
+            16.98075
+          ],
+          [
+            73.38969,
+            16.9812
+          ],
+          [
+            73.37783,
+            16.98334
+          ],
+          [
+            73.37504,
+            16.98403
+          ],
+          [
+            73.37333,
+            16.98422
+          ],
+          [
+            73.36787,
+            16.9853
+          ],
+          [
+            73.36683,
+            16.98565
+          ],
+          [
+            73.36556,
+            16.98622
+          ],
+          [
+            73.36335,
+            16.98742
+          ],
+          [
+            73.36036,
+            16.98888
+          ],
+          [
+            73.35872,
+            16.98943
+          ],
+          [
+            73.35804,
+            16.98958
+          ],
+          [
+            73.35564,
+            16.98987
+          ],
+          [
+            73.3497,
+            16.99
+          ],
+          [
+            73.3482,
+            16.99031
+          ],
+          [
+            73.34749,
+            16.99058
+          ],
+          [
+            73.34659,
+            16.99106
+          ],
+          [
+            73.34579,
+            16.99167
+          ],
+          [
+            73.34526,
+            16.9922
+          ],
+          [
+            73.3448,
+            16.99279
+          ],
+          [
+            73.3443,
+            16.99364
+          ],
+          [
+            73.34394,
+            16.99456
+          ],
+          [
+            73.34377,
+            16.99528
+          ],
+          [
+            73.34368,
+            16.99625
+          ],
+          [
+            73.34379,
+            16.99747
+          ],
+          [
+            73.34414,
+            16.99864
+          ],
+          [
+            73.34458,
+            16.99951
+          ],
+          [
+            73.34533,
+            17.0005
+          ],
+          [
+            73.34586,
+            17.00102
+          ],
+          [
+            73.34667,
+            17.00162
+          ],
+          [
+            73.34803,
+            17.00229
+          ],
+          [
+            73.34904,
+            17.00257
+          ],
+          [
+            73.34976,
+            17.00267
+          ],
+          [
+            73.35727,
+            17.00311
+          ],
+          [
+            73.36562,
+            17.00392
+          ],
+          [
+            73.36662,
+            17.00415
+          ],
+          [
+            73.36799,
+            17.00476
+          ],
+          [
+            73.36908,
+            17.00566
+          ],
+          [
+            73.3695,
+            17.00611
+          ],
+          [
+            73.37556,
+            17.01382
+          ],
+          [
+            73.37837,
+            17.01728
+          ],
+          [
+            73.38024,
+            17.01975
+          ],
+          [
+            73.38103,
+            17.02115
+          ],
+          [
+            73.38128,
+            17.02174
+          ],
+          [
+            73.38154,
+            17.02255
+          ],
+          [
+            73.38161,
+            17.0232
+          ],
+          [
+            73.38119,
+            17.02659
+          ],
+          [
+            73.38069,
+            17.02907
+          ],
+          [
+            73.37788,
+            17.04119
+          ],
+          [
+            73.37786,
+            17.04248
+          ],
+          [
+            73.37807,
+            17.04395
+          ],
+          [
+            73.37862,
+            17.0454
+          ],
+          [
+            73.37909,
+            17.04628
+          ],
+          [
+            73.38028,
+            17.04803
+          ],
+          [
+            73.38107,
+            17.04892
+          ],
+          [
+            73.38265,
+            17.05157
+          ],
+          [
+            73.38385,
+            17.05342
+          ],
+          [
+            73.41899,
+            17.10576
+          ],
+          [
+            73.41976,
+            17.10676
+          ],
+          [
+            73.42022,
+            17.1072
+          ],
+          [
+            73.42244,
+            17.10866
+          ],
+          [
+            73.42401,
+            17.10942
+          ],
+          [
+            73.42806,
+            17.11097
+          ],
+          [
+            73.43753,
+            17.11415
+          ],
+          [
+            73.44039,
+            17.11532
+          ],
+          [
+            73.44222,
+            17.11654
+          ],
+          [
+            73.44363,
+            17.11778
+          ],
+          [
+            73.44408,
+            17.11831
+          ],
+          [
+            73.4491,
+            17.12572
+          ],
+          [
+            73.45022,
+            17.12711
+          ],
+          [
+            73.4513,
+            17.12814
+          ],
+          [
+            73.4527,
+            17.12893
+          ],
+          [
+            73.45427,
+            17.1296
+          ],
+          [
+            73.45504,
+            17.12987
+          ],
+          [
+            73.45688,
+            17.1302
+          ],
+          [
+            73.46036,
+            17.13131
+          ],
+          [
+            73.46196,
+            17.13191
+          ],
+          [
+            73.4637,
+            17.13268
+          ],
+          [
+            73.46631,
+            17.13416
+          ],
+          [
+            73.46774,
+            17.1351
+          ],
+          [
+            73.46917,
+            17.13633
+          ],
+          [
+            73.47016,
+            17.13732
+          ],
+          [
+            73.47085,
+            17.13819
+          ],
+          [
+            73.47181,
+            17.1397
+          ],
+          [
+            73.47364,
+            17.14321
+          ],
+          [
+            73.47496,
+            17.14606
+          ],
+          [
+            73.47747,
+            17.15191
+          ],
+          [
+            73.47836,
+            17.15354
+          ],
+          [
+            73.47957,
+            17.15539
+          ],
+          [
+            73.48074,
+            17.15686
+          ],
+          [
+            73.48386,
+            17.15943
+          ],
+          [
+            73.49627,
+            17.16865
+          ],
+          [
+            73.4989,
+            17.17023
+          ],
+          [
+            73.50011,
+            17.17077
+          ],
+          [
+            73.50183,
+            17.17119
+          ],
+          [
+            73.52098,
+            17.1713
+          ],
+          [
+            73.52187,
+            17.17136
+          ],
+          [
+            73.52337,
+            17.17162
+          ],
+          [
+            73.52451,
+            17.17195
+          ],
+          [
+            73.52609,
+            17.17264
+          ],
+          [
+            73.52717,
+            17.17322
+          ],
+          [
+            73.53883,
+            17.18156
+          ],
+          [
+            73.5425,
+            17.18436
+          ],
+          [
+            73.54325,
+            17.18511
+          ],
+          [
+            73.54388,
+            17.186
+          ],
+          [
+            73.54451,
+            17.1874
+          ],
+          [
+            73.54499,
+            17.19085
+          ],
+          [
+            73.54564,
+            17.19309
+          ],
+          [
+            73.54592,
+            17.19449
+          ],
+          [
+            73.54593,
+            17.19663
+          ],
+          [
+            73.5464,
+            17.20159
+          ],
+          [
+            73.54631,
+            17.20448
+          ],
+          [
+            73.5464,
+            17.20544
+          ],
+          [
+            73.54678,
+            17.20716
+          ],
+          [
+            73.54774,
+            17.20963
+          ],
+          [
+            73.54832,
+            17.21089
+          ],
+          [
+            73.5485,
+            17.21162
+          ],
+          [
+            73.54869,
+            17.21344
+          ],
+          [
+            73.54877,
+            17.21696
+          ],
+          [
+            73.54892,
+            17.2179
+          ],
+          [
+            73.54958,
+            17.22077
+          ],
+          [
+            73.55023,
+            17.22245
+          ],
+          [
+            73.55168,
+            17.22524
+          ],
+          [
+            73.55241,
+            17.22744
+          ],
+          [
+            73.55269,
+            17.22968
+          ],
+          [
+            73.55257,
+            17.23286
+          ],
+          [
+            73.5526,
+            17.2337
+          ],
+          [
+            73.5528,
+            17.2353
+          ],
+          [
+            73.5532,
+            17.23679
+          ],
+          [
+            73.5536,
+            17.2377
+          ],
+          [
+            73.55531,
+            17.24077
+          ],
+          [
+            73.55749,
+            17.24518
+          ],
+          [
+            73.55802,
+            17.24686
+          ],
+          [
+            73.55842,
+            17.2485
+          ],
+          [
+            73.55852,
+            17.24956
+          ],
+          [
+            73.55838,
+            17.2516
+          ],
+          [
+            73.55815,
+            17.25258
+          ],
+          [
+            73.55768,
+            17.25395
+          ],
+          [
+            73.55498,
+            17.25946
+          ],
+          [
+            73.55311,
+            17.26289
+          ],
+          [
+            73.54211,
+            17.28416
+          ],
+          [
+            73.5413,
+            17.28559
+          ],
+          [
+            73.54055,
+            17.28663
+          ],
+          [
+            73.5361,
+            17.29212
+          ],
+          [
+            73.53461,
+            17.2943
+          ],
+          [
+            73.53279,
+            17.29748
+          ],
+          [
+            73.53143,
+            17.30032
+          ],
+          [
+            73.53101,
+            17.30151
+          ],
+          [
+            73.53085,
+            17.30232
+          ],
+          [
+            73.53078,
+            17.30386
+          ],
+          [
+            73.5309,
+            17.30456
+          ],
+          [
+            73.53115,
+            17.30534
+          ],
+          [
+            73.53162,
+            17.30614
+          ],
+          [
+            73.53337,
+            17.30857
+          ],
+          [
+            73.53611,
+            17.31184
+          ],
+          [
+            73.53676,
+            17.31274
+          ],
+          [
+            73.53757,
+            17.31427
+          ],
+          [
+            73.53798,
+            17.31539
+          ],
+          [
+            73.53809,
+            17.31666
+          ],
+          [
+            73.53843,
+            17.31754
+          ],
+          [
+            73.53848,
+            17.31837
+          ],
+          [
+            73.53845,
+            17.31924
+          ],
+          [
+            73.53827,
+            17.32057
+          ],
+          [
+            73.53805,
+            17.32168
+          ],
+          [
+            73.53767,
+            17.3228
+          ],
+          [
+            73.53009,
+            17.33864
+          ],
+          [
+            73.52928,
+            17.34051
+          ],
+          [
+            73.52869,
+            17.34228
+          ],
+          [
+            73.52837,
+            17.34404
+          ],
+          [
+            73.52834,
+            17.3455
+          ],
+          [
+            73.52849,
+            17.34705
+          ],
+          [
+            73.52982,
+            17.35344
+          ],
+          [
+            73.53155,
+            17.36046
+          ],
+          [
+            73.53174,
+            17.36181
+          ],
+          [
+            73.53177,
+            17.36319
+          ],
+          [
+            73.53168,
+            17.36429
+          ],
+          [
+            73.53015,
+            17.37353
+          ],
+          [
+            73.52971,
+            17.37489
+          ],
+          [
+            73.52524,
+            17.3817
+          ],
+          [
+            73.52413,
+            17.38316
+          ],
+          [
+            73.52322,
+            17.38495
+          ],
+          [
+            73.5173,
+            17.39905
+          ],
+          [
+            73.51519,
+            17.40465
+          ],
+          [
+            73.51259,
+            17.41024
+          ],
+          [
+            73.50855,
+            17.41991
+          ],
+          [
+            73.50815,
+            17.42121
+          ],
+          [
+            73.50791,
+            17.4229
+          ],
+          [
+            73.50787,
+            17.42409
+          ],
+          [
+            73.50804,
+            17.4254
+          ],
+          [
+            73.50854,
+            17.42739
+          ],
+          [
+            73.51038,
+            17.43116
+          ],
+          [
+            73.52147,
+            17.4554
+          ],
+          [
+            73.52197,
+            17.4569
+          ],
+          [
+            73.5221,
+            17.45779
+          ],
+          [
+            73.52211,
+            17.45873
+          ],
+          [
+            73.52186,
+            17.46029
+          ],
+          [
+            73.51735,
+            17.4741
+          ],
+          [
+            73.51717,
+            17.47489
+          ],
+          [
+            73.51592,
+            17.47785
+          ],
+          [
+            73.51517,
+            17.48184
+          ],
+          [
+            73.51516,
+            17.48351
+          ],
+          [
+            73.51538,
+            17.48499
+          ],
+          [
+            73.51564,
+            17.48602
+          ],
+          [
+            73.51604,
+            17.48673
+          ],
+          [
+            73.51674,
+            17.48767
+          ],
+          [
+            73.51838,
+            17.48891
+          ],
+          [
+            73.53074,
+            17.49589
+          ],
+          [
+            73.53267,
+            17.49722
+          ],
+          [
+            73.53358,
+            17.49807
+          ],
+          [
+            73.5345,
+            17.49913
+          ],
+          [
+            73.54049,
+            17.5072
+          ],
+          [
+            73.5414,
+            17.5088
+          ],
+          [
+            73.54187,
+            17.51003
+          ],
+          [
+            73.54222,
+            17.51144
+          ],
+          [
+            73.54237,
+            17.51278
+          ],
+          [
+            73.54254,
+            17.52734
+          ],
+          [
+            73.54233,
+            17.52887
+          ],
+          [
+            73.54193,
+            17.5303
+          ],
+          [
+            73.5411,
+            17.53216
+          ],
+          [
+            73.54065,
+            17.53286
+          ],
+          [
+            73.5398,
+            17.53397
+          ],
+          [
+            73.53883,
+            17.53497
+          ],
+          [
+            73.53771,
+            17.53586
+          ],
+          [
+            73.53619,
+            17.53674
+          ],
+          [
+            73.53423,
+            17.53759
+          ],
+          [
+            73.52223,
+            17.54235
+          ],
+          [
+            73.51215,
+            17.54594
+          ],
+          [
+            73.49964,
+            17.55079
+          ],
+          [
+            73.4981,
+            17.55142
+          ],
+          [
+            73.49662,
+            17.55225
+          ],
+          [
+            73.49514,
+            17.55342
+          ],
+          [
+            73.49434,
+            17.55428
+          ],
+          [
+            73.49312,
+            17.556
+          ],
+          [
+            73.49262,
+            17.55695
+          ],
+          [
+            73.48986,
+            17.56357
+          ],
+          [
+            73.48913,
+            17.56474
+          ],
+          [
+            73.48842,
+            17.56566
+          ],
+          [
+            73.48692,
+            17.5671
+          ],
+          [
+            73.4695,
+            17.5789
+          ],
+          [
+            73.46499,
+            17.58272
+          ],
+          [
+            73.46423,
+            17.58346
+          ],
+          [
+            73.46289,
+            17.58448
+          ],
+          [
+            73.4621,
+            17.58494
+          ],
+          [
+            73.46002,
+            17.58587
+          ],
+          [
+            73.45921,
+            17.58612
+          ],
+          [
+            73.45292,
+            17.58726
+          ],
+          [
+            73.45151,
+            17.58759
+          ],
+          [
+            73.45016,
+            17.5881
+          ],
+          [
+            73.44939,
+            17.58849
+          ],
+          [
+            73.4477,
+            17.5895
+          ],
+          [
+            73.44624,
+            17.59081
+          ],
+          [
+            73.44513,
+            17.59214
+          ],
+          [
+            73.44367,
+            17.59411
+          ],
+          [
+            73.44332,
+            17.59471
+          ],
+          [
+            73.44286,
+            17.59629
+          ],
+          [
+            73.44195,
+            17.59797
+          ],
+          [
+            73.44141,
+            17.59868
+          ],
+          [
+            73.44,
+            17.60008
+          ],
+          [
+            73.4387,
+            17.60098
+          ],
+          [
+            73.4379,
+            17.60147
+          ],
+          [
+            73.43606,
+            17.6022
+          ],
+          [
+            73.43223,
+            17.6032
+          ],
+          [
+            73.43084,
+            17.60361
+          ],
+          [
+            73.42969,
+            17.60406
+          ],
+          [
+            73.42749,
+            17.60516
+          ],
+          [
+            73.42081,
+            17.60954
+          ],
+          [
+            73.4191,
+            17.61028
+          ],
+          [
+            73.41784,
+            17.61074
+          ],
+          [
+            73.41699,
+            17.61094
+          ],
+          [
+            73.4138,
+            17.61146
+          ],
+          [
+            73.4121,
+            17.6119
+          ],
+          [
+            73.40978,
+            17.61286
+          ],
+          [
+            73.409,
+            17.61337
+          ],
+          [
+            73.40682,
+            17.61521
+          ],
+          [
+            73.40557,
+            17.61642
+          ],
+          [
+            73.39766,
+            17.62263
+          ],
+          [
+            73.39639,
+            17.62393
+          ],
+          [
+            73.39582,
+            17.62466
+          ],
+          [
+            73.39484,
+            17.62613
+          ],
+          [
+            73.39321,
+            17.62895
+          ],
+          [
+            73.39148,
+            17.6314
+          ],
+          [
+            73.38617,
+            17.63615
+          ],
+          [
+            73.38524,
+            17.63709
+          ],
+          [
+            73.3845,
+            17.63792
+          ],
+          [
+            73.38392,
+            17.63872
+          ],
+          [
+            73.38348,
+            17.63958
+          ],
+          [
+            73.3829,
+            17.64127
+          ],
+          [
+            73.38279,
+            17.64229
+          ],
+          [
+            73.38278,
+            17.64333
+          ],
+          [
+            73.38333,
+            17.64642
+          ],
+          [
+            73.38357,
+            17.64729
+          ],
+          [
+            73.38441,
+            17.64916
+          ],
+          [
+            73.3849,
+            17.64992
+          ],
+          [
+            73.39065,
+            17.65733
+          ],
+          [
+            73.39204,
+            17.65964
+          ],
+          [
+            73.39298,
+            17.66178
+          ],
+          [
+            73.39317,
+            17.66249
+          ],
+          [
+            73.39334,
+            17.66409
+          ],
+          [
+            73.39333,
+            17.66564
+          ],
+          [
+            73.39325,
+            17.66776
+          ],
+          [
+            73.39315,
+            17.66899
+          ],
+          [
+            73.39296,
+            17.67003
+          ],
+          [
+            73.39239,
+            17.67157
+          ],
+          [
+            73.39201,
+            17.6723
+          ],
+          [
+            73.39058,
+            17.67427
+          ],
+          [
+            73.38957,
+            17.67549
+          ],
+          [
+            73.3889,
+            17.67611
+          ],
+          [
+            73.38733,
+            17.67786
+          ],
+          [
+            73.38524,
+            17.68049
+          ],
+          [
+            73.38434,
+            17.68146
+          ],
+          [
+            73.38317,
+            17.68292
+          ],
+          [
+            73.38235,
+            17.68436
+          ],
+          [
+            73.38167,
+            17.68581
+          ],
+          [
+            73.38124,
+            17.68712
+          ],
+          [
+            73.38103,
+            17.68818
+          ],
+          [
+            73.381,
+            17.68928
+          ],
+          [
+            73.38111,
+            17.69024
+          ],
+          [
+            73.38136,
+            17.69119
+          ],
+          [
+            73.3816,
+            17.69199
+          ],
+          [
+            73.3821,
+            17.6931
+          ],
+          [
+            73.38332,
+            17.69523
+          ],
+          [
+            73.38661,
+            17.69941
+          ],
+          [
+            73.39218,
+            17.70619
+          ],
+          [
+            73.39474,
+            17.70911
+          ],
+          [
+            73.39602,
+            17.71019
+          ],
+          [
+            73.39729,
+            17.71104
+          ],
+          [
+            73.39986,
+            17.71199
+          ],
+          [
+            73.40174,
+            17.71235
+          ],
+          [
+            73.41066,
+            17.71257
+          ],
+          [
+            73.41552,
+            17.71225
+          ],
+          [
+            73.41758,
+            17.71226
+          ],
+          [
+            73.41904,
+            17.71242
+          ],
+          [
+            73.41993,
+            17.7126
+          ],
+          [
+            73.42196,
+            17.71325
+          ],
+          [
+            73.42372,
+            17.71413
+          ],
+          [
+            73.42513,
+            17.71514
+          ],
+          [
+            73.42621,
+            17.71607
+          ],
+          [
+            73.42712,
+            17.71702
+          ],
+          [
+            73.42781,
+            17.71794
+          ],
+          [
+            73.42898,
+            17.72021
+          ],
+          [
+            73.42953,
+            17.72165
+          ],
+          [
+            73.42986,
+            17.72333
+          ],
+          [
+            73.42995,
+            17.7246
+          ],
+          [
+            73.42989,
+            17.72579
+          ],
+          [
+            73.42971,
+            17.72709
+          ],
+          [
+            73.4294,
+            17.72837
+          ],
+          [
+            73.42758,
+            17.73371
+          ],
+          [
+            73.42563,
+            17.74002
+          ],
+          [
+            73.42441,
+            17.74599
+          ],
+          [
+            73.42184,
+            17.7599
+          ],
+          [
+            73.42098,
+            17.76362
+          ],
+          [
+            73.42069,
+            17.76609
+          ],
+          [
+            73.42059,
+            17.76904
+          ],
+          [
+            73.42005,
+            17.77536
+          ],
+          [
+            73.42002,
+            17.77683
+          ],
+          [
+            73.41972,
+            17.77827
+          ],
+          [
+            73.41954,
+            17.78284
+          ],
+          [
+            73.41936,
+            17.78414
+          ],
+          [
+            73.41916,
+            17.7882
+          ],
+          [
+            73.41888,
+            17.79175
+          ],
+          [
+            73.41861,
+            17.79385
+          ],
+          [
+            73.41867,
+            17.79438
+          ],
+          [
+            73.41438,
+            17.80893
+          ],
+          [
+            73.41308,
+            17.81281
+          ],
+          [
+            73.41173,
+            17.81759
+          ],
+          [
+            73.41136,
+            17.82028
+          ],
+          [
+            73.41106,
+            17.82351
+          ],
+          [
+            73.4109,
+            17.82571
+          ],
+          [
+            73.41093,
+            17.82676
+          ],
+          [
+            73.41131,
+            17.8285
+          ],
+          [
+            73.41543,
+            17.83917
+          ],
+          [
+            73.41632,
+            17.84214
+          ],
+          [
+            73.41751,
+            17.84961
+          ],
+          [
+            73.41812,
+            17.85513
+          ],
+          [
+            73.41836,
+            17.85628
+          ],
+          [
+            73.41815,
+            17.8587
+          ],
+          [
+            73.41798,
+            17.85942
+          ],
+          [
+            73.41765,
+            17.86058
+          ],
+          [
+            73.41706,
+            17.86194
+          ],
+          [
+            73.41647,
+            17.86289
+          ],
+          [
+            73.41579,
+            17.86366
+          ],
+          [
+            73.40403,
+            17.8745
+          ],
+          [
+            73.3912,
+            17.88777
+          ],
+          [
+            73.38873,
+            17.89073
+          ],
+          [
+            73.38695,
+            17.89362
+          ],
+          [
+            73.38589,
+            17.89568
+          ],
+          [
+            73.38528,
+            17.89739
+          ],
+          [
+            73.38506,
+            17.89841
+          ],
+          [
+            73.38486,
+            17.89989
+          ],
+          [
+            73.38334,
+            17.92247
+          ],
+          [
+            73.38267,
+            17.93074
+          ],
+          [
+            73.38217,
+            17.94082
+          ],
+          [
+            73.38235,
+            17.94249
+          ],
+          [
+            73.38285,
+            17.94425
+          ],
+          [
+            73.38335,
+            17.94541
+          ],
+          [
+            73.38396,
+            17.94653
+          ],
+          [
+            73.38521,
+            17.94849
+          ],
+          [
+            73.38628,
+            17.95074
+          ],
+          [
+            73.38656,
+            17.95156
+          ],
+          [
+            73.38811,
+            17.95819
+          ],
+          [
+            73.38952,
+            17.96487
+          ],
+          [
+            73.39021,
+            17.96726
+          ],
+          [
+            73.39041,
+            17.96875
+          ],
+          [
+            73.39165,
+            17.97373
+          ],
+          [
+            73.39193,
+            17.97543
+          ],
+          [
+            73.39264,
+            17.97763
+          ],
+          [
+            73.39333,
+            17.97939
+          ],
+          [
+            73.39414,
+            17.98088
+          ],
+          [
+            73.39512,
+            17.98217
+          ],
+          [
+            73.39571,
+            17.98274
+          ],
+          [
+            73.39702,
+            17.98376
+          ],
+          [
+            73.40066,
+            17.98604
+          ],
+          [
+            73.40199,
+            17.98701
+          ],
+          [
+            73.40273,
+            17.9877
+          ],
+          [
+            73.40409,
+            17.98943
+          ],
+          [
+            73.40483,
+            17.99102
+          ],
+          [
+            73.40517,
+            17.99211
+          ],
+          [
+            73.40537,
+            17.99376
+          ],
+          [
+            73.40513,
+            17.99533
+          ],
+          [
+            73.40424,
+            17.99924
+          ],
+          [
+            73.40271,
+            18.00253
+          ],
+          [
+            73.40244,
+            18.00364
+          ],
+          [
+            73.39655,
+            18.01988
+          ],
+          [
+            73.39589,
+            18.0215
+          ],
+          [
+            73.39512,
+            18.02297
+          ],
+          [
+            73.39468,
+            18.02361
+          ],
+          [
+            73.39336,
+            18.02503
+          ],
+          [
+            73.3915,
+            18.02666
+          ],
+          [
+            73.3786,
+            18.03731
+          ],
+          [
+            73.37778,
+            18.03815
+          ],
+          [
+            73.37727,
+            18.03879
+          ],
+          [
+            73.37634,
+            18.04019
+          ],
+          [
+            73.37541,
+            18.04212
+          ],
+          [
+            73.37486,
+            18.04408
+          ],
+          [
+            73.37157,
+            18.05811
+          ],
+          [
+            73.36942,
+            18.06782
+          ],
+          [
+            73.36889,
+            18.0694
+          ],
+          [
+            73.36829,
+            18.07064
+          ],
+          [
+            73.36763,
+            18.07166
+          ],
+          [
+            73.36548,
+            18.07426
+          ],
+          [
+            73.36212,
+            18.07809
+          ],
+          [
+            73.35522,
+            18.08798
+          ],
+          [
+            73.35458,
+            18.08957
+          ],
+          [
+            73.35416,
+            18.09314
+          ],
+          [
+            73.35403,
+            18.09363
+          ],
+          [
+            73.35339,
+            18.09495
+          ],
+          [
+            73.3529,
+            18.09559
+          ],
+          [
+            73.35222,
+            18.09627
+          ],
+          [
+            73.35148,
+            18.09678
+          ],
+          [
+            73.35053,
+            18.09723
+          ],
+          [
+            73.34285,
+            18.09937
+          ],
+          [
+            73.33945,
+            18.10041
+          ],
+          [
+            73.33831,
+            18.1011
+          ],
+          [
+            73.33711,
+            18.10231
+          ],
+          [
+            73.33246,
+            18.11007
+          ],
+          [
+            73.33058,
+            18.11375
+          ],
+          [
+            73.32801,
+            18.1175
+          ],
+          [
+            73.32756,
+            18.1183
+          ],
+          [
+            73.3243,
+            18.12487
+          ],
+          [
+            73.3236,
+            18.12651
+          ],
+          [
+            73.32303,
+            18.12858
+          ],
+          [
+            73.32171,
+            18.13577
+          ],
+          [
+            73.32146,
+            18.13667
+          ],
+          [
+            73.32114,
+            18.13753
+          ],
+          [
+            73.32028,
+            18.13926
+          ],
+          [
+            73.30526,
+            18.15995
+          ],
+          [
+            73.303,
+            18.16261
+          ],
+          [
+            73.30097,
+            18.16588
+          ],
+          [
+            73.2994,
+            18.16815
+          ],
+          [
+            73.29855,
+            18.16957
+          ],
+          [
+            73.29822,
+            18.1704
+          ],
+          [
+            73.29786,
+            18.17169
+          ],
+          [
+            73.29761,
+            18.1734
+          ],
+          [
+            73.29747,
+            18.17842
+          ],
+          [
+            73.29728,
+            18.19181
+          ],
+          [
+            73.29708,
+            18.19825
+          ],
+          [
+            73.29681,
+            18.21774
+          ],
+          [
+            73.29667,
+            18.22131
+          ],
+          [
+            73.29654,
+            18.22244
+          ],
+          [
+            73.29625,
+            18.22352
+          ],
+          [
+            73.29547,
+            18.22537
+          ],
+          [
+            73.29474,
+            18.22657
+          ],
+          [
+            73.28785,
+            18.23543
+          ],
+          [
+            73.28588,
+            18.23785
+          ],
+          [
+            73.28212,
+            18.24145
+          ],
+          [
+            73.27544,
+            18.24745
+          ],
+          [
+            73.27259,
+            18.25054
+          ],
+          [
+            73.26598,
+            18.25681
+          ],
+          [
+            73.26367,
+            18.25938
+          ],
+          [
+            73.26238,
+            18.26108
+          ],
+          [
+            73.26135,
+            18.26265
+          ],
+          [
+            73.26041,
+            18.26429
+          ],
+          [
+            73.25397,
+            18.27799
+          ],
+          [
+            73.24677,
+            18.29354
+          ],
+          [
+            73.24627,
+            18.29467
+          ],
+          [
+            73.24466,
+            18.29905
+          ],
+          [
+            73.24052,
+            18.3077
+          ],
+          [
+            73.24005,
+            18.30921
+          ],
+          [
+            73.23982,
+            18.31045
+          ],
+          [
+            73.23983,
+            18.3128
+          ],
+          [
+            73.24025,
+            18.31491
+          ],
+          [
+            73.24151,
+            18.31885
+          ],
+          [
+            73.24192,
+            18.32107
+          ],
+          [
+            73.24241,
+            18.32832
+          ],
+          [
+            73.24234,
+            18.32978
+          ],
+          [
+            73.24213,
+            18.33093
+          ],
+          [
+            73.23519,
+            18.35337
+          ],
+          [
+            73.23119,
+            18.37179
+          ],
+          [
+            73.22928,
+            18.38008
+          ],
+          [
+            73.22806,
+            18.38295
+          ],
+          [
+            73.22465,
+            18.39
+          ],
+          [
+            73.22342,
+            18.39202
+          ],
+          [
+            73.22231,
+            18.39492
+          ],
+          [
+            73.21946,
+            18.40075
+          ],
+          [
+            73.21868,
+            18.40209
+          ],
+          [
+            73.21718,
+            18.40389
+          ],
+          [
+            73.20413,
+            18.41554
+          ],
+          [
+            73.1936,
+            18.42292
+          ],
+          [
+            73.19263,
+            18.42368
+          ],
+          [
+            73.19193,
+            18.42433
+          ],
+          [
+            73.19088,
+            18.42559
+          ],
+          [
+            73.19025,
+            18.42651
+          ],
+          [
+            73.18818,
+            18.43009
+          ],
+          [
+            73.18724,
+            18.43129
+          ],
+          [
+            73.18612,
+            18.43238
+          ],
+          [
+            73.18423,
+            18.43377
+          ],
+          [
+            73.18008,
+            18.43592
+          ],
+          [
+            73.1786,
+            18.43653
+          ],
+          [
+            73.17714,
+            18.43692
+          ],
+          [
+            73.17489,
+            18.43717
+          ],
+          [
+            73.17358,
+            18.43716
+          ],
+          [
+            73.16519,
+            18.43626
+          ],
+          [
+            73.16381,
+            18.4362
+          ],
+          [
+            73.16193,
+            18.43638
+          ],
+          [
+            73.16091,
+            18.43657
+          ],
+          [
+            73.1595,
+            18.43698
+          ],
+          [
+            73.14452,
+            18.44322
+          ],
+          [
+            73.14333,
+            18.44361
+          ],
+          [
+            73.14242,
+            18.44382
+          ],
+          [
+            73.14077,
+            18.44404
+          ],
+          [
+            73.13989,
+            18.44408
+          ],
+          [
+            73.13601,
+            18.44393
+          ],
+          [
+            73.13401,
+            18.44405
+          ],
+          [
+            73.12387,
+            18.44658
+          ],
+          [
+            73.12018,
+            18.44783
+          ],
+          [
+            73.11692,
+            18.44873
+          ],
+          [
+            73.11622,
+            18.44896
+          ],
+          [
+            73.11517,
+            18.44947
+          ],
+          [
+            73.11244,
+            18.45155
+          ],
+          [
+            73.11155,
+            18.45238
+          ],
+          [
+            73.10543,
+            18.45869
+          ],
+          [
+            73.10492,
+            18.45978
+          ],
+          [
+            73.10486,
+            18.46025
+          ],
+          [
+            73.10489,
+            18.46106
+          ],
+          [
+            73.10545,
+            18.46923
+          ],
+          [
+            73.10582,
+            18.47054
+          ],
+          [
+            73.10731,
+            18.4741
+          ],
+          [
+            73.11269,
+            18.48437
+          ],
+          [
+            73.11963,
+            18.49835
+          ],
+          [
+            73.12016,
+            18.49928
+          ],
+          [
+            73.1209,
+            18.50039
+          ],
+          [
+            73.12295,
+            18.50286
+          ],
+          [
+            73.13024,
+            18.51109
+          ],
+          [
+            73.13086,
+            18.51184
+          ],
+          [
+            73.13167,
+            18.51312
+          ],
+          [
+            73.13218,
+            18.51437
+          ],
+          [
+            73.13243,
+            18.51525
+          ],
+          [
+            73.13253,
+            18.51622
+          ],
+          [
+            73.13227,
+            18.52013
+          ],
+          [
+            73.13243,
+            18.52108
+          ],
+          [
+            73.13297,
+            18.52273
+          ],
+          [
+            73.13345,
+            18.52363
+          ],
+          [
+            73.13451,
+            18.52497
+          ],
+          [
+            73.13952,
+            18.52955
+          ],
+          [
+            73.14154,
+            18.53155
+          ],
+          [
+            73.1422,
+            18.53267
+          ],
+          [
+            73.14245,
+            18.53364
+          ],
+          [
+            73.14252,
+            18.53433
+          ],
+          [
+            73.14238,
+            18.53554
+          ],
+          [
+            73.14161,
+            18.53787
+          ],
+          [
+            73.14116,
+            18.5401
+          ],
+          [
+            73.13868,
+            18.54703
+          ],
+          [
+            73.13839,
+            18.54772
+          ],
+          [
+            73.13795,
+            18.54848
+          ],
+          [
+            73.13723,
+            18.54943
+          ],
+          [
+            73.13344,
+            18.55348
+          ],
+          [
+            73.13188,
+            18.55535
+          ],
+          [
+            73.12637,
+            18.56266
+          ],
+          [
+            73.12559,
+            18.56383
+          ],
+          [
+            73.12497,
+            18.56505
+          ],
+          [
+            73.12436,
+            18.5666
+          ],
+          [
+            73.122,
+            18.57174
+          ],
+          [
+            73.11099,
+            18.59679
+          ],
+          [
+            73.11038,
+            18.59799
+          ],
+          [
+            73.10511,
+            18.6037
+          ],
+          [
+            73.10395,
+            18.6047
+          ],
+          [
+            73.10317,
+            18.60522
+          ],
+          [
+            73.10216,
+            18.6057
+          ],
+          [
+            73.09764,
+            18.60721
+          ],
+          [
+            73.09666,
+            18.60769
+          ],
+          [
+            73.09525,
+            18.6086
+          ],
+          [
+            73.09473,
+            18.6091
+          ],
+          [
+            73.09402,
+            18.60995
+          ],
+          [
+            73.0911,
+            18.61457
+          ],
+          [
+            73.09056,
+            18.61582
+          ],
+          [
+            73.09036,
+            18.61668
+          ],
+          [
+            73.08999,
+            18.6198
+          ],
+          [
+            73.08954,
+            18.62116
+          ],
+          [
+            73.08893,
+            18.62224
+          ],
+          [
+            73.08764,
+            18.62412
+          ],
+          [
+            73.08311,
+            18.63032
+          ],
+          [
+            73.08199,
+            18.63235
+          ],
+          [
+            73.08165,
+            18.6332
+          ],
+          [
+            73.0812,
+            18.63459
+          ],
+          [
+            73.07931,
+            18.64137
+          ],
+          [
+            73.07863,
+            18.64511
+          ],
+          [
+            73.07811,
+            18.64681
+          ],
+          [
+            73.07764,
+            18.64793
+          ],
+          [
+            73.07459,
+            18.65398
+          ],
+          [
+            73.07398,
+            18.65557
+          ],
+          [
+            73.06943,
+            18.67383
+          ],
+          [
+            73.06876,
+            18.67572
+          ],
+          [
+            73.06842,
+            18.67641
+          ],
+          [
+            73.06772,
+            18.67739
+          ],
+          [
+            73.06499,
+            18.67993
+          ],
+          [
+            73.05408,
+            18.68958
+          ],
+          [
+            73.05324,
+            18.69043
+          ],
+          [
+            73.0524,
+            18.69159
+          ],
+          [
+            73.05192,
+            18.69256
+          ],
+          [
+            73.05166,
+            18.69337
+          ],
+          [
+            73.05026,
+            18.70077
+          ],
+          [
+            73.05013,
+            18.70292
+          ],
+          [
+            73.05027,
+            18.70688
+          ],
+          [
+            73.05049,
+            18.70793
+          ],
+          [
+            73.05094,
+            18.70902
+          ],
+          [
+            73.05137,
+            18.70965
+          ],
+          [
+            73.052,
+            18.71032
+          ],
+          [
+            73.05287,
+            18.71096
+          ],
+          [
+            73.06342,
+            18.71709
+          ],
+          [
+            73.06473,
+            18.71775
+          ],
+          [
+            73.06669,
+            18.71828
+          ],
+          [
+            73.07063,
+            18.71891
+          ],
+          [
+            73.07204,
+            18.71931
+          ],
+          [
+            73.07353,
+            18.71998
+          ],
+          [
+            73.081,
+            18.72385
+          ],
+          [
+            73.08271,
+            18.72489
+          ],
+          [
+            73.08372,
+            18.72582
+          ],
+          [
+            73.0841,
+            18.72625
+          ],
+          [
+            73.08477,
+            18.72732
+          ],
+          [
+            73.08519,
+            18.72836
+          ],
+          [
+            73.08682,
+            18.73539
+          ],
+          [
+            73.08837,
+            18.74388
+          ],
+          [
+            73.08905,
+            18.74711
+          ],
+          [
+            73.0895,
+            18.74833
+          ],
+          [
+            73.09143,
+            18.75218
+          ],
+          [
+            73.09217,
+            18.75392
+          ],
+          [
+            73.09232,
+            18.75474
+          ],
+          [
+            73.09233,
+            18.75634
+          ],
+          [
+            73.09206,
+            18.75779
+          ],
+          [
+            73.09173,
+            18.75871
+          ],
+          [
+            73.09139,
+            18.75938
+          ],
+          [
+            73.09088,
+            18.76017
+          ],
+          [
+            73.08685,
+            18.76501
+          ],
+          [
+            73.08567,
+            18.76672
+          ],
+          [
+            73.08483,
+            18.76835
+          ],
+          [
+            73.0792,
+            18.78394
+          ],
+          [
+            73.07835,
+            18.78683
+          ],
+          [
+            73.07824,
+            18.78769
+          ],
+          [
+            73.07827,
+            18.78968
+          ],
+          [
+            73.07906,
+            18.80302
+          ],
+          [
+            73.07968,
+            18.80474
+          ],
+          [
+            73.08023,
+            18.80565
+          ],
+          [
+            73.0847,
+            18.81123
+          ],
+          [
+            73.08515,
+            18.81195
+          ],
+          [
+            73.08581,
+            18.81351
+          ],
+          [
+            73.08682,
+            18.82009
+          ],
+          [
+            73.08707,
+            18.82384
+          ],
+          [
+            73.08753,
+            18.82783
+          ],
+          [
+            73.08782,
+            18.82867
+          ],
+          [
+            73.09026,
+            18.8326
+          ],
+          [
+            73.09098,
+            18.83335
+          ],
+          [
+            73.09172,
+            18.83395
+          ],
+          [
+            73.10244,
+            18.84169
+          ],
+          [
+            73.10328,
+            18.84219
+          ],
+          [
+            73.10453,
+            18.84252
+          ],
+          [
+            73.10549,
+            18.84251
+          ],
+          [
+            73.11327,
+            18.84124
+          ],
+          [
+            73.11403,
+            18.84119
+          ],
+          [
+            73.11803,
+            18.84164
+          ],
+          [
+            73.11923,
+            18.84187
+          ],
+          [
+            73.11997,
+            18.84216
+          ],
+          [
+            73.12192,
+            18.84321
+          ],
+          [
+            73.12354,
+            18.84425
+          ],
+          [
+            73.12402,
+            18.84464
+          ],
+          [
+            73.12627,
+            18.84704
+          ],
+          [
+            73.12704,
+            18.84756
+          ],
+          [
+            73.12799,
+            18.84793
+          ],
+          [
+            73.1285,
+            18.84804
+          ],
+          [
+            73.13391,
+            18.84892
+          ],
+          [
+            73.13511,
+            18.84923
+          ],
+          [
+            73.13557,
+            18.84945
+          ],
+          [
+            73.13664,
+            18.85027
+          ],
+          [
+            73.13729,
+            18.85119
+          ],
+          [
+            73.13758,
+            18.85206
+          ],
+          [
+            73.13766,
+            18.85254
+          ],
+          [
+            73.13801,
+            18.85627
+          ],
+          [
+            73.13817,
+            18.85681
+          ],
+          [
+            73.13855,
+            18.85747
+          ],
+          [
+            73.13928,
+            18.85823
+          ],
+          [
+            73.14012,
+            18.85867
+          ],
+          [
+            73.14052,
+            18.8588
+          ],
+          [
+            73.14126,
+            18.85889
+          ],
+          [
+            73.14241,
+            18.8587
+          ],
+          [
+            73.14411,
+            18.858
+          ],
+          [
+            73.145,
+            18.85777
+          ],
+          [
+            73.14588,
+            18.85778
+          ],
+          [
+            73.14672,
+            18.858
+          ],
+          [
+            73.14965,
+            18.85938
+          ],
+          [
+            73.15031,
+            18.85979
+          ],
+          [
+            73.15083,
+            18.86035
+          ],
+          [
+            73.15202,
+            18.86203
+          ],
+          [
+            73.15274,
+            18.86359
+          ],
+          [
+            73.1533,
+            18.86371
+          ],
+          [
+            73.15302,
+            18.8646
+          ],
+          [
+            73.15412,
+            18.87019
+          ],
+          [
+            73.15453,
+            18.87266
+          ],
+          [
+            73.15459,
+            18.87371
+          ],
+          [
+            73.15424,
+            18.87564
+          ],
+          [
+            73.15236,
+            18.88162
+          ],
+          [
+            73.15208,
+            18.88274
+          ],
+          [
+            73.15193,
+            18.88405
+          ],
+          [
+            73.15164,
+            18.89404
+          ],
+          [
+            73.15174,
+            18.90255
+          ],
+          [
+            73.15185,
+            18.90329
+          ],
+          [
+            73.15213,
+            18.90406
+          ],
+          [
+            73.15331,
+            18.9063
+          ],
+          [
+            73.15351,
+            18.90683
+          ],
+          [
+            73.1537,
+            18.90767
+          ],
+          [
+            73.15366,
+            18.91018
+          ],
+          [
+            73.15345,
+            18.91192
+          ],
+          [
+            73.15301,
+            18.91346
+          ],
+          [
+            73.15058,
+            18.91831
+          ],
+          [
+            73.14595,
+            18.92723
+          ],
+          [
+            73.14555,
+            18.92833
+          ],
+          [
+            73.14535,
+            18.92915
+          ],
+          [
+            73.14521,
+            18.92996
+          ],
+          [
+            73.14516,
+            18.93144
+          ],
+          [
+            73.14592,
+            18.93978
+          ],
+          [
+            73.14597,
+            18.94153
+          ],
+          [
+            73.14545,
+            18.94856
+          ],
+          [
+            73.14548,
+            18.95065
+          ],
+          [
+            73.14454,
+            18.95838
+          ],
+          [
+            73.14425,
+            18.96239
+          ],
+          [
+            73.14394,
+            18.96418
+          ],
+          [
+            73.14332,
+            18.96558
+          ],
+          [
+            73.13663,
+            18.97582
+          ],
+          [
+            73.1351,
+            18.97782
+          ],
+          [
+            73.13055,
+            18.98219
+          ],
+          [
+            73.12902,
+            18.98382
+          ],
+          [
+            73.12484,
+            18.9878
+          ],
+          [
+            73.12269,
+            18.98942
+          ],
+          [
+            73.11713,
+            18.99463
+          ],
+          [
+            73.11266,
+            18.99952
+          ],
+          [
+            73.11163,
+            19.00031
+          ],
+          [
+            73.10239,
+            19.00537
+          ],
+          [
+            73.1014,
+            19.00584
+          ],
+          [
+            73.09978,
+            19.00632
+          ],
+          [
+            73.09848,
+            19.00653
+          ],
+          [
+            73.09528,
+            19.00735
+          ],
+          [
+            73.09285,
+            19.00786
+          ],
+          [
+            73.08943,
+            19.00874
+          ],
+          [
+            73.0882,
+            19.00921
+          ],
+          [
+            73.08733,
+            19.00977
+          ],
+          [
+            73.08668,
+            19.01037
+          ],
+          [
+            73.08319,
+            19.01389
+          ],
+          [
+            73.0815,
+            19.01549
+          ],
+          [
+            73.07744,
+            19.0197
+          ],
+          [
+            73.07031,
+            19.0269
+          ],
+          [
+            73.06938,
+            19.02769
+          ],
+          [
+            73.06825,
+            19.02832
+          ],
+          [
+            73.06758,
+            19.02855
+          ],
+          [
+            73.0661,
+            19.02876
+          ],
+          [
+            73.06532,
+            19.02873
+          ],
+          [
+            73.06427,
+            19.0285
+          ],
+          [
+            73.06332,
+            19.02812
+          ],
+          [
+            73.0593,
+            19.02584
+          ],
+          [
+            73.05557,
+            19.02404
+          ],
+          [
+            73.05135,
+            19.02186
+          ],
+          [
+            73.04984,
+            19.02157
+          ],
+          [
+            73.04882,
+            19.02157
+          ],
+          [
+            73.04578,
+            19.02208
+          ],
+          [
+            73.04514,
+            19.02212
+          ],
+          [
+            73.0442,
+            19.022
+          ],
+          [
+            73.04313,
+            19.02161
+          ],
+          [
+            73.04251,
+            19.02127
+          ],
+          [
+            73.03913,
+            19.01901
+          ],
+          [
+            73.03746,
+            19.01807
+          ],
+          [
+            73.03561,
+            19.01722
+          ],
+          [
+            73.0347,
+            19.01703
+          ],
+          [
+            73.02994,
+            19.01637
+          ],
+          [
+            73.02697,
+            19.01628
+          ],
+          [
+            73.02598,
+            19.0165
+          ],
+          [
+            73.0251,
+            19.0169
+          ],
+          [
+            73.02415,
+            19.01763
+          ],
+          [
+            73.01799,
+            19.02314
+          ],
+          [
+            73.01717,
+            19.02411
+          ],
+          [
+            73.01669,
+            19.02522
+          ],
+          [
+            73.01659,
+            19.02633
+          ],
+          [
+            73.01672,
+            19.02711
+          ],
+          [
+            73.01784,
+            19.03003
+          ],
+          [
+            73.01805,
+            19.03095
+          ],
+          [
+            73.01833,
+            19.03549
+          ],
+          [
+            73.01888,
+            19.04241
+          ],
+          [
+            73.0189,
+            19.04899
+          ],
+          [
+            73.01886,
+            19.05009
+          ],
+          [
+            73.01854,
+            19.0522
+          ],
+          [
+            73.01836,
+            19.05416
+          ],
+          [
+            73.01844,
+            19.05585
+          ],
+          [
+            73.01841,
+            19.05857
+          ],
+          [
+            73.01819,
+            19.06457
+          ],
+          [
+            73.01864,
+            19.06753
+          ],
+          [
+            73.01871,
+            19.06845
+          ],
+          [
+            73.01844,
+            19.07315
+          ],
+          [
+            73.01776,
+            19.07622
+          ],
+          [
+            73.01729,
+            19.07739
+          ],
+          [
+            73.01664,
+            19.08228
+          ],
+          [
+            73.01703,
+            19.08956
+          ],
+          [
+            73.01692,
+            19.09328
+          ],
+          [
+            73.01676,
+            19.094
+          ],
+          [
+            73.01638,
+            19.09494
+          ],
+          [
+            73.01407,
+            19.09821
+          ],
+          [
+            73.0134,
+            19.09932
+          ],
+          [
+            73.01239,
+            19.10066
+          ],
+          [
+            73.01214,
+            19.10105
+          ],
+          [
+            73.01183,
+            19.10181
+          ],
+          [
+            73.0113,
+            19.10333
+          ],
+          [
+            73.01048,
+            19.1067
+          ],
+          [
+            73.00958,
+            19.10973
+          ],
+          [
+            73.00826,
+            19.11343
+          ],
+          [
+            73.00709,
+            19.11617
+          ],
+          [
+            73.00555,
+            19.1205
+          ],
+          [
+            73.00324,
+            19.13003
+          ],
+          [
+            73.00317,
+            19.1313
+          ],
+          [
+            73.00341,
+            19.13406
+          ],
+          [
+            73.00241,
+            19.13844
+          ],
+          [
+            73.00224,
+            19.14201
+          ],
+          [
+            73.00189,
+            19.14322
+          ],
+          [
+            73.00049,
+            19.14601
+          ],
+          [
+            73.00027,
+            19.14685
+          ],
+          [
+            73.00026,
+            19.15178
+          ],
+          [
+            73.00015,
+            19.15266
+          ],
+          [
+            72.99959,
+            19.15494
+          ],
+          [
+            72.99949,
+            19.15563
+          ],
+          [
+            72.99938,
+            19.1586
+          ],
+          [
+            72.99949,
+            19.16448
+          ],
+          [
+            72.99876,
+            19.17062
+          ],
+          [
+            72.99853,
+            19.17138
+          ],
+          [
+            72.99813,
+            19.17219
+          ],
+          [
+            72.99517,
+            19.17531
+          ],
+          [
+            72.99471,
+            19.17591
+          ],
+          [
+            72.99431,
+            19.17661
+          ],
+          [
+            72.99405,
+            19.17738
+          ],
+          [
+            72.99394,
+            19.17812
+          ],
+          [
+            72.99397,
+            19.17878
+          ],
+          [
+            72.99415,
+            19.17965
+          ],
+          [
+            72.99503,
+            19.18281
+          ],
+          [
+            72.9964,
+            19.18827
+          ],
+          [
+            72.99638,
+            19.189
+          ],
+          [
+            72.99617,
+            19.18951
+          ],
+          [
+            72.9957,
+            19.19008
+          ],
+          [
+            72.99532,
+            19.19031
+          ],
+          [
+            72.99455,
+            19.19051
+          ],
+          [
+            72.99393,
+            19.19047
+          ],
+          [
+            72.99004,
+            19.18991
+          ],
+          [
+            72.98904,
+            19.18969
+          ],
+          [
+            72.97986,
+            19.18717
+          ],
+          [
+            72.97699,
+            19.18593
+          ],
+          [
+            72.97577,
+            19.18648
+          ],
+          [
+            72.97361,
+            19.18587
+          ],
+          [
+            72.97204,
+            19.18532
+          ],
+          [
+            72.97033,
+            19.18456
+          ],
+          [
+            72.96853,
+            19.18352
+          ],
+          [
+            72.96692,
+            19.18221
+          ],
+          [
+            72.95837,
+            19.17388
+          ],
+          [
+            72.9567,
+            19.17214
+          ],
+          [
+            72.95559,
+            19.17064
+          ],
+          [
+            72.95479,
+            19.16978
+          ],
+          [
+            72.95331,
+            19.1679
+          ],
+          [
+            72.95276,
+            19.16713
+          ],
+          [
+            72.95159,
+            19.1652
+          ],
+          [
+            72.9502,
+            19.16232
+          ],
+          [
+            72.94845,
+            19.15741
+          ],
+          [
+            72.94763,
+            19.15569
+          ],
+          [
+            72.94558,
+            19.15246
+          ],
+          [
+            72.93873,
+            19.1434
+          ],
+          [
+            72.93765,
+            19.14276
+          ],
+          [
+            72.93556,
+            19.13987
+          ],
+          [
+            72.93022,
+            19.13295
+          ],
+          [
+            72.92944,
+            19.13173
+          ],
+          [
+            72.92891,
+            19.1307
+          ],
+          [
+            72.92804,
+            19.12865
+          ],
+          [
+            72.9278,
+            19.12709
+          ],
+          [
+            72.92767,
+            19.12542
+          ],
+          [
+            72.92816,
+            19.1131
+          ],
+          [
+            72.92802,
+            19.11069
+          ],
+          [
+            72.92776,
+            19.10922
+          ],
+          [
+            72.92687,
+            19.10598
+          ],
+          [
+            72.92587,
+            19.10365
+          ],
+          [
+            72.92492,
+            19.10203
+          ],
+          [
+            72.92376,
+            19.10042
+          ],
+          [
+            72.92292,
+            19.09948
+          ],
+          [
+            72.91461,
+            19.09085
+          ],
+          [
+            72.91247,
+            19.08883
+          ],
+          [
+            72.91155,
+            19.08808
+          ],
+          [
+            72.90837,
+            19.08569
+          ],
+          [
+            72.90145,
+            19.08226
+          ],
+          [
+            72.89712,
+            19.07954
+          ],
+          [
+            72.8973,
+            19.07889
+          ],
+          [
+            72.89657,
+            19.07805
+          ],
+          [
+            72.89609,
+            19.07728
+          ],
+          [
+            72.89506,
+            19.07372
+          ],
+          [
+            72.89451,
+            19.07242
+          ],
+          [
+            72.89425,
+            19.07204
+          ],
+          [
+            72.89198,
+            19.06947
+          ]
+        ]
+      }
+    }
+  },
+  "_provider": "schedule",
+  "deadReckoning": {
+    "active": false,
+    "staleSinceMs": 0,
+    "method": "live_signal"
+  }
+}

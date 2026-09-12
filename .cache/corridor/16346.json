@@ -1,0 +1,2188 @@
+{
+ "number": "16346",
+ "name": "Netravati Express",
+ "type": "MAIL EXPRESS",
+ "category": "Express",
+ "avgSpeed": 47.1,
+ "source": {
+  "code": "TVC",
+  "name": "Thiruvananthapuram Central",
+  "lat": 8.4870167,
+  "lng": 76.9526408
+ },
+ "destination": {
+  "code": "LTT",
+  "name": "Mumbai LTT",
+  "lat": 19.0694658,
+  "lng": 72.8919779
+ },
+ "stations": [
+  {
+   "code": "TVC",
+   "name": "Thiruvananthapuram Central",
+   "km": 0.0,
+   "arrMin": null,
+   "depMin": 555,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TVP",
+   "name": "Thiruvananthapuram Pettah",
+   "km": 2.9,
+   "arrMin": 558,
+   "depMin": 558,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KCVL",
+   "name": "Thiruvananthapuram North",
+   "km": 7.8,
+   "arrMin": 562,
+   "depMin": 562,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VELI",
+   "name": "Veli",
+   "km": 9.7,
+   "arrMin": 563,
+   "depMin": 563,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KZK",
+   "name": "Kazhakuttam",
+   "km": 13.7,
+   "arrMin": 567,
+   "depMin": 567,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KXP",
+   "name": "Kaniyapuram",
+   "km": 17.8,
+   "arrMin": 571,
+   "depMin": 571,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MQU",
+   "name": "Murukkampuzha",
+   "km": 21.5,
+   "arrMin": 574,
+   "depMin": 574,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PGZ",
+   "name": "Perunguzhi",
+   "km": 24.8,
+   "arrMin": 577,
+   "depMin": 577,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CRY",
+   "name": "Chirayinkeezh",
+   "km": 28.8,
+   "arrMin": 580,
+   "depMin": 580,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KVU",
+   "name": "Kadakavur",
+   "km": 31.8,
+   "arrMin": 583,
+   "depMin": 583,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AMY",
+   "name": "Akathumuri",
+   "km": 34.8,
+   "arrMin": 585,
+   "depMin": 585,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VAK",
+   "name": "Varkala",
+   "km": 41.2,
+   "arrMin": 591,
+   "depMin": 592,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "EVA",
+   "name": "Edavai",
+   "km": 45.1,
+   "arrMin": 597,
+   "depMin": 597,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KFI",
+   "name": "Kappil",
+   "km": 47.9,
+   "arrMin": 600,
+   "depMin": 600,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PVU",
+   "name": "Paravur",
+   "km": 52.8,
+   "arrMin": 607,
+   "depMin": 607,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MYY",
+   "name": "Mayyanad",
+   "km": 56.0,
+   "arrMin": 611,
+   "depMin": 611,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "IRP",
+   "name": "Iravipuram",
+   "km": 60.0,
+   "arrMin": 616,
+   "depMin": 616,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "QLN",
+   "name": "Kollam Jn",
+   "km": 64.9,
+   "arrMin": 622,
+   "depMin": 625,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PRND",
+   "name": "Perinad",
+   "km": 74.3,
+   "arrMin": 633,
+   "depMin": 633,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MQO",
+   "name": "Munroturuttu",
+   "km": 79.7,
+   "arrMin": 638,
+   "depMin": 638,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "STKT",
+   "name": "Sasthankotta",
+   "km": 84.2,
+   "arrMin": 642,
+   "depMin": 642,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KPY",
+   "name": "Karunagappalli",
+   "km": 92.0,
+   "arrMin": 649,
+   "depMin": 650,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "OCR",
+   "name": "Ochira",
+   "km": 99.4,
+   "arrMin": 659,
+   "depMin": 659,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KYJ",
+   "name": "Kayankulam Jn",
+   "km": 105.7,
+   "arrMin": 666,
+   "depMin": 668,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CHPD",
+   "name": "Cheppad",
+   "km": 113.5,
+   "arrMin": 677,
+   "depMin": 677,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HAD",
+   "name": "Haripad",
+   "km": 118.3,
+   "arrMin": 682,
+   "depMin": 683,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KVTA",
+   "name": "Karuvatta Halt",
+   "km": 123.7,
+   "arrMin": 688,
+   "depMin": 688,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TZH",
+   "name": "Takazhi",
+   "km": 131.6,
+   "arrMin": 696,
+   "depMin": 696,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AMPA",
+   "name": "Ambalappuzha",
+   "km": 137.0,
+   "arrMin": 701,
+   "depMin": 702,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PNPR",
+   "name": "Punnapra",
+   "km": 141.9,
+   "arrMin": 706,
+   "depMin": 706,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ALLP",
+   "name": "Alappuzha",
+   "km": 149.2,
+   "arrMin": 712,
+   "depMin": 715,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TMPY",
+   "name": "Tumboli",
+   "km": 153.2,
+   "arrMin": 718,
+   "depMin": 718,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KAVR",
+   "name": "Kalavur Halt",
+   "km": 158.3,
+   "arrMin": 723,
+   "depMin": 723,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MAKM",
+   "name": "Mararikulam",
+   "km": 161.9,
+   "arrMin": 726,
+   "depMin": 726,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TRVZ",
+   "name": "Tiruvizha",
+   "km": 167.0,
+   "arrMin": 730,
+   "depMin": 730,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SRTL",
+   "name": "Cherthala",
+   "km": 172.6,
+   "arrMin": 735,
+   "depMin": 736,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VAY",
+   "name": "Vayalar",
+   "km": 179.2,
+   "arrMin": 747,
+   "depMin": 747,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TUVR",
+   "name": "Turavur",
+   "km": 182.9,
+   "arrMin": 753,
+   "depMin": 753,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "EZP",
+   "name": "Ezhuppunna",
+   "km": 188.0,
+   "arrMin": 761,
+   "depMin": 761,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AROR",
+   "name": "Aroor Halt",
+   "km": 193.4,
+   "arrMin": 769,
+   "depMin": 769,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KUMM",
+   "name": "Kumpbalam",
+   "km": 198.2,
+   "arrMin": 777,
+   "depMin": 777,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TNU",
+   "name": "Tirunettur",
+   "km": 201.8,
+   "arrMin": 783,
+   "depMin": 783,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ERS",
+   "name": "Ernakulam Jn",
+   "km": 206.2,
+   "arrMin": 790,
+   "depMin": 795,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ERN",
+   "name": "Ernakulam Town",
+   "km": 208.7,
+   "arrMin": 798,
+   "depMin": 798,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "IPL",
+   "name": "Idapalli",
+   "km": 214.7,
+   "arrMin": 805,
+   "depMin": 805,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KLMR",
+   "name": "Kalamasseri",
+   "km": 219.5,
+   "arrMin": 811,
+   "depMin": 811,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AWY",
+   "name": "Aluva",
+   "km": 225.7,
+   "arrMin": 818,
+   "depMin": 820,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CWR",
+   "name": "Chovvara",
+   "km": 228.9,
+   "arrMin": 823,
+   "depMin": 823,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AFK",
+   "name": "Angamali",
+   "km": 234.8,
+   "arrMin": 828,
+   "depMin": 828,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KUC",
+   "name": "Karukkutty",
+   "km": 239.5,
+   "arrMin": 833,
+   "depMin": 833,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KRAN",
+   "name": "Koratti Angadi",
+   "km": 244.1,
+   "arrMin": 837,
+   "depMin": 837,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DINR",
+   "name": "Divine Nagar Halt (f",
+   "km": 248.2,
+   "arrMin": 840,
+   "depMin": 840,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CKI",
+   "name": "Chalakudi",
+   "km": 250.6,
+   "arrMin": 843,
+   "depMin": 843,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "IJK",
+   "name": "Irinjalakuda",
+   "km": 256.6,
+   "arrMin": 848,
+   "depMin": 848,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NYI",
+   "name": "Nellayi",
+   "km": 262.9,
+   "arrMin": 854,
+   "depMin": 854,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PUK",
+   "name": "Pudukad",
+   "km": 266.6,
+   "arrMin": 857,
+   "depMin": 857,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "OLR",
+   "name": "Ollur",
+   "km": 273.7,
+   "arrMin": 864,
+   "depMin": 864,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TCR",
+   "name": "Thrisur",
+   "km": 280.6,
+   "arrMin": 870,
+   "depMin": 873,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PNQ",
+   "name": "Punkunnam",
+   "km": 282.5,
+   "arrMin": 877,
+   "depMin": 877,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MGK",
+   "name": "Mulagunnathukavu",
+   "km": 289.4,
+   "arrMin": 891,
+   "depMin": 891,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "WKI",
+   "name": "Wadakancheri",
+   "km": 296.9,
+   "arrMin": 907,
+   "depMin": 907,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MUC",
+   "name": "Mullurcarai",
+   "km": 305.6,
+   "arrMin": 924,
+   "depMin": 924,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VTK",
+   "name": "Vallathol Nagar",
+   "km": 309.1,
+   "arrMin": 932,
+   "depMin": 932,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SRR",
+   "name": "Shoranur Jn",
+   "km": 313.2,
+   "arrMin": 940,
+   "depMin": 945,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KRKD",
+   "name": "Karakad",
+   "km": 319.1,
+   "arrMin": 949,
+   "depMin": 949,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PTB",
+   "name": "Pattambi",
+   "km": 324.7,
+   "arrMin": 952,
+   "depMin": 952,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KODN",
+   "name": "Kodumunda",
+   "km": 329.3,
+   "arrMin": 955,
+   "depMin": 955,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PUM",
+   "name": "Pallippuram",
+   "km": 333.8,
+   "arrMin": 958,
+   "depMin": 958,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PEU",
+   "name": "Perssannur",
+   "km": 339.1,
+   "arrMin": 961,
+   "depMin": 961,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KTU",
+   "name": "Kuttippuram",
+   "km": 343.2,
+   "arrMin": 964,
+   "depMin": 965,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TUA",
+   "name": "Tirunnavaya",
+   "km": 349.3,
+   "arrMin": 970,
+   "depMin": 970,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TIR",
+   "name": "Tirur",
+   "km": 358.1,
+   "arrMin": 978,
+   "depMin": 980,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TA",
+   "name": "Tanur",
+   "km": 366.4,
+   "arrMin": 987,
+   "depMin": 987,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PGI",
+   "name": "Parpanangadi",
+   "km": 374.7,
+   "arrMin": 994,
+   "depMin": 995,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VLI",
+   "name": "Vallikunnu",
+   "km": 379.5,
+   "arrMin": 1001,
+   "depMin": 1001,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KN",
+   "name": "Kadalundi",
+   "km": 384.8,
+   "arrMin": 1007,
+   "depMin": 1007,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "FK",
+   "name": "Ferok",
+   "km": 389.5,
+   "arrMin": 1013,
+   "depMin": 1013,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KUL",
+   "name": "Kallayi",
+   "km": 397.7,
+   "arrMin": 1023,
+   "depMin": 1023,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CLT",
+   "name": "Kozhikkode",
+   "km": 399.5,
+   "arrMin": 1025,
+   "depMin": 1030,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VLL",
+   "name": "Vellayil",
+   "km": 401.9,
+   "arrMin": 1032,
+   "depMin": 1032,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "WH",
+   "name": "West Hill",
+   "km": 404.0,
+   "arrMin": 1034,
+   "depMin": 1034,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ETR",
+   "name": "Elattur",
+   "km": 411.3,
+   "arrMin": 1040,
+   "depMin": 1040,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CMC",
+   "name": "Chemancheri",
+   "km": 420.1,
+   "arrMin": 1047,
+   "depMin": 1047,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "QLD",
+   "name": "Quilandi",
+   "km": 424.1,
+   "arrMin": 1050,
+   "depMin": 1050,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VEK",
+   "name": "Vellarakkad",
+   "km": 429.2,
+   "arrMin": 1054,
+   "depMin": 1054,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TKT",
+   "name": "Tikkotti",
+   "km": 433.1,
+   "arrMin": 1058,
+   "depMin": 1058,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PYOL",
+   "name": "Payyoli",
+   "km": 435.7,
+   "arrMin": 1060,
+   "depMin": 1060,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "IGL",
+   "name": "Iringal",
+   "km": 439.9,
+   "arrMin": 1063,
+   "depMin": 1063,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BDJ",
+   "name": "Vadakara",
+   "km": 445.7,
+   "arrMin": 1068,
+   "depMin": 1070,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NAU",
+   "name": "Nadapuram Road",
+   "km": 451.3,
+   "arrMin": 1075,
+   "depMin": 1075,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MUKE",
+   "name": "Mukkali",
+   "km": 454.9,
+   "arrMin": 1077,
+   "depMin": 1077,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MAHE",
+   "name": "Mahe",
+   "km": 458.6,
+   "arrMin": 1080,
+   "depMin": 1080,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JGE",
+   "name": "Jgnth Tmpl Gte",
+   "km": 465.5,
+   "arrMin": 1086,
+   "depMin": 1086,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TLY",
+   "name": "Thalassery",
+   "km": 467.9,
+   "arrMin": 1088,
+   "depMin": 1090,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DMD",
+   "name": "Dharmadam",
+   "km": 472.4,
+   "arrMin": 1096,
+   "depMin": 1096,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ETK",
+   "name": "Etakkot",
+   "km": 476.1,
+   "arrMin": 1101,
+   "depMin": 1101,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CS",
+   "name": "Kannur South",
+   "km": 485.0,
+   "arrMin": 1112,
+   "depMin": 1112,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CAN",
+   "name": "Kannur",
+   "km": 488.8,
+   "arrMin": 1117,
+   "depMin": 1120,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CQL",
+   "name": "Chirakkal",
+   "km": 493.4,
+   "arrMin": 1125,
+   "depMin": 1125,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VAPM",
+   "name": "Valapattanam",
+   "km": 495.4,
+   "arrMin": 1127,
+   "depMin": 1127,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PPNS",
+   "name": "Pappinisseri",
+   "km": 497.2,
+   "arrMin": 1129,
+   "depMin": 1129,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KPQ",
+   "name": "Kannapuram",
+   "km": 502.8,
+   "arrMin": 1135,
+   "depMin": 1136,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PAZ",
+   "name": "Payangadi",
+   "km": 510.7,
+   "arrMin": 1142,
+   "depMin": 1142,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ELM",
+   "name": "Elimala",
+   "km": 517.5,
+   "arrMin": 1147,
+   "depMin": 1147,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PAY",
+   "name": "Payyanur",
+   "km": 522.3,
+   "arrMin": 1150,
+   "depMin": 1151,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TKQ",
+   "name": "Trikarpur",
+   "km": 528.6,
+   "arrMin": 1157,
+   "depMin": 1157,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CDRA",
+   "name": "Chandera",
+   "km": 533.4,
+   "arrMin": 1161,
+   "depMin": 1161,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CHV",
+   "name": "Charvattur",
+   "km": 537.1,
+   "arrMin": 1164,
+   "depMin": 1165,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NLE",
+   "name": "Nileshwar",
+   "km": 541.8,
+   "arrMin": 1173,
+   "depMin": 1174,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KZE",
+   "name": "Kanhangad",
+   "km": 552.0,
+   "arrMin": 1186,
+   "depMin": 1187,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BFR",
+   "name": "Bekal Fort",
+   "km": 560.2,
+   "arrMin": 1193,
+   "depMin": 1193,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KQK",
+   "name": "Kotikulam",
+   "km": 565.3,
+   "arrMin": 1197,
+   "depMin": 1197,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KLAD",
+   "name": "Kalanad Halt",
+   "km": 571.8,
+   "arrMin": 1201,
+   "depMin": 1201,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KGQ",
+   "name": "Kasaragod",
+   "km": 574.3,
+   "arrMin": 1203,
+   "depMin": 1205,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KMQ",
+   "name": "Kumbla",
+   "km": 587.1,
+   "arrMin": 1228,
+   "depMin": 1228,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "UAA",
+   "name": "Uppala",
+   "km": 596.9,
+   "arrMin": 1245,
+   "depMin": 1245,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MJS",
+   "name": "Manjeshwar",
+   "km": 603.7,
+   "arrMin": 1258,
+   "depMin": 1258,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ULL",
+   "name": "Ullal",
+   "km": 612.2,
+   "arrMin": 1273,
+   "depMin": 1273,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TKOT",
+   "name": "Tokkottu",
+   "km": 616.2,
+   "arrMin": 1280,
+   "depMin": 1280,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NTVT",
+   "name": "Nethravathi Cabin",
+   "km": 618.1,
+   "arrMin": 1283,
+   "depMin": 1283,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MAJN",
+   "name": "Mangalore Jn",
+   "km": 621.9,
+   "arrMin": 1290,
+   "depMin": 1295,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TOK",
+   "name": "Thokur",
+   "km": 638.2,
+   "arrMin": 1342,
+   "depMin": 1342,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SL",
+   "name": "Surathkal",
+   "km": 642.8,
+   "arrMin": 1355,
+   "depMin": 1357,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MULK",
+   "name": "Mulki",
+   "km": 651.6,
+   "arrMin": 1366,
+   "depMin": 1366,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PDD",
+   "name": "Padubidri",
+   "km": 668.1,
+   "arrMin": 1383,
+   "depMin": 1383,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "INJ",
+   "name": "Innanje",
+   "km": 674.8,
+   "arrMin": 1390,
+   "depMin": 1390,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "UD",
+   "name": "Udupi",
+   "km": 684.5,
+   "arrMin": 1400,
+   "depMin": 1402,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BKJ",
+   "name": "Barkur",
+   "km": 700.6,
+   "arrMin": 1415,
+   "depMin": 1415,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KUDA",
+   "name": "Kundapura",
+   "km": 716.3,
+   "arrMin": 1428,
+   "depMin": 1430,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SEN",
+   "name": "Senapura",
+   "km": 730.6,
+   "arrMin": 1446,
+   "depMin": 1446,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BIJR",
+   "name": "Bijoor",
+   "km": 743.2,
+   "arrMin": 1461,
+   "depMin": 1461,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BYNR",
+   "name": "Mookambika Road Byndoor (H)",
+   "km": 749.6,
+   "arrMin": 1468,
+   "depMin": 1470,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SHMI",
+   "name": "Shiroor",
+   "km": 757.3,
+   "arrMin": 1477,
+   "depMin": 1477,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BTJL",
+   "name": "Bhatkal",
+   "km": 765.1,
+   "arrMin": 1484,
+   "depMin": 1486,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CTTP",
+   "name": "Chitrapur (H)",
+   "km": 771.5,
+   "arrMin": 1491,
+   "depMin": 1491,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MRDW",
+   "name": "Murdeshwar",
+   "km": 779.7,
+   "arrMin": 1498,
+   "depMin": 1500,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MANK",
+   "name": "Manki",
+   "km": 788.2,
+   "arrMin": 1507,
+   "depMin": 1507,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HNA",
+   "name": "Honnavar",
+   "km": 806.2,
+   "arrMin": 1522,
+   "depMin": 1522,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KT",
+   "name": "Kumta",
+   "km": 819.9,
+   "arrMin": 1534,
+   "depMin": 1536,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GOK",
+   "name": "Gokarna Road",
+   "km": 838.9,
+   "arrMin": 1554,
+   "depMin": 1554,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ANKL",
+   "name": "Ankola",
+   "km": 846.3,
+   "arrMin": 1561,
+   "depMin": 1561,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HAA",
+   "name": "Harwada",
+   "km": 861.3,
+   "arrMin": 1575,
+   "depMin": 1575,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KAWR",
+   "name": "Karwar",
+   "km": 875.1,
+   "arrMin": 1588,
+   "depMin": 1590,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AT",
+   "name": "Asnoti",
+   "km": 882.9,
+   "arrMin": 1599,
+   "depMin": 1599,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "LOL",
+   "name": "Loliem",
+   "km": 892.4,
+   "arrMin": 1609,
+   "depMin": 1609,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CNO",
+   "name": "Canacona",
+   "km": 902.3,
+   "arrMin": 1620,
+   "depMin": 1622,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BLLI",
+   "name": "Balli",
+   "km": 918.9,
+   "arrMin": 1646,
+   "depMin": 1646,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MAO",
+   "name": "Madgaon Jn",
+   "km": 935.3,
+   "arrMin": 1670,
+   "depMin": 1680,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SRVX",
+   "name": "Suravali (H)",
+   "km": 939.9,
+   "arrMin": 1685,
+   "depMin": 1685,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MJO",
+   "name": "Majorda Jn",
+   "km": 942.9,
+   "arrMin": 1688,
+   "depMin": 1688,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VEN",
+   "name": "Verna",
+   "km": 947.0,
+   "arrMin": 1693,
+   "depMin": 1693,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KRMI",
+   "name": "Karmali",
+   "km": 964.0,
+   "arrMin": 1712,
+   "depMin": 1714,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "THVM",
+   "name": "Thivim",
+   "km": 981.3,
+   "arrMin": 1734,
+   "depMin": 1736,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PERN",
+   "name": "Pernem",
+   "km": 992.3,
+   "arrMin": 1748,
+   "depMin": 1748,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MADR",
+   "name": "Madure",
+   "km": 1003.2,
+   "arrMin": 1760,
+   "depMin": 1760,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SWV",
+   "name": "Sawantwadi Road",
+   "km": 1010.9,
+   "arrMin": 1768,
+   "depMin": 1768,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ZARP",
+   "name": "Zarap",
+   "km": 1021.7,
+   "arrMin": 1779,
+   "depMin": 1779,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KUDL",
+   "name": "Kudal",
+   "km": 1031.6,
+   "arrMin": 1790,
+   "depMin": 1792,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SNDD",
+   "name": "Sindhudurg",
+   "km": 1042.7,
+   "arrMin": 1807,
+   "depMin": 1807,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KKW",
+   "name": "Kankavli",
+   "km": 1060.0,
+   "arrMin": 1832,
+   "depMin": 1832,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NAN",
+   "name": "Nandgaon Road",
+   "km": 1075.9,
+   "arrMin": 1854,
+   "depMin": 1854,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ACRN",
+   "name": "Achirne",
+   "km": 1082.2,
+   "arrMin": 1862,
+   "depMin": 1862,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VBW",
+   "name": "Vaibhavwadi Road",
+   "km": 1091.4,
+   "arrMin": 1875,
+   "depMin": 1875,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RAJP",
+   "name": "Rajapur Road",
+   "km": 1107.7,
+   "arrMin": 1898,
+   "depMin": 1900,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VID",
+   "name": "Vilavade",
+   "km": 1124.3,
+   "arrMin": 1921,
+   "depMin": 1921,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VRLI",
+   "name": "Veravali",
+   "km": 1129.9,
+   "arrMin": 1928,
+   "depMin": 1928,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ADVI",
+   "name": "Adavali",
+   "km": 1140.0,
+   "arrMin": 1940,
+   "depMin": 1940,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NIV",
+   "name": "Nivasar",
+   "km": 1156.3,
+   "arrMin": 1960,
+   "depMin": 1960,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RN",
+   "name": "Ratnagiri",
+   "km": 1172.0,
+   "arrMin": 1980,
+   "depMin": 1985,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BOKE",
+   "name": "Bhoke",
+   "km": 1178.2,
+   "arrMin": 1994,
+   "depMin": 1994,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "UKC",
+   "name": "Ukshi",
+   "km": 1190.9,
+   "arrMin": 2011,
+   "depMin": 2011,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SGR",
+   "name": "Sangameshwar Road",
+   "km": 1204.6,
+   "arrMin": 2030,
+   "depMin": 2032,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AVRD",
+   "name": "Aravali Road",
+   "km": 1218.4,
+   "arrMin": 2051,
+   "depMin": 2051,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SVX",
+   "name": "Sawarda",
+   "km": 1228.8,
+   "arrMin": 2065,
+   "depMin": 2065,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KMAH",
+   "name": "Kamathe",
+   "km": 1237.6,
+   "arrMin": 2077,
+   "depMin": 2077,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "CHI",
+   "name": "Chiplun",
+   "km": 1247.2,
+   "arrMin": 2090,
+   "depMin": 2092,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ANO",
+   "name": "Anjani",
+   "km": 1263.4,
+   "arrMin": 2108,
+   "depMin": 2108,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KHED",
+   "name": "Khed",
+   "km": 1276.4,
+   "arrMin": 2120,
+   "depMin": 2122,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KLBN",
+   "name": "Kalambani Budruk",
+   "km": 1284.5,
+   "arrMin": 2133,
+   "depMin": 2133,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "DWV",
+   "name": "Diwankhavati",
+   "km": 1294.5,
+   "arrMin": 2146,
+   "depMin": 2146,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KFD",
+   "name": "Karanjadi",
+   "km": 1312.4,
+   "arrMin": 2170,
+   "depMin": 2170,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SAPE",
+   "name": "Sape Wamane",
+   "km": 1319.8,
+   "arrMin": 2180,
+   "depMin": 2180,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VEER",
+   "name": "Veer",
+   "km": 1328.3,
+   "arrMin": 2192,
+   "depMin": 2192,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GNO",
+   "name": "Goregaon Road",
+   "km": 1334.5,
+   "arrMin": 2200,
+   "depMin": 2200,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MNI",
+   "name": "Mangaon",
+   "km": 1345.2,
+   "arrMin": 2215,
+   "depMin": 2215,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "INP",
+   "name": "Indapur",
+   "km": 1351.9,
+   "arrMin": 2224,
+   "depMin": 2224,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KOL",
+   "name": "Kolad",
+   "km": 1362.3,
+   "arrMin": 2238,
+   "depMin": 2238,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "ROHA",
+   "name": "Roha",
+   "km": 1375.3,
+   "arrMin": 2255,
+   "depMin": 2260,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NIDI",
+   "name": "Nidi",
+   "km": 1379.3,
+   "arrMin": 2264,
+   "depMin": 2264,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NGTN",
+   "name": "Nagothane",
+   "km": 1388.0,
+   "arrMin": 2272,
+   "depMin": 2272,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KASU",
+   "name": "Kasu",
+   "km": 1401.1,
+   "arrMin": 2285,
+   "depMin": 2285,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PEN",
+   "name": "Pen",
+   "km": 1414.8,
+   "arrMin": 2298,
+   "depMin": 2298,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "HMRR",
+   "name": "Hamarapur",
+   "km": 1420.9,
+   "arrMin": 2304,
+   "depMin": 2304,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JITE",
+   "name": "Jite",
+   "km": 1424.9,
+   "arrMin": 2308,
+   "depMin": 2308,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "APTA",
+   "name": "Apta",
+   "km": 1434.7,
+   "arrMin": 2317,
+   "depMin": 2317,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RSYI",
+   "name": "Rasayani",
+   "km": 1437.7,
+   "arrMin": 2320,
+   "depMin": 2320,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "SMNE",
+   "name": "Somatne",
+   "km": 1444.6,
+   "arrMin": 2327,
+   "depMin": 2327,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "PNVL",
+   "name": "Panvel",
+   "km": 1449.8,
+   "arrMin": 2332,
+   "depMin": 2335,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KNDS",
+   "name": "Khandeshwar",
+   "km": 1453.5,
+   "arrMin": 2341,
+   "depMin": 2341,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KHAG",
+   "name": "Kharghar",
+   "km": 1458.0,
+   "arrMin": 2347,
+   "depMin": 2347,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BEPR",
+   "name": "Belapur Cbd",
+   "km": 1460.6,
+   "arrMin": 2351,
+   "depMin": 2351,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "NEU",
+   "name": "Nerul",
+   "km": 1464.1,
+   "arrMin": 2356,
+   "depMin": 2356,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "JNJ",
+   "name": "Jui Nagar",
+   "km": 1466.8,
+   "arrMin": 2361,
+   "depMin": 2361,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TUH",
+   "name": "Turbhe",
+   "km": 1469.0,
+   "arrMin": 2364,
+   "depMin": 2364,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KPHN",
+   "name": "Kopar Khairna",
+   "km": 1472.2,
+   "arrMin": 2369,
+   "depMin": 2369,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GNSL",
+   "name": "Ghansoli",
+   "km": 1473.9,
+   "arrMin": 2371,
+   "depMin": 2371,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "RABE",
+   "name": "Rabale",
+   "km": 1475.9,
+   "arrMin": 2374,
+   "depMin": 2374,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "AIRL",
+   "name": "Airoli",
+   "km": 1478.3,
+   "arrMin": 2378,
+   "depMin": 2378,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "TNA",
+   "name": "Thane",
+   "km": 1484.4,
+   "arrMin": 2387,
+   "depMin": 2390,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "MLND",
+   "name": "Mulund",
+   "km": 1487.0,
+   "arrMin": 2402,
+   "depMin": 2402,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "BND",
+   "name": "Bhandup",
+   "km": 1490.9,
+   "arrMin": 2420,
+   "depMin": 2420,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "KJRD",
+   "name": "Kanjur Marg",
+   "km": 1492.7,
+   "arrMin": 2428,
+   "depMin": 2428,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VK",
+   "name": "Vikhroli",
+   "km": 1494.6,
+   "arrMin": 2436,
+   "depMin": 2436,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "GC",
+   "name": "Ghatkopar",
+   "km": 1498.1,
+   "arrMin": 2452,
+   "depMin": 2452,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "VVH",
+   "name": "Vidyavihar",
+   "km": 1499.7,
+   "arrMin": 2460,
+   "depMin": 2460,
+   "isHalt": false,
+   "lat": null,
+   "lng": null
+  },
+  {
+   "code": "LTT",
+   "name": "Mumbai LTT",
+   "km": 1500.9,
+   "arrMin": 2465,
+   "depMin": null,
+   "isHalt": true,
+   "lat": null,
+   "lng": null
+  }
+ ],
+ "_meta": {
+  "builtFrom": "train_16346_live_fallback.json",
+  "builtAt": "2026-09-05T11:03:35",
+  "timeBasis": "day-normalised minutes: (journeyDay-1)*1440 + hh*60+mm",
+  "timesAreScheduled": true,
+  "note": "Scheduled times only \u2014 this file carries NO live data and needs no refresh to stay correct.  The cached run's own service date is deliberately discarded (see day_minutes)."
+ }
+}

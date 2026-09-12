@@ -1,0 +1,3277 @@
+{
+ "rows": [
+  {
+   "train": "01001",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 22,
+   "tot": 22,
+   "covkm": 502.4,
+   "totkm": 502.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.45,
+   "resolvable_pct": 43.5
+  },
+  {
+   "train": "01003",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 22,
+   "tot": 22,
+   "covkm": 544.8,
+   "totkm": 544.8,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.2
+  },
+  {
+   "train": "01004",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 22,
+   "tot": 22,
+   "covkm": 544.8,
+   "totkm": 544.8,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 6.92992,
+   "resolvable_pct": 16.6
+  },
+  {
+   "train": "01007",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 25,
+   "tot": 25,
+   "covkm": 577.9,
+   "totkm": 577.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.45,
+   "resolvable_pct": 43.7
+  },
+  {
+   "train": "01008",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 25,
+   "tot": 25,
+   "covkm": 577.9,
+   "totkm": 577.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 22.92992,
+   "resolvable_pct": 16.7
+  },
+  {
+   "train": "01029",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 22,
+   "tot": 22,
+   "covkm": 582.3,
+   "totkm": 582.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 3.45,
+   "resolvable_pct": 43.7
+  },
+  {
+   "train": "01030",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 22,
+   "tot": 22,
+   "covkm": 582.8,
+   "totkm": 582.8,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 15.82992,
+   "resolvable_pct": 16.8
+  },
+  {
+   "train": "01103",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 26,
+   "tot": 26,
+   "covkm": 502.4,
+   "totkm": 502.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 5.075,
+   "resolvable_pct": 43.5
+  },
+  {
+   "train": "01104",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 26,
+   "tot": 26,
+   "covkm": 502.4,
+   "totkm": 502.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 11.67992,
+   "resolvable_pct": 16.7
+  },
+  {
+   "train": "01129",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 19,
+   "tot": 19,
+   "covkm": 469.2,
+   "totkm": 469.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 6.15492,
+   "resolvable_pct": 42.8
+  },
+  {
+   "train": "01130",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 20,
+   "tot": 20,
+   "covkm": 469.3,
+   "totkm": 469.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.62992,
+   "resolvable_pct": 16.5
+  },
+  {
+   "train": "01131",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 20,
+   "tot": 20,
+   "covkm": 469.2,
+   "totkm": 469.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 6.15492,
+   "resolvable_pct": 42.8
+  },
+  {
+   "train": "01132",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 20,
+   "tot": 20,
+   "covkm": 469.3,
+   "totkm": 469.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.62992,
+   "resolvable_pct": 16.5
+  },
+  {
+   "train": "01133",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 23,
+   "tot": 23,
+   "covkm": 202.6,
+   "totkm": 202.6,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 3.175,
+   "resolvable_pct": 54.1
+  },
+  {
+   "train": "01134",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 23,
+   "tot": 23,
+   "covkm": 202.6,
+   "totkm": 202.6,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.15,
+   "resolvable_pct": 20.3
+  },
+  {
+   "train": "01139",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 14,
+   "tot": 14,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.8,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "01140",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 14,
+   "tot": 14,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 1.75,
+   "resolvable_pct": 17.4
+  },
+  {
+   "train": "01151",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 23,
+   "tot": 23,
+   "covkm": 502.4,
+   "totkm": 502.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.875,
+   "resolvable_pct": 43.5
+  },
+  {
+   "train": "01152",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 23,
+   "tot": 23,
+   "covkm": 502.4,
+   "totkm": 502.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.62992,
+   "resolvable_pct": 16.7
+  },
+  {
+   "train": "01153",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 16,
+   "tot": 16,
+   "covkm": 341.7,
+   "totkm": 341.7,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 1.6,
+   "resolvable_pct": 51.3
+  },
+  {
+   "train": "01154",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 16,
+   "tot": 16,
+   "covkm": 341.7,
+   "totkm": 341.7,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 20.3
+  },
+  {
+   "train": "01155",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 21,
+   "tot": 21,
+   "covkm": 172.9,
+   "totkm": 172.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.50484,
+   "resolvable_pct": 50.6
+  },
+  {
+   "train": "01156",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 21,
+   "tot": 21,
+   "covkm": 172.9,
+   "totkm": 172.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 6.1,
+   "resolvable_pct": 18.5
+  },
+  {
+   "train": "01165",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 20,
+   "tot": 20,
+   "covkm": 544.8,
+   "totkm": 544.8,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 7.40365,
+   "resolvable_pct": 43.2
+  },
+  {
+   "train": "01166",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 20,
+   "tot": 20,
+   "covkm": 544.8,
+   "totkm": 544.8,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.62992,
+   "resolvable_pct": 16.7
+  },
+  {
+   "train": "01167",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 11,
+   "covkm": 308.5,
+   "totkm": 308.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 1.45,
+   "resolvable_pct": 51.2
+  },
+  {
+   "train": "01168",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 11,
+   "covkm": 308.6,
+   "totkm": 308.6,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 4.62992,
+   "resolvable_pct": 20.6
+  },
+  {
+   "train": "01171",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 21,
+   "tot": 21,
+   "covkm": 469.2,
+   "totkm": 469.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 42.8
+  },
+  {
+   "train": "01172",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 21,
+   "tot": 21,
+   "covkm": 469.3,
+   "totkm": 469.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 16.5
+  },
+  {
+   "train": "01185",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 20,
+   "tot": 20,
+   "covkm": 544.8,
+   "totkm": 544.8,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 7.40365,
+   "resolvable_pct": 43.2
+  },
+  {
+   "train": "01186",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 20,
+   "tot": 20,
+   "covkm": 544.8,
+   "totkm": 544.8,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.62992,
+   "resolvable_pct": 16.7
+  },
+  {
+   "train": "01445",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 11,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.00365,
+   "resolvable_pct": 53.4
+  },
+  {
+   "train": "01446",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 11,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 21.6
+  },
+  {
+   "train": "01447",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 11,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.00365,
+   "resolvable_pct": 53.4
+  },
+  {
+   "train": "01448",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 11,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 21.6
+  },
+  {
+   "train": "01464",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 17,
+   "covkm": 544.8,
+   "totkm": 795.8,
+   "frac": 0.6846,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 1.62992,
+   "resolvable_pct": 16.9
+  },
+  {
+   "train": "02197",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 14,
+   "covkm": 514.5,
+   "totkm": 798.2,
+   "frac": 0.6446,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.87993,
+   "resolvable_pct": 17.8
+  },
+  {
+   "train": "02198",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 14,
+   "covkm": 514.4,
+   "totkm": 798.1,
+   "frac": 0.6445,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "04079",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 4,
+   "tot": 9,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 17.9
+  },
+  {
+   "train": "06904",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 4,
+   "tot": 4,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "06910",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 4,
+   "tot": 4,
+   "covkm": 514.4,
+   "totkm": 514.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "07361",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "07362",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "07365",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "07366",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "09013",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 17,
+   "tot": 27,
+   "covkm": 514.5,
+   "totkm": 811.5,
+   "frac": 0.634,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 3.07992,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "09014",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 17,
+   "tot": 27,
+   "covkm": 514.4,
+   "totkm": 811.5,
+   "frac": 0.6339,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.62992,
+   "resolvable_pct": 16.9
+  },
+  {
+   "train": "09019",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 21,
+   "tot": 21,
+   "covkm": 438.9,
+   "totkm": 438.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 3.07992,
+   "resolvable_pct": 43.6
+  },
+  {
+   "train": "09020",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 21,
+   "tot": 21,
+   "covkm": 438.9,
+   "totkm": 438.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 8.57992,
+   "resolvable_pct": 16.8
+  },
+  {
+   "train": "09021",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 8,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.62992,
+   "resolvable_pct": 21.7
+  },
+  {
+   "train": "09022",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 8,
+   "covkm": 278.3,
+   "totkm": 278.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 3.07992,
+   "resolvable_pct": 53.4
+  },
+  {
+   "train": "09029",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.525,
+   "resolvable_pct": 21.6
+  },
+  {
+   "train": "09030",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 278.3,
+   "totkm": 278.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.45,
+   "resolvable_pct": 53.4
+  },
+  {
+   "train": "09035",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 278.3,
+   "totkm": 278.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 8.15492,
+   "resolvable_pct": 53.4
+  },
+  {
+   "train": "09036",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 21.6
+  },
+  {
+   "train": "09109",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 21.6
+  },
+  {
+   "train": "09110",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 278.3,
+   "totkm": 278.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 8.07992,
+   "resolvable_pct": 53.4
+  },
+  {
+   "train": "09113",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 11,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 21.6
+  },
+  {
+   "train": "09114",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 11,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 8.15492,
+   "resolvable_pct": 53.4
+  },
+  {
+   "train": "09123",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 8,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.62992,
+   "resolvable_pct": 21.7
+  },
+  {
+   "train": "09124",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 8,
+   "covkm": 278.3,
+   "totkm": 278.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 3.07992,
+   "resolvable_pct": 53.4
+  },
+  {
+   "train": "09423",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 17,
+   "tot": 29,
+   "covkm": 514.4,
+   "totkm": 807.2,
+   "frac": 0.6373,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 4.62992,
+   "resolvable_pct": 17.0
+  },
+  {
+   "train": "09424",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 17,
+   "tot": 29,
+   "covkm": 514.4,
+   "totkm": 807.2,
+   "frac": 0.6373,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 1.80365,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "10103",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 19,
+   "tot": 19,
+   "covkm": 577.9,
+   "totkm": 577.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.7
+  },
+  {
+   "train": "10104",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 19,
+   "tot": 19,
+   "covkm": 577.9,
+   "totkm": 577.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 16.9
+  },
+  {
+   "train": "10105",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 33,
+   "tot": 33,
+   "covkm": 438.9,
+   "totkm": 438.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.75,
+   "resolvable_pct": 43.6
+  },
+  {
+   "train": "10106",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 33,
+   "tot": 33,
+   "covkm": 438.9,
+   "totkm": 438.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 16.3
+  },
+  {
+   "train": "10107",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 21,
+   "covkm": 0,
+   "totkm": 292.8,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "10108",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 21,
+   "covkm": 0,
+   "totkm": 292.8,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "10109",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 2,
+   "covkm": 0,
+   "totkm": 60.3,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "10110",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 2,
+   "covkm": 0,
+   "totkm": 60.3,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "10115",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "10116",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 1.275,
+   "resolvable_pct": 17.6
+  },
+  {
+   "train": "10215",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 4,
+   "covkm": 0,
+   "totkm": 251.0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "10216",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 4,
+   "covkm": 0,
+   "totkm": 251.0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "11003",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 20,
+   "tot": 20,
+   "covkm": 493.5,
+   "totkm": 493.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 42.9
+  },
+  {
+   "train": "11004",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 20,
+   "tot": 20,
+   "covkm": 493.5,
+   "totkm": 493.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 16.8
+  },
+  {
+   "train": "11097",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 9,
+   "covkm": 0,
+   "totkm": 251.0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "11098",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 9,
+   "covkm": 0,
+   "totkm": 251.0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "11099",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 544.8,
+   "totkm": 544.8,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.2
+  },
+  {
+   "train": "11100",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 544.8,
+   "totkm": 544.8,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 16.9
+  },
+  {
+   "train": "11203",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 13,
+   "tot": 13,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.275,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "11204",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 13,
+   "tot": 13,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 1.75,
+   "resolvable_pct": 17.5
+  },
+  {
+   "train": "12051",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 582.3,
+   "totkm": 582.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.7
+  },
+  {
+   "train": "12052",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 577.9,
+   "totkm": 577.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 17.2
+  },
+  {
+   "train": "12133",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 14,
+   "covkm": 577.9,
+   "totkm": 870.6,
+   "frac": 0.6638,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.7
+  },
+  {
+   "train": "12134",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 14,
+   "covkm": 577.8,
+   "totkm": 870.6,
+   "frac": 0.6637,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 14.9,
+   "resolvable_pct": 17.4
+  },
+  {
+   "train": "12201",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 4,
+   "tot": 8,
+   "covkm": 544.8,
+   "totkm": 795.8,
+   "frac": 0.6846,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.2
+  },
+  {
+   "train": "12202",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 4,
+   "tot": 8,
+   "covkm": 544.8,
+   "totkm": 795.8,
+   "frac": 0.6846,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 17.5
+  },
+  {
+   "train": "12217",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 4,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 20.5
+  },
+  {
+   "train": "12218",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 4,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "12223",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 2,
+   "tot": 2,
+   "covkm": 514.4,
+   "totkm": 514.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "12224",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 2,
+   "tot": 2,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 24.1
+  },
+  {
+   "train": "12283",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 2,
+   "tot": 2,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 24.1
+  },
+  {
+   "train": "12284",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 2,
+   "tot": 2,
+   "covkm": 514.4,
+   "totkm": 514.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "12431",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 5,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 21.0
+  },
+  {
+   "train": "12432",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 5,
+   "covkm": 514.4,
+   "totkm": 765.5,
+   "frac": 0.672,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "12449",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 5,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 20.2
+  },
+  {
+   "train": "12450",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 5,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "12483",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 4,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 22.7
+  },
+  {
+   "train": "12484",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 4,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "12617",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 11,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 19.1
+  },
+  {
+   "train": "12618",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 11,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "12619",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 20,
+   "covkm": 544.8,
+   "totkm": 837.5,
+   "frac": 0.6505,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.2
+  },
+  {
+   "train": "12620",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 18,
+   "covkm": 544.8,
+   "totkm": 837.6,
+   "frac": 0.6504,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 17.7
+  },
+  {
+   "train": "12741",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 5,
+   "covkm": 514.4,
+   "totkm": 514.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 19.5
+  },
+  {
+   "train": "12742",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 5,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "12779",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "12780",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "12789",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 8,
+   "covkm": 0,
+   "totkm": 177.3,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "12790",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 8,
+   "covkm": 0,
+   "totkm": 177.3,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "12977",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 11,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 18.4
+  },
+  {
+   "train": "12978",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 11,
+   "covkm": 514.4,
+   "totkm": 765.5,
+   "frac": 0.672,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "12989",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 21,
+   "covkm": 0,
+   "totkm": 977.8,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "no station of this train is on the canonical corridor axis, so it cannot be matched to a cached polyline",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "16311",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 10,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "16312",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 10,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 18.2
+  },
+  {
+   "train": "16333",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 11,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "16334",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 11,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 18.0
+  },
+  {
+   "train": "16335",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 14,
+   "covkm": 514.5,
+   "totkm": 807.2,
+   "frac": 0.6374,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "16336",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 14,
+   "covkm": 514.5,
+   "totkm": 807.2,
+   "frac": 0.6374,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 18.6
+  },
+  {
+   "train": "16337",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 12,
+   "covkm": 514.5,
+   "totkm": 807.2,
+   "frac": 0.6374,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "16338",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 12,
+   "covkm": 514.5,
+   "totkm": 807.2,
+   "frac": 0.6374,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 18.2
+  },
+  {
+   "train": "16345",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 20,
+   "covkm": 544.8,
+   "totkm": 837.5,
+   "frac": 0.6505,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.2
+  },
+  {
+   "train": "16346",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 11,
+   "tot": 20,
+   "covkm": 544.8,
+   "totkm": 837.5,
+   "frac": 0.6505,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 16.8
+  },
+  {
+   "train": "16515",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 10,
+   "covkm": 0,
+   "totkm": 232.5,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "16516",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 10,
+   "covkm": 0,
+   "totkm": 232.5,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "16585",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 7,
+   "covkm": 0,
+   "totkm": 137.3,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "16586",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 7,
+   "covkm": 0,
+   "totkm": 137.2,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "16595",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 12,
+   "covkm": 0,
+   "totkm": 232.5,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "16596",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 12,
+   "covkm": 0,
+   "totkm": 232.5,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17021",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17039",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17040",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17309",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17310",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17315",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17316",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17321",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17322",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17419",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "17420",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "18047",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "18048",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 0,
+   "covkm": 0,
+   "totkm": 0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train has fewer than two halts on the corridor, so it has no block to measure curvature over",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "19057",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 17,
+   "tot": 29,
+   "covkm": 514.5,
+   "totkm": 807.2,
+   "frac": 0.6374,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 17.90492,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "19058",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 17,
+   "tot": 29,
+   "covkm": 514.4,
+   "totkm": 807.2,
+   "frac": 0.6373,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 6.42992,
+   "resolvable_pct": 17.0
+  },
+  {
+   "train": "19259",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 11,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 17.8
+  },
+  {
+   "train": "19260",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 11,
+   "covkm": 514.4,
+   "totkm": 765.5,
+   "frac": 0.672,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 7.8,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "19577",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 5,
+   "covkm": 514.4,
+   "totkm": 765.5,
+   "frac": 0.672,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 23.6
+  },
+  {
+   "train": "19578",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 5,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "20111",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 18,
+   "tot": 18,
+   "covkm": 577.9,
+   "totkm": 577.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.7
+  },
+  {
+   "train": "20112",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 18,
+   "tot": 18,
+   "covkm": 577.9,
+   "totkm": 577.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 16.9
+  },
+  {
+   "train": "20159",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 14,
+   "covkm": 514.5,
+   "totkm": 798.2,
+   "frac": 0.6446,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 1.15493,
+   "resolvable_pct": 17.8
+  },
+  {
+   "train": "20160",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 14,
+   "covkm": 514.4,
+   "totkm": 798.1,
+   "frac": 0.6445,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 8.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "20645",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 2,
+   "covkm": 0,
+   "totkm": 251.0,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "20646",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 2,
+   "covkm": 0,
+   "totkm": 251.1,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "20909",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 5,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 23.6
+  },
+  {
+   "train": "20910",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 5,
+   "covkm": 514.4,
+   "totkm": 765.5,
+   "frac": 0.672,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "20923",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 2,
+   "tot": 3,
+   "covkm": 514.4,
+   "totkm": 574.7,
+   "frac": 0.8951,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 24.1
+  },
+  {
+   "train": "20924",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 2,
+   "tot": 3,
+   "covkm": 514.5,
+   "totkm": 574.7,
+   "frac": 0.8952,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "20931",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 8,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.00063,
+   "resolvable_pct": 17.8
+  },
+  {
+   "train": "20932",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 8,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "22113",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 11,
+   "covkm": 544.8,
+   "totkm": 795.8,
+   "frac": 0.6846,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.2
+  },
+  {
+   "train": "22114",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 11,
+   "covkm": 544.8,
+   "totkm": 795.8,
+   "frac": 0.6846,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 17.2
+  },
+  {
+   "train": "22115",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 6,
+   "covkm": 516.1,
+   "totkm": 516.1,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.4
+  },
+  {
+   "train": "22116",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 6,
+   "covkm": 516.2,
+   "totkm": 516.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 17.6
+  },
+  {
+   "train": "22119",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 8,
+   "covkm": 577.9,
+   "totkm": 577.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.7
+  },
+  {
+   "train": "22120",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 8,
+   "covkm": 577.9,
+   "totkm": 577.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 17.0
+  },
+  {
+   "train": "22149",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 8,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 20.0
+  },
+  {
+   "train": "22150",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 8,
+   "covkm": 514.4,
+   "totkm": 765.5,
+   "frac": 0.672,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "22195",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 21,
+   "covkm": 0,
+   "totkm": 1318.6,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "no station of this train is on the canonical corridor axis, so it cannot be matched to a cached polyline",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "22226",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 2,
+   "tot": 2,
+   "covkm": 33.1,
+   "totkm": 33.1,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 27.3
+  },
+  {
+   "train": "22229",
+   "basis": "own-route",
+   "avail": true,
+   "res": 8,
+   "tot": 8,
+   "covkm": 588,
+   "totkm": 588,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.00134,
+   "resolvable_pct": 43.7
+  },
+  {
+   "train": "22230",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 8,
+   "tot": 8,
+   "covkm": 577.9,
+   "totkm": 577.9,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.00481,
+   "resolvable_pct": 17.2
+  },
+  {
+   "train": "22308",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 31,
+   "covkm": 0,
+   "totkm": 1883.3,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "no station of this train is on the canonical corridor axis, so it cannot be matched to a cached polyline",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "22413",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 4,
+   "tot": 4,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 20.5
+  },
+  {
+   "train": "22414",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 4,
+   "tot": 4,
+   "covkm": 514.4,
+   "totkm": 514.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "22475",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 10,
+   "covkm": 514.4,
+   "totkm": 765.5,
+   "frac": 0.672,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 1.025,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "22476",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 6,
+   "tot": 10,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.00063,
+   "resolvable_pct": 17.9
+  },
+  {
+   "train": "22629",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 11,
+   "covkm": 544.8,
+   "totkm": 795.8,
+   "frac": 0.6846,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.2
+  },
+  {
+   "train": "22630",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 11,
+   "covkm": 544.8,
+   "totkm": 795.9,
+   "frac": 0.6845,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 17.1
+  },
+  {
+   "train": "22633",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 7,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 19.7
+  },
+  {
+   "train": "22634",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 7,
+   "covkm": 514.4,
+   "totkm": 765.5,
+   "frac": 0.672,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "22653",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 6,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 20.2
+  },
+  {
+   "train": "22654",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 3,
+   "tot": 6,
+   "covkm": 514.4,
+   "totkm": 765.5,
+   "frac": 0.672,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "22655",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 4,
+   "tot": 7,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 20.2
+  },
+  {
+   "train": "22656",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 4,
+   "tot": 7,
+   "covkm": 514.4,
+   "totkm": 765.5,
+   "frac": 0.672,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "22659",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 2,
+   "tot": 3,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 24.1
+  },
+  {
+   "train": "22660",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 2,
+   "tot": 3,
+   "covkm": 514.5,
+   "totkm": 765.5,
+   "frac": 0.6721,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "22907",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 5,
+   "covkm": 514.5,
+   "totkm": 514.5,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 19.2
+  },
+  {
+   "train": "22908",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 5,
+   "tot": 5,
+   "covkm": 514.4,
+   "totkm": 514.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 43.9
+  },
+  {
+   "train": "50103",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 27,
+   "tot": 27,
+   "covkm": 278.3,
+   "totkm": 278.3,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.125,
+   "resolvable_pct": 53.4
+  },
+  {
+   "train": "50104",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 27,
+   "tot": 27,
+   "covkm": 278.2,
+   "totkm": 278.2,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 2.1,
+   "resolvable_pct": 20.1
+  },
+  {
+   "train": "50107",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 8,
+   "covkm": 72.4,
+   "totkm": 75.5,
+   "frac": 0.9589,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 45.3
+  },
+  {
+   "train": "50108",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 7,
+   "tot": 8,
+   "covkm": 72.3,
+   "totkm": 75.5,
+   "frac": 0.9576,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 16.7
+  },
+  {
+   "train": "56615",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 28,
+   "covkm": 0,
+   "totkm": 297.1,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "56616",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 28,
+   "covkm": 0,
+   "totkm": 297.1,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "56961",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 1,
+   "tot": 2,
+   "covkm": 4.4,
+   "totkm": 7.5,
+   "frac": 0.5867,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 28.2
+  },
+  {
+   "train": "56962",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 1,
+   "tot": 2,
+   "covkm": 4.5,
+   "totkm": 7.6,
+   "frac": 0.5921,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 28.2
+  },
+  {
+   "train": "56963",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 1,
+   "tot": 2,
+   "covkm": 4.4,
+   "totkm": 7.5,
+   "frac": 0.5867,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 28.2
+  },
+  {
+   "train": "56964",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 1,
+   "tot": 2,
+   "covkm": 4.5,
+   "totkm": 7.6,
+   "frac": 0.5921,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 28.2
+  },
+  {
+   "train": "56965",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 1,
+   "tot": 2,
+   "covkm": 4.4,
+   "totkm": 7.5,
+   "frac": 0.5867,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 28.2
+  },
+  {
+   "train": "56966",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 1,
+   "tot": 2,
+   "covkm": 4.5,
+   "totkm": 7.6,
+   "frac": 0.5921,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 28.2
+  },
+  {
+   "train": "61010",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 74.4,
+   "totkm": 74.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 21.4
+  },
+  {
+   "train": "61011",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 74.4,
+   "totkm": 74.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 55.5
+  },
+  {
+   "train": "61012",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 74.4,
+   "totkm": 74.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 21.4
+  },
+  {
+   "train": "61013",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 74.4,
+   "totkm": 74.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 55.5
+  },
+  {
+   "train": "61015",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 74.4,
+   "totkm": 74.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 55.5
+  },
+  {
+   "train": "61016",
+   "basis": "shared-corridor-polyline",
+   "avail": true,
+   "res": 10,
+   "tot": 10,
+   "covkm": 74.4,
+   "totkm": 74.4,
+   "frac": 1.0,
+   "refs": [
+    "22229"
+   ],
+   "reason": null,
+   "curve_min": 0.0,
+   "resolvable_pct": 21.4
+  },
+  {
+   "train": "70101",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 5,
+   "covkm": 0,
+   "totkm": 60.3,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  },
+  {
+   "train": "70102",
+   "basis": null,
+   "avail": false,
+   "res": 0,
+   "tot": 5,
+   "covkm": 0,
+   "totkm": 60.3,
+   "frac": 0.0,
+   "refs": [],
+   "reason": "this train runs south of canonical km 440.1 (Madgaon), beyond every cached polyline; priming a southern route file (scripts/prime_train.py 56615) resolves it with no code change",
+   "curve_min": null,
+   "resolvable_pct": null
+  }
+ ],
+ "failed": []
+}

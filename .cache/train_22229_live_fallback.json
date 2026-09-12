@@ -1,0 +1,3367 @@
+{
+  "trainNumber": "22229",
+  "trainName": "Mumbai CSMT - Madgaon Vande Bharat Express",
+  "startDate": "2026-09-14",
+  "lastUpdatedAt": "2026-09-12T10:25:27+05:30",
+  "status": "not-started",
+  "train": {
+    "number": "22229",
+    "name": "Mumbai CSMT - Madgaon Vande Bharat Express",
+    "type": "Vande Bharat Express",
+    "category": "Premium",
+    "source": {
+      "code": "CSMT",
+      "name": "Mumbai CSMT",
+      "lat": 18.9404925,
+      "lng": 72.8357856
+    },
+    "destination": {
+      "code": "MAO",
+      "name": "Madgaon",
+      "lat": 15.26799,
+      "lng": 73.97015
+    },
+    "runDays": [
+      "mon",
+      "wed",
+      "fri"
+    ],
+    "distance": 582,
+    "duration": 635,
+    "avgSpeed": 55,
+    "maxSpeed": 80.7,
+    "totalHalts": 9,
+    "returnTrain": "22230",
+    "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1"
+  },
+  "isLive": true,
+  "trackingMode": "real-time",
+  "nextHalt": {
+    "stationCode": "DR",
+    "stationName": "Dadar",
+    "sequence": 8,
+    "distance": 8.9
+  },
+  "delayMinutes": 0,
+  "currentLocation": {
+    "stationCode": "CSMT",
+    "stationName": "Mumbai CSMT",
+    "sequence": 1,
+    "status": "at-station",
+    "isHalt": true,
+    "coordinates": {
+      "lat": 18.94087,
+      "lng": 72.83606
+    },
+    "distanceFromOriginKm": 0,
+    "distanceFromLastStationKm": 0,
+    "delayMinutes": 0
+  },
+  "route": [
+    {
+      "sequence": 1,
+      "stationCode": "CSMT",
+      "stationName": "Mumbai CSMT",
+      "isHalt": true,
+      "status": "at-station",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.9404925,
+      "lng": 72.8357856,
+      "scheduledDeparture": "2026-09-14T05:25:00+05:30",
+      "departureDay": 1,
+      "actualDeparture": "2026-09-14T05:25:00+05:30",
+      "delayDeparture": 0,
+      "platform": "12",
+      "distance": 0,
+      "speedToNextStationKmph": 76.3
+    },
+    {
+      "sequence": 2,
+      "stationCode": "MSD",
+      "stationName": "Masjid",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.9522949,
+      "lng": 72.8381771,
+      "scheduledArrival": "2026-09-14T05:26:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:26:00+05:30",
+      "departureDay": 1,
+      "distance": 1.3,
+      "speedToNextStationKmph": 76.3
+    },
+    {
+      "sequence": 3,
+      "stationCode": "SNRD",
+      "stationName": "Sandhurst Road",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.9609243,
+      "lng": 72.8393719,
+      "scheduledArrival": "2026-09-14T05:27:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:27:00+05:30",
+      "departureDay": 1,
+      "distance": 2.3,
+      "speedToNextStationKmph": 76.3
+    },
+    {
+      "sequence": 4,
+      "stationCode": "BY",
+      "stationName": "Byculla",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.9766219,
+      "lng": 72.8327936,
+      "scheduledArrival": "2026-09-14T05:28:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:28:00+05:30",
+      "departureDay": 1,
+      "distance": 4.2,
+      "speedToNextStationKmph": 76.3
+    },
+    {
+      "sequence": 5,
+      "stationCode": "CHG",
+      "stationName": "Mumbai (Chinchpokli)",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.9871984,
+      "lng": 72.8326716,
+      "scheduledArrival": "2026-09-14T05:29:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:29:00+05:30",
+      "departureDay": 1,
+      "distance": 5.4,
+      "speedToNextStationKmph": 76.3
+    },
+    {
+      "sequence": 6,
+      "stationCode": "CRD",
+      "stationName": "Mumbai (currey Road)",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.9937486,
+      "lng": 72.8328556,
+      "scheduledArrival": "2026-09-14T05:30:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:30:00+05:30",
+      "departureDay": 1,
+      "distance": 6.1,
+      "speedToNextStationKmph": 76.3
+    },
+    {
+      "sequence": 7,
+      "stationCode": "PR",
+      "stationName": "Parel",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0094817,
+      "lng": 72.8376614,
+      "scheduledArrival": "2026-09-14T05:31:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:31:00+05:30",
+      "departureDay": 1,
+      "distance": 7.9,
+      "speedToNextStationKmph": 76.3
+    },
+    {
+      "sequence": 8,
+      "stationCode": "DR",
+      "stationName": "Dadar",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0173761,
+      "lng": 72.8430265,
+      "scheduledArrival": "2026-09-14T05:32:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:34:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-14T05:32:00+05:30",
+      "actualDeparture": "2026-09-14T05:34:00+05:30",
+      "delayArrival": 0,
+      "delayDeparture": 0,
+      "platform": "10",
+      "distance": 8.9,
+      "speedToNextStationKmph": 80.7
+    },
+    {
+      "sequence": 9,
+      "stationCode": "MTN",
+      "stationName": "Matunga",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0274356,
+      "lng": 72.8501467,
+      "scheduledArrival": "2026-09-14T05:35:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:35:00+05:30",
+      "departureDay": 1,
+      "distance": 10.3,
+      "speedToNextStationKmph": 80.7
+    },
+    {
+      "sequence": 10,
+      "stationCode": "SIN",
+      "stationName": "Mumbai (Sion)",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0465213,
+      "lng": 72.8632834,
+      "scheduledArrival": "2026-09-14T05:37:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:37:00+05:30",
+      "departureDay": 1,
+      "distance": 12.8,
+      "speedToNextStationKmph": 80.7
+    },
+    {
+      "sequence": 11,
+      "stationCode": "CLA",
+      "stationName": "Kurla Jn",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0652797,
+      "lng": 72.8793805,
+      "scheduledArrival": "2026-09-14T05:39:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:39:00+05:30",
+      "departureDay": 1,
+      "distance": 15.5,
+      "speedToNextStationKmph": 80.7
+    },
+    {
+      "sequence": 12,
+      "stationCode": "VVH",
+      "stationName": "Vidyavihar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0795422,
+      "lng": 72.8971169,
+      "scheduledArrival": "2026-09-14T05:41:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:41:00+05:30",
+      "departureDay": 1,
+      "distance": 17.9,
+      "speedToNextStationKmph": 80.7
+    },
+    {
+      "sequence": 13,
+      "stationCode": "GC",
+      "stationName": "Ghat Kopar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0856928,
+      "lng": 72.9083668,
+      "scheduledArrival": "2026-09-14T05:42:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:42:00+05:30",
+      "departureDay": 1,
+      "distance": 19.3,
+      "speedToNextStationKmph": 80.7
+    },
+    {
+      "sequence": 14,
+      "stationCode": "VK",
+      "stationName": "Vikhroli",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.1114795,
+      "lng": 72.928021,
+      "scheduledArrival": "2026-09-14T05:44:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:44:00+05:30",
+      "departureDay": 1,
+      "distance": 22.9,
+      "speedToNextStationKmph": 80.7
+    },
+    {
+      "sequence": 15,
+      "stationCode": "BND",
+      "stationName": "Bhandup",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.142757,
+      "lng": 72.9376543,
+      "scheduledArrival": "2026-09-14T05:47:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:47:00+05:30",
+      "departureDay": 1,
+      "distance": 26.7,
+      "speedToNextStationKmph": 80.7
+    },
+    {
+      "sequence": 16,
+      "stationCode": "MLND",
+      "stationName": "Mulund",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.1721366,
+      "lng": 72.9566971,
+      "scheduledArrival": "2026-09-14T05:50:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:50:00+05:30",
+      "departureDay": 1,
+      "distance": 30.6,
+      "speedToNextStationKmph": 80.7
+    },
+    {
+      "sequence": 17,
+      "stationCode": "TNA",
+      "stationName": "Thane",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.186483,
+      "lng": 72.9757664,
+      "scheduledArrival": "2026-09-14T05:52:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:54:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-14T05:52:00+05:30",
+      "actualDeparture": "2026-09-14T05:54:00+05:30",
+      "delayArrival": 0,
+      "delayDeparture": 0,
+      "platform": "5",
+      "distance": 33.1,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 18,
+      "stationCode": "AIRL",
+      "stationName": "Airavali",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.1586,
+      "lng": 72.99938,
+      "scheduledArrival": "2026-09-14T05:59:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T05:59:00+05:30",
+      "departureDay": 1,
+      "distance": 39,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 19,
+      "stationCode": "GNSL",
+      "stationName": "Ghansoli",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.11617,
+      "lng": 73.00709,
+      "scheduledArrival": "2026-09-14T06:04:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:04:00+05:30",
+      "departureDay": 1,
+      "distance": 43.8,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 20,
+      "stationCode": "KPHN",
+      "stationName": "Kopar Khairna",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.10333,
+      "lng": 73.0113,
+      "scheduledArrival": "2026-09-14T06:05:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:05:00+05:30",
+      "departureDay": 1,
+      "distance": 45.3,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 21,
+      "stationCode": "TUH",
+      "stationName": "Turbhe",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.07622,
+      "lng": 73.01776,
+      "scheduledArrival": "2026-09-14T06:08:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:08:00+05:30",
+      "departureDay": 1,
+      "distance": 48.5,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 22,
+      "stationCode": "JNJ",
+      "stationName": "Juinagar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.05585,
+      "lng": 73.01844,
+      "scheduledArrival": "2026-09-14T06:10:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:10:00+05:30",
+      "departureDay": 1,
+      "distance": 50.8,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 23,
+      "stationCode": "NEU",
+      "stationName": "Nerul",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.033139,
+      "lng": 73.018182,
+      "scheduledArrival": "2026-09-14T06:12:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:12:00+05:30",
+      "departureDay": 1,
+      "distance": 53.3,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 24,
+      "stationCode": "SWDV",
+      "stationName": "Seawood Darave",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0218192,
+      "lng": 73.0191588,
+      "scheduledArrival": "2026-09-14T06:13:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:13:00+05:30",
+      "departureDay": 1,
+      "distance": 54.6,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 25,
+      "stationCode": "BEPR",
+      "stationName": "Belapur C. B.d",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0190075,
+      "lng": 73.0391304,
+      "scheduledArrival": "2026-09-14T06:15:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:15:00+05:30",
+      "departureDay": 1,
+      "distance": 57,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 26,
+      "stationCode": "KHAG",
+      "stationName": "Kharghar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0258415,
+      "lng": 73.0593001,
+      "scheduledArrival": "2026-09-14T06:18:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:18:00+05:30",
+      "departureDay": 1,
+      "distance": 59.3,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 27,
+      "stationCode": "MANR",
+      "stationName": "Mansarovar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0164338,
+      "lng": 73.0806552,
+      "scheduledArrival": "2026-09-14T06:20:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:20:00+05:30",
+      "departureDay": 1,
+      "distance": 62.2,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 28,
+      "stationCode": "KNDS",
+      "stationName": "Khandeshwar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 19.0073498,
+      "lng": 73.0952827,
+      "scheduledArrival": "2026-09-14T06:22:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:22:00+05:30",
+      "departureDay": 1,
+      "distance": 64.1,
+      "speedToNextStationKmph": 66.8
+    },
+    {
+      "sequence": 29,
+      "stationCode": "PNVL",
+      "stationName": "Panvel",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.9894239,
+      "lng": 73.122695,
+      "scheduledArrival": "2026-09-14T06:25:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:27:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-14T06:25:00+05:30",
+      "actualDeparture": "2026-09-14T06:27:00+05:30",
+      "delayArrival": 0,
+      "delayDeparture": 0,
+      "platform": "7",
+      "distance": 67.6,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 30,
+      "stationCode": "SMNE",
+      "stationName": "Somtane",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.950646,
+      "lng": 73.14548,
+      "scheduledArrival": "2026-09-14T06:31:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:31:00+05:30",
+      "departureDay": 1,
+      "distance": 72.7,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 31,
+      "stationCode": "RSYI",
+      "stationName": "Rasayani",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.8940449,
+      "lng": 73.1516427,
+      "scheduledArrival": "2026-09-14T06:36:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:36:00+05:30",
+      "departureDay": 1,
+      "distance": 79.2,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 32,
+      "stationCode": "APTA",
+      "stationName": "Apta",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.8637081,
+      "lng": 73.1532989,
+      "scheduledArrival": "2026-09-14T06:39:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:39:00+05:30",
+      "departureDay": 1,
+      "distance": 82.6,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 33,
+      "stationCode": "JITE",
+      "stationName": "Jite",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.8200931,
+      "lng": 73.0868155,
+      "scheduledArrival": "2026-09-14T06:47:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:47:00+05:30",
+      "departureDay": 1,
+      "distance": 92.4,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 34,
+      "stationCode": "HMRR",
+      "stationName": "Hamarapur",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.7839356,
+      "lng": 73.0792002,
+      "scheduledArrival": "2026-09-14T06:50:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:50:00+05:30",
+      "departureDay": 1,
+      "distance": 96.7,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 35,
+      "stationCode": "PEN",
+      "stationName": "Pen",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.735385,
+      "lng": 73.0868161,
+      "scheduledArrival": "2026-09-14T06:55:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T06:55:00+05:30",
+      "departureDay": 1,
+      "distance": 102.5,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 36,
+      "stationCode": "KASU",
+      "stationName": "Kasu",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.6413721,
+      "lng": 73.0793081,
+      "scheduledArrival": "2026-09-14T07:05:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T07:05:00+05:30",
+      "departureDay": 1,
+      "distance": 115.9,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 37,
+      "stationCode": "NGTN",
+      "stationName": "Nagothane",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.5401,
+      "lng": 73.14116,
+      "scheduledArrival": "2026-09-14T07:16:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T07:16:00+05:30",
+      "departureDay": 1,
+      "distance": 129.3,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 38,
+      "stationCode": "NIDI",
+      "stationName": "Nidi",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.4741031,
+      "lng": 73.1073063,
+      "scheduledArrival": "2026-09-14T07:23:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T07:23:00+05:30",
+      "departureDay": 1,
+      "distance": 137.8,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 39,
+      "stationCode": "ROHA",
+      "stationName": "Roha",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.44658,
+      "lng": 73.1238722,
+      "scheduledArrival": "2026-09-14T07:26:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T07:26:00+05:30",
+      "departureDay": 1,
+      "distance": 142,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 40,
+      "stationCode": "KOL",
+      "stationName": "Kolad",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.3920231,
+      "lng": 73.2234248,
+      "scheduledArrival": "2026-09-14T07:36:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T07:36:00+05:30",
+      "departureDay": 1,
+      "distance": 155,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 41,
+      "stationCode": "INP",
+      "stationName": "Indapur",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.2990452,
+      "lng": 73.2446587,
+      "scheduledArrival": "2026-09-14T07:45:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T07:45:00+05:30",
+      "departureDay": 1,
+      "distance": 165.8,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 42,
+      "stationCode": "MNI",
+      "stationName": "Mangaon",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.247448,
+      "lng": 73.275442,
+      "scheduledArrival": "2026-09-14T07:50:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T07:50:00+05:30",
+      "departureDay": 1,
+      "distance": 172.4,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 43,
+      "stationCode": "GNO",
+      "stationName": "Goregaon Road (H)",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.1626135,
+      "lng": 73.3030008,
+      "scheduledArrival": "2026-09-14T07:58:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T07:58:00+05:30",
+      "departureDay": 1,
+      "distance": 182.8,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 44,
+      "stationCode": "VEER",
+      "stationName": "Veer",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.1137454,
+      "lng": 73.3305792,
+      "scheduledArrival": "2026-09-14T08:03:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T08:03:00+05:30",
+      "departureDay": 1,
+      "distance": 189.1,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 45,
+      "stationCode": "SAPE",
+      "stationName": "Sape-Wamne",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 18.0581106,
+      "lng": 73.3715683,
+      "scheduledArrival": "2026-09-14T08:10:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T08:10:00+05:30",
+      "departureDay": 1,
+      "distance": 197.1,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 46,
+      "stationCode": "KFD",
+      "stationName": "Karanjadi",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.9992354,
+      "lng": 73.4042369,
+      "scheduledArrival": "2026-09-14T08:16:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T08:16:00+05:30",
+      "departureDay": 1,
+      "distance": 204.7,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 47,
+      "stationCode": "DWV",
+      "stationName": "Diwan Khavati",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.8551345,
+      "lng": 73.4181212,
+      "scheduledArrival": "2026-09-14T08:30:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T08:30:00+05:30",
+      "departureDay": 1,
+      "distance": 222.8,
+      "speedToNextStationKmph": 75.7
+    },
+    {
+      "sequence": 48,
+      "stationCode": "KHED",
+      "stationName": "Khed",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.7125696,
+      "lng": 73.4106638,
+      "scheduledArrival": "2026-09-14T08:44:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T08:46:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-14T08:44:00+05:30",
+      "actualDeparture": "2026-09-14T08:46:00+05:30",
+      "delayArrival": 0,
+      "delayDeparture": 0,
+      "platform": "2",
+      "distance": 240.5,
+      "speedToNextStationKmph": 55.4
+    },
+    {
+      "sequence": 49,
+      "stationCode": "ANO",
+      "stationName": "Anjani",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.6210548,
+      "lng": 73.3997311,
+      "scheduledArrival": "2026-09-14T09:01:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T09:01:00+05:30",
+      "departureDay": 1,
+      "distance": 253.9,
+      "speedToNextStationKmph": 55.4
+    },
+    {
+      "sequence": 50,
+      "stationCode": "CHI",
+      "stationName": "Chiplun",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.5423529,
+      "lng": 73.522233,
+      "scheduledArrival": "2026-09-14T09:18:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T09:18:00+05:30",
+      "departureDay": 1,
+      "distance": 270.1,
+      "speedToNextStationKmph": 55.4
+    },
+    {
+      "sequence": 51,
+      "stationCode": "KMAH",
+      "stationName": "Kamathe",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.4778541,
+      "lng": 73.5159247,
+      "scheduledArrival": "2026-09-14T09:29:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T09:29:00+05:30",
+      "departureDay": 1,
+      "distance": 279.8,
+      "speedToNextStationKmph": 55.4
+    },
+    {
+      "sequence": 52,
+      "stationCode": "SVX",
+      "stationName": "Savarda",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.4046532,
+      "lng": 73.5151946,
+      "scheduledArrival": "2026-09-14T09:38:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T09:38:00+05:30",
+      "departureDay": 1,
+      "distance": 288.5,
+      "speedToNextStationKmph": 55.4
+    },
+    {
+      "sequence": 53,
+      "stationCode": "AVRD",
+      "stationName": "Aravali Road",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.316657,
+      "lng": 73.5380915,
+      "scheduledArrival": "2026-09-14T09:49:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T09:49:00+05:30",
+      "departureDay": 1,
+      "distance": 298.9,
+      "speedToNextStationKmph": 55.4
+    },
+    {
+      "sequence": 54,
+      "stationCode": "SGR",
+      "stationName": "Sangmeshwar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.2015922,
+      "lng": 73.5463963,
+      "scheduledArrival": "2026-09-14T10:04:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T10:04:00+05:30",
+      "departureDay": 1,
+      "distance": 312.9,
+      "speedToNextStationKmph": 55.4
+    },
+    {
+      "sequence": 55,
+      "stationCode": "UKC",
+      "stationName": "Ukshi",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.1301992,
+      "lng": 73.4568767,
+      "scheduledArrival": "2026-09-14T10:19:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T10:19:00+05:30",
+      "departureDay": 1,
+      "distance": 326.6,
+      "speedToNextStationKmph": 55.4
+    },
+    {
+      "sequence": 56,
+      "stationCode": "BOKE",
+      "stationName": "Bhoke",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.0489169,
+      "lng": 73.3810736,
+      "scheduledArrival": "2026-09-14T10:33:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T10:33:00+05:30",
+      "departureDay": 1,
+      "distance": 339.1,
+      "speedToNextStationKmph": 55.4
+    },
+    {
+      "sequence": 57,
+      "stationCode": "RN",
+      "stationName": "Ratnagiri",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 17.00311,
+      "lng": 73.35727,
+      "scheduledArrival": "2026-09-14T10:40:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T10:45:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-14T10:40:00+05:30",
+      "actualDeparture": "2026-09-14T10:45:00+05:30",
+      "delayArrival": 0,
+      "delayDeparture": 0,
+      "platform": "1",
+      "distance": 345.8,
+      "speedToNextStationKmph": 53.5
+    },
+    {
+      "sequence": 58,
+      "stationCode": "NIV",
+      "stationName": "Nivasar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 16.9472452,
+      "lng": 73.454825,
+      "scheduledArrival": "2026-09-14T11:02:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T11:02:00+05:30",
+      "departureDay": 1,
+      "distance": 361,
+      "speedToNextStationKmph": 53.5
+    },
+    {
+      "sequence": 59,
+      "stationCode": "ADVI",
+      "stationName": "Adavali",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 16.9215451,
+      "lng": 73.5928085,
+      "scheduledArrival": "2026-09-14T11:20:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T11:20:00+05:30",
+      "departureDay": 1,
+      "distance": 377.3,
+      "speedToNextStationKmph": 53.5
+    },
+    {
+      "sequence": 60,
+      "stationCode": "VID",
+      "stationName": "Vilavade",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 16.7856781,
+      "lng": 73.6191607,
+      "scheduledArrival": "2026-09-14T11:38:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T11:38:00+05:30",
+      "departureDay": 1,
+      "distance": 392.9,
+      "speedToNextStationKmph": 53.5
+    },
+    {
+      "sequence": 61,
+      "stationCode": "RAJP",
+      "stationName": "Rajapur Road",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 16.635634,
+      "lng": 73.6267989,
+      "scheduledArrival": "2026-09-14T11:57:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T11:57:00+05:30",
+      "departureDay": 1,
+      "distance": 409.6,
+      "speedToNextStationKmph": 53.5
+    },
+    {
+      "sequence": 62,
+      "stationCode": "VBW",
+      "stationName": "Vaibhavwadi Road",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 16.5123066,
+      "lng": 73.7079427,
+      "scheduledArrival": "2026-09-14T12:15:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T12:15:00+05:30",
+      "departureDay": 1,
+      "distance": 426.2,
+      "speedToNextStationKmph": 53.5
+    },
+    {
+      "sequence": 63,
+      "stationCode": "NAN",
+      "stationName": "Nandgaon Road",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 16.3876268,
+      "lng": 73.7308816,
+      "scheduledArrival": "2026-09-14T12:33:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T12:33:00+05:30",
+      "departureDay": 1,
+      "distance": 441.8,
+      "speedToNextStationKmph": 53.5
+    },
+    {
+      "sequence": 64,
+      "stationCode": "KKW",
+      "stationName": "Kankavli",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 16.2594268,
+      "lng": 73.7199483,
+      "scheduledArrival": "2026-09-14T12:50:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T12:52:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-14T12:50:00+05:30",
+      "actualDeparture": "2026-09-14T12:52:00+05:30",
+      "delayArrival": 0,
+      "delayDeparture": 0,
+      "platform": "2",
+      "distance": 457.3,
+      "speedToNextStationKmph": 53.7
+    },
+    {
+      "sequence": 65,
+      "stationCode": "SNDD",
+      "stationName": "Sindhudurg",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 16.1121887,
+      "lng": 73.6798546,
+      "scheduledArrival": "2026-09-14T13:12:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T13:12:00+05:30",
+      "departureDay": 1,
+      "distance": 475,
+      "speedToNextStationKmph": 53.7
+    },
+    {
+      "sequence": 66,
+      "stationCode": "KUDL",
+      "stationName": "Kudal",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 16.0172348,
+      "lng": 73.6780522,
+      "scheduledArrival": "2026-09-14T13:24:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T13:24:00+05:30",
+      "departureDay": 1,
+      "distance": 485.6,
+      "speedToNextStationKmph": 53.7
+    },
+    {
+      "sequence": 67,
+      "stationCode": "ZARP",
+      "stationName": "Zarap",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 15.9483572,
+      "lng": 73.7341532,
+      "scheduledArrival": "2026-09-14T13:35:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T13:35:00+05:30",
+      "departureDay": 1,
+      "distance": 495.9,
+      "speedToNextStationKmph": 53.7
+    },
+    {
+      "sequence": 68,
+      "stationCode": "SWV",
+      "stationName": "Sawantwadi Road",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 15.8664634,
+      "lng": 73.785083,
+      "scheduledArrival": "2026-09-14T13:47:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T13:47:00+05:30",
+      "departureDay": 1,
+      "distance": 506.5,
+      "speedToNextStationKmph": 53.7
+    },
+    {
+      "sequence": 69,
+      "stationCode": "MADR",
+      "stationName": "Madure",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 15.8038314,
+      "lng": 73.81286,
+      "scheduledArrival": "2026-09-14T13:56:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T13:56:00+05:30",
+      "departureDay": 1,
+      "distance": 514.1,
+      "speedToNextStationKmph": 53.7
+    },
+    {
+      "sequence": 70,
+      "stationCode": "PERN",
+      "stationName": "Pernem",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 15.7089964,
+      "lng": 73.8167602,
+      "scheduledArrival": "2026-09-14T14:08:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T14:08:00+05:30",
+      "departureDay": 1,
+      "distance": 525,
+      "speedToNextStationKmph": 53.7
+    },
+    {
+      "sequence": 71,
+      "stationCode": "THVM",
+      "stationName": "Thivim",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 15.6298781,
+      "lng": 73.8770455,
+      "scheduledArrival": "2026-09-14T14:20:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T14:22:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-14T14:20:00+05:30",
+      "actualDeparture": "2026-09-14T14:22:00+05:30",
+      "delayArrival": 0,
+      "delayDeparture": 0,
+      "platform": "2",
+      "distance": 536,
+      "speedToNextStationKmph": 28.2
+    },
+    {
+      "sequence": 72,
+      "stationCode": "KRMI",
+      "stationName": "Karmali",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 15.4904538,
+      "lng": 73.9245522,
+      "scheduledArrival": "2026-09-14T14:59:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T14:59:00+05:30",
+      "departureDay": 1,
+      "distance": 553.4,
+      "speedToNextStationKmph": 28.2
+    },
+    {
+      "sequence": 73,
+      "stationCode": "VEN",
+      "stationName": "Verna",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 15.3538506,
+      "lng": 73.9124939,
+      "scheduledArrival": "2026-09-14T15:33:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T15:33:00+05:30",
+      "departureDay": 1,
+      "distance": 569.5,
+      "speedToNextStationKmph": 28.2
+    },
+    {
+      "sequence": 74,
+      "stationCode": "MJO",
+      "stationName": "Majorda",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 15.3137925,
+      "lng": 73.9219348,
+      "scheduledArrival": "2026-09-14T15:44:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T15:44:00+05:30",
+      "departureDay": 1,
+      "distance": 574.5,
+      "speedToNextStationKmph": 28.2
+    },
+    {
+      "sequence": 75,
+      "stationCode": "SRVX",
+      "stationName": "Suravali (H)",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 15.2913229,
+      "lng": 73.9396519,
+      "scheduledArrival": "2026-09-14T15:51:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-14T15:51:00+05:30",
+      "departureDay": 1,
+      "distance": 577.6,
+      "speedToNextStationKmph": 28.2
+    },
+    {
+      "sequence": 76,
+      "stationCode": "MAO",
+      "stationName": "Madgaon",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "C7-C6-E1-C5-C4-C3-C2-C1",
+      "lat": 15.26799,
+      "lng": 73.97015,
+      "scheduledArrival": "2026-09-14T16:00:00+05:30",
+      "arrivalDay": 1,
+      "actualArrival": "2026-09-14T16:00:00+05:30",
+      "delayArrival": 0,
+      "platform": "2",
+      "distance": 582
+    }
+  ],
+  "tunnels": {
+    "inside": null,
+    "ahead": {
+      "id": "dasgaon-tunnel",
+      "no": "1",
+      "name": "Dasgaon Tunnel",
+      "chordLengthM": 317.6,
+      "portalA": {
+        "lat": 18.08911,
+        "lng": 73.35471
+      },
+      "portalB": {
+        "lat": 18.09194,
+        "lng": 73.354303
+      },
+      "entryKm": 192.842,
+      "exitKm": 193.159,
+      "chainageLengthM": 317.4,
+      "polylineKm": [
+        193.469,
+        193.787
+      ],
+      "portalOffsetM": 0.3,
+      "positionalConfidence": "high",
+      "metresToEntry": 192842,
+      "minutesToEntry": 151.6
+    },
+    "passedCount": 0,
+    "totalCount": 69,
+    "list": [
+      {
+        "id": "dasgaon-tunnel",
+        "no": "1",
+        "name": "Dasgaon Tunnel",
+        "chordLengthM": 317.6,
+        "portalA": {
+          "lat": 18.08911,
+          "lng": 73.35471
+        },
+        "portalB": {
+          "lat": 18.09194,
+          "lng": 73.354303
+        },
+        "entryKm": 192.842,
+        "exitKm": 193.159,
+        "chainageLengthM": 317.4,
+        "polylineKm": [
+          193.469,
+          193.787
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "bijghar-tunnel",
+        "no": "2",
+        "name": "Bijghar Tunnel",
+        "chordLengthM": 443.6,
+        "portalA": {
+          "lat": 18.011363,
+          "lng": 73.399635
+        },
+        "portalB": {
+          "lat": 18.015133,
+          "lng": 73.398262
+        },
+        "entryKm": 202.833,
+        "exitKm": 203.274,
+        "chainageLengthM": 441.2,
+        "polylineKm": [
+          203.503,
+          203.947
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "karanjadi-tunnel",
+        "no": "3",
+        "name": "Karanjadi Tunnel",
+        "chordLengthM": 193.1,
+        "portalA": {
+          "lat": 17.989433,
+          "lng": 73.404089
+        },
+        "portalB": {
+          "lat": 17.99102,
+          "lng": 73.40483
+        },
+        "entryKm": 205.632,
+        "exitKm": 205.826,
+        "chainageLengthM": 193.5,
+        "polylineKm": [
+          206.311,
+          206.504
+        ],
+        "portalOffsetM": 0.2,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "underi-tunnel",
+        "no": "4",
+        "name": "Underi Tunnel",
+        "chordLengthM": 177.3,
+        "portalA": {
+          "lat": 17.980876,
+          "lng": 73.394144
+        },
+        "portalB": {
+          "lat": 17.982172,
+          "lng": 73.39512
+        },
+        "entryKm": 207.085,
+        "exitKm": 207.262,
+        "chainageLengthM": 177.7,
+        "polylineKm": [
+          207.761,
+          207.938
+        ],
+        "portalOffsetM": 0.6,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "shirsavane-tunnel",
+        "no": "5",
+        "name": "Shirsavane Tunnel",
+        "chordLengthM": 922.2,
+        "portalA": {
+          "lat": 17.92247,
+          "lng": 73.383343
+        },
+        "portalB": {
+          "lat": 17.930739,
+          "lng": 73.382672
+        },
+        "entryKm": 213.058,
+        "exitKm": 213.983,
+        "chainageLengthM": 924.1,
+        "polylineKm": [
+          213.722,
+          214.644
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "natuwadi-tunnel",
+        "no": "6",
+        "name": "Natuwadi Tunnel",
+        "chordLengthM": 4409,
+        "portalA": {
+          "lat": 17.864348,
+          "lng": 73.415043
+        },
+        "portalB": {
+          "lat": 17.893624,
+          "lng": 73.386944
+        },
+        "entryKm": 217.242,
+        "exitKm": 221.673,
+        "chainageLengthM": 4430.4,
+        "polylineKm": [
+          217.897,
+          222.319
+        ],
+        "portalOffsetM": 0.8,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "diwankhawati-tunnel",
+        "no": "7",
+        "name": "Diwankhawati Tunnel",
+        "chordLengthM": 343.6,
+        "portalA": {
+          "lat": 17.839166,
+          "lng": 73.41543
+        },
+        "portalB": {
+          "lat": 17.842138,
+          "lng": 73.41632
+        },
+        "entryKm": 224.26,
+        "exitKm": 224.604,
+        "chainageLengthM": 344.2,
+        "polylineKm": [
+          224.901,
+          225.244
+        ],
+        "portalOffsetM": 0.1,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "bhoste-tunnel",
+        "no": "8",
+        "name": "Bhoste Tunnel",
+        "chordLengthM": 292,
+        "portalA": {
+          "lat": 17.711035,
+          "lng": 73.397293
+        },
+        "portalB": {
+          "lat": 17.711987,
+          "lng": 73.399862
+        },
+        "entryKm": 241.648,
+        "exitKm": 241.939,
+        "chainageLengthM": 291.8,
+        "polylineKm": [
+          242.262,
+          242.554
+        ],
+        "portalOffsetM": 0.6,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "alsure-tunnel",
+        "no": "9",
+        "name": "Alsure Tunnel",
+        "chordLengthM": 581.2,
+        "portalA": {
+          "lat": 17.695227,
+          "lng": 73.383318
+        },
+        "portalB": {
+          "lat": 17.69941,
+          "lng": 73.386607
+        },
+        "entryKm": 243.664,
+        "exitKm": 244.245,
+        "chainageLengthM": 580.7,
+        "polylineKm": [
+          244.28,
+          244.861
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "nilike-tunnel",
+        "no": "10",
+        "name": "Nilike Tunnel",
+        "chordLengthM": 972.1,
+        "portalA": {
+          "lat": 17.684362,
+          "lng": 73.382353
+        },
+        "portalB": {
+          "lat": 17.693101,
+          "lng": 73.382095
+        },
+        "entryKm": 244.514,
+        "exitKm": 245.528,
+        "chainageLengthM": 1013.7,
+        "polylineKm": [
+          245.131,
+          246.145
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "kondavali-tunnel",
+        "no": "11",
+        "name": "Kondavali Tunnel",
+        "chordLengthM": 256.2,
+        "portalA": {
+          "lat": 17.676112,
+          "lng": 73.388903
+        },
+        "portalB": {
+          "lat": 17.677863,
+          "lng": 73.387331
+        },
+        "entryKm": 246.425,
+        "exitKm": 246.681,
+        "chainageLengthM": 256.1,
+        "polylineKm": [
+          247.043,
+          247.299
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "ashti-tunnel",
+        "no": "12",
+        "name": "Ashti Tunnel",
+        "chordLengthM": 1003.6,
+        "portalA": {
+          "lat": 17.636153,
+          "lng": 73.386171
+        },
+        "portalB": {
+          "lat": 17.644656,
+          "lng": 73.382996
+        },
+        "entryKm": 250.615,
+        "exitKm": 251.67,
+        "chainageLengthM": 1054.9,
+        "polylineKm": [
+          251.236,
+          252.292
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "kotawali-tunnel",
+        "no": "13",
+        "name": "Kotawali Tunnel",
+        "chordLengthM": 413.2,
+        "portalA": {
+          "lat": 17.592143,
+          "lng": 73.445128
+        },
+        "portalB": {
+          "lat": 17.595332,
+          "lng": 73.443127
+        },
+        "entryKm": 259.47,
+        "exitKm": 259.885,
+        "chainageLengthM": 415.4,
+        "polylineKm": [
+          260.106,
+          260.522
+        ],
+        "portalOffsetM": 0.2,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "songaon-tunnel",
+        "no": "14",
+        "name": "Songaon Tunnel",
+        "chordLengthM": 277.4,
+        "portalA": {
+          "lat": 17.581047,
+          "lng": 73.466933
+        },
+        "portalB": {
+          "lat": 17.582722,
+          "lng": 73.464994
+        },
+        "entryKm": 262.302,
+        "exitKm": 262.579,
+        "chainageLengthM": 276.8,
+        "polylineKm": [
+          262.944,
+          263.221
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "dhamandevi-tunnel",
+        "no": "15",
+        "name": "Dhamandevi Tunnel",
+        "chordLengthM": 693.5,
+        "portalA": {
+          "lat": 17.571526,
+          "lng": 73.48036
+        },
+        "portalB": {
+          "lat": 17.575129,
+          "lng": 73.47502
+        },
+        "entryKm": 263.658,
+        "exitKm": 264.35,
+        "chainageLengthM": 692,
+        "polylineKm": [
+          264.303,
+          264.997
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "chiplun-tunnel",
+        "no": "16",
+        "name": "Chiplun Tunnel",
+        "chordLengthM": 1941.1,
+        "portalA": {
+          "lat": 17.48602,
+          "lng": 73.515643
+        },
+        "portalB": {
+          "lat": 17.495886,
+          "lng": 73.530742
+        },
+        "entryKm": 276.92,
+        "exitKm": 278.882,
+        "chainageLengthM": 1962,
+        "polylineKm": [
+          277.583,
+          279.546
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "savarde-tunnel",
+        "no": "17",
+        "name": "Savarde Tunnel",
+        "chordLengthM": 3409.6,
+        "portalA": {
+          "lat": 17.431163,
+          "lng": 73.510376
+        },
+        "portalB": {
+          "lat": 17.459763,
+          "lng": 73.521968
+        },
+        "entryKm": 281.914,
+        "exitKm": 285.352,
+        "chainageLengthM": 3438.2,
+        "polylineKm": [
+          282.576,
+          286.013
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "agave-tunnel",
+        "no": "18",
+        "name": "Agave Tunnel",
+        "chordLengthM": 892.6,
+        "portalA": {
+          "lat": 17.374895,
+          "lng": 73.529712
+        },
+        "portalB": {
+          "lat": 17.381696,
+          "lng": 73.525244
+        },
+        "entryKm": 291.268,
+        "exitKm": 292.159,
+        "chainageLengthM": 890.8,
+        "polylineKm": [
+          291.932,
+          292.825
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "khershet-tunnel",
+        "no": "19",
+        "name": "Khershet Tunnel",
+        "chordLengthM": 1056.8,
+        "portalA": {
+          "lat": 17.344035,
+          "lng": 73.528372
+        },
+        "portalB": {
+          "lat": 17.353439,
+          "lng": 73.529816
+        },
+        "entryKm": 294.583,
+        "exitKm": 295.641,
+        "chainageLengthM": 1058.2,
+        "polylineKm": [
+          295.254,
+          296.314
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "aravali-tunnel",
+        "no": "20",
+        "name": "Aravali Tunnel",
+        "chordLengthM": 465.8,
+        "portalA": {
+          "lat": 17.308565,
+          "lng": 73.533372
+        },
+        "portalB": {
+          "lat": 17.311837,
+          "lng": 73.536112
+        },
+        "entryKm": 299.485,
+        "exitKm": 299.95,
+        "chainageLengthM": 465.8,
+        "polylineKm": [
+          300.164,
+          300.63
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "shinde-tunnel",
+        "no": "21",
+        "name": "Shinde Tunnel",
+        "chordLengthM": 1802.2,
+        "portalA": {
+          "lat": 17.292124,
+          "lng": 73.536097
+        },
+        "portalB": {
+          "lat": 17.308059,
+          "lng": 73.532995
+        },
+        "entryKm": 300.019,
+        "exitKm": 301.991,
+        "chainageLengthM": 1972,
+        "polylineKm": [
+          300.699,
+          302.671
+        ],
+        "portalOffsetM": 0.1,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "dhamani-i-tunnel",
+        "no": "22",
+        "name": "Dhamani I Tunnel",
+        "chordLengthM": 558.7,
+        "portalA": {
+          "lat": 17.219359,
+          "lng": 73.549283
+        },
+        "portalB": {
+          "lat": 17.22408,
+          "lng": 73.551084
+        },
+        "entryKm": 310.318,
+        "exitKm": 310.879,
+        "chainageLengthM": 561.9,
+        "polylineKm": [
+          310.997,
+          311.559
+        ],
+        "portalOffsetM": 0.7,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "dhamani-ii-tunnel",
+        "no": "23",
+        "name": "Dhamani II Tunnel",
+        "chordLengthM": 366.9,
+        "portalA": {
+          "lat": 17.21535,
+          "lng": 73.54873
+        },
+        "portalB": {
+          "lat": 17.21863,
+          "lng": 73.549104
+        },
+        "entryKm": 310.963,
+        "exitKm": 311.331,
+        "chainageLengthM": 368.3,
+        "polylineKm": [
+          311.642,
+          312.011
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "ambed-tunnel",
+        "no": "24",
+        "name": "Ambed Tunnel",
+        "chordLengthM": 1203.3,
+        "portalA": {
+          "lat": 17.18386,
+          "lng": 73.541857
+        },
+        "portalB": {
+          "lat": 17.193985,
+          "lng": 73.545856
+        },
+        "entryKm": 313.752,
+        "exitKm": 314.997,
+        "chainageLengthM": 1245.3,
+        "polylineKm": [
+          314.428,
+          315.668
+        ],
+        "portalOffsetM": 0.8,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "konad-tunnel",
+        "no": "25",
+        "name": "Konad Tunnel",
+        "chordLengthM": 136.8,
+        "portalA": {
+          "lat": 17.180825,
+          "lng": 73.537791
+        },
+        "portalB": {
+          "lat": 17.181557,
+          "lng": 73.538826
+        },
+        "entryKm": 315.41,
+        "exitKm": 315.547,
+        "chainageLengthM": 137.3,
+        "polylineKm": [
+          316.08,
+          316.216
+        ],
+        "portalOffsetM": 0,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "bhirkond-tunnel",
+        "no": "26",
+        "name": "Bhirkond Tunnel",
+        "chordLengthM": 1265.7,
+        "portalA": {
+          "lat": 17.168646,
+          "lng": 73.496272
+        },
+        "portalB": {
+          "lat": 17.171207,
+          "lng": 73.50788
+        },
+        "entryKm": 319.063,
+        "exitKm": 320.372,
+        "chainageLengthM": 1309,
+        "polylineKm": [
+          319.718,
+          321.022
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "parchuri-tunnel",
+        "no": "27",
+        "name": "Parchuri Tunnel",
+        "chordLengthM": 2717.3,
+        "portalA": {
+          "lat": 17.137317,
+          "lng": 73.470159
+        },
+        "portalB": {
+          "lat": 17.158565,
+          "lng": 73.482792
+        },
+        "entryKm": 322.198,
+        "exitKm": 324.954,
+        "chainageLengthM": 2756.1,
+        "polylineKm": [
+          322.841,
+          325.586
+        ],
+        "portalOffsetM": 0.6,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "velewadi-tunnel",
+        "no": "28",
+        "name": "Velewadi Tunnel",
+        "chordLengthM": 910,
+        "portalA": {
+          "lat": 17.131911,
+          "lng": 73.461961
+        },
+        "portalB": {
+          "lat": 17.136331,
+          "lng": 73.469169
+        },
+        "entryKm": 325.106,
+        "exitKm": 326.025,
+        "chainageLengthM": 918.6,
+        "polylineKm": [
+          325.738,
+          326.653
+        ],
+        "portalOffsetM": 0.2,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "ukshi-tunnel",
+        "no": "29",
+        "name": "Ukshi Tunnel",
+        "chordLengthM": 108,
+        "portalA": {
+          "lat": 17.130652,
+          "lng": 73.457991
+        },
+        "portalB": {
+          "lat": 17.130889,
+          "lng": 73.458977
+        },
+        "entryKm": 326.363,
+        "exitKm": 326.472,
+        "chainageLengthM": 108.5,
+        "polylineKm": [
+          326.99,
+          327.098
+        ],
+        "portalOffsetM": 0.2,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "banachiwadi-tunnel",
+        "no": "30",
+        "name": "Banachiwadi Tunnel",
+        "chordLengthM": 592.7,
+        "portalA": {
+          "lat": 17.125724,
+          "lng": 73.449095
+        },
+        "portalB": {
+          "lat": 17.129181,
+          "lng": 73.453341
+        },
+        "entryKm": 326.993,
+        "exitKm": 327.595,
+        "chainageLengthM": 602.1,
+        "polylineKm": [
+          327.62,
+          328.223
+        ],
+        "portalOffsetM": 0.7,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "ukshi-i-tunnel",
+        "no": "31",
+        "name": "Ukshi I Tunnel",
+        "chordLengthM": 253.5,
+        "portalA": {
+          "lat": 17.122085,
+          "lng": 73.44661
+        },
+        "portalB": {
+          "lat": 17.124015,
+          "lng": 73.447879
+        },
+        "entryKm": 327.824,
+        "exitKm": 328.077,
+        "chainageLengthM": 252.7,
+        "polylineKm": [
+          328.453,
+          328.707
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "ukshi-ii-tunnel",
+        "no": "32",
+        "name": "Ukshi II Tunnel",
+        "chordLengthM": 675.1,
+        "portalA": {
+          "lat": 17.116195,
+          "lng": 73.441777
+        },
+        "portalB": {
+          "lat": 17.120899,
+          "lng": 73.445794
+        },
+        "entryKm": 328.234,
+        "exitKm": 328.914,
+        "chainageLengthM": 679.1,
+        "polylineKm": [
+          328.864,
+          329.545
+        ],
+        "portalOffsetM": 1,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "ranpat-tunnel",
+        "no": "33",
+        "name": "Ranpat Tunnel",
+        "chordLengthM": 899.7,
+        "portalA": {
+          "lat": 17.111471,
+          "lng": 73.42954
+        },
+        "portalB": {
+          "lat": 17.114148,
+          "lng": 73.437529
+        },
+        "entryKm": 329.42,
+        "exitKm": 330.317,
+        "chainageLengthM": 897.2,
+        "polylineKm": [
+          330.053,
+          330.953
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "lajul-tunnel",
+        "no": "34",
+        "name": "Lajul Tunnel",
+        "chordLengthM": 932.8,
+        "portalA": {
+          "lat": 17.107201,
+          "lng": 73.420219
+        },
+        "portalB": {
+          "lat": 17.110969,
+          "lng": 73.428061
+        },
+        "entryKm": 330.483,
+        "exitKm": 331.418,
+        "chainageLengthM": 934.7,
+        "polylineKm": [
+          331.119,
+          332.057
+        ],
+        "portalOffsetM": 0.2,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "karbude-tunnel",
+        "no": "35",
+        "name": "Karbude Tunnel",
+        "chordLengthM": 6534.6,
+        "portalA": {
+          "lat": 17.054976,
+          "lng": 73.384951
+        },
+        "portalB": {
+          "lat": 17.104456,
+          "lng": 73.418121
+        },
+        "entryKm": 331.796,
+        "exitKm": 338.312,
+        "chainageLengthM": 6516.3,
+        "polylineKm": [
+          332.436,
+          338.971
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "khedshi-i-tunnel",
+        "no": "36",
+        "name": "Khedshi I Tunnel",
+        "chordLengthM": 617.1,
+        "portalA": {
+          "lat": 17.029065,
+          "lng": 73.380691
+        },
+        "portalB": {
+          "lat": 17.034476,
+          "lng": 73.379401
+        },
+        "entryKm": 340.817,
+        "exitKm": 341.436,
+        "chainageLengthM": 618.2,
+        "polylineKm": [
+          341.475,
+          342.092
+        ],
+        "portalOffsetM": 0,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "khedshi-ii-tunnel",
+        "no": "36A",
+        "name": "Khedshi II Tunnel",
+        "chordLengthM": 613.7,
+        "portalA": {
+          "lat": 17.02174,
+          "lng": 73.381278
+        },
+        "portalB": {
+          "lat": 17.027255,
+          "lng": 73.381055
+        },
+        "entryKm": 341.641,
+        "exitKm": 342.264,
+        "chainageLengthM": 623.2,
+        "polylineKm": [
+          342.297,
+          342.919
+        ],
+        "portalOffsetM": 0.6,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "pomendi-tunnel",
+        "no": "37",
+        "name": "Pomendi Tunnel",
+        "chordLengthM": 608.1,
+        "portalA": {
+          "lat": 16.985142,
+          "lng": 73.368544
+        },
+        "portalB": {
+          "lat": 16.987419,
+          "lng": 73.363345
+        },
+        "entryKm": 350.186,
+        "exitKm": 350.795,
+        "chainageLengthM": 609.2,
+        "polylineKm": [
+          350.846,
+          351.457
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "banewadi-tunnel",
+        "no": "38",
+        "name": "Banewadi Tunnel",
+        "chordLengthM": 1112.6,
+        "portalA": {
+          "lat": 16.981458,
+          "lng": 73.388108
+        },
+        "portalB": {
+          "lat": 16.983338,
+          "lng": 73.377832
+        },
+        "entryKm": 351.801,
+        "exitKm": 352.911,
+        "chainageLengthM": 1109.6,
+        "polylineKm": [
+          352.466,
+          353.579
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "tike-tunnel",
+        "no": "39",
+        "name": "Tike Tunnel",
+        "chordLengthM": 4087.2,
+        "portalA": {
+          "lat": 16.962965,
+          "lng": 73.428758
+        },
+        "portalB": {
+          "lat": 16.980262,
+          "lng": 73.394848
+        },
+        "entryKm": 353.638,
+        "exitKm": 357.727,
+        "chainageLengthM": 4088.8,
+        "polylineKm": [
+          354.308,
+          358.408
+        ],
+        "portalOffsetM": 0.6,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "konvad-tunnel",
+        "no": "40",
+        "name": "Konvad Tunnel",
+        "chordLengthM": 757.4,
+        "portalA": {
+          "lat": 16.951228,
+          "lng": 73.448118
+        },
+        "portalB": {
+          "lat": 16.955,
+          "lng": 73.442189
+        },
+        "entryKm": 359.405,
+        "exitKm": 360.16,
+        "chainageLengthM": 755.3,
+        "polylineKm": [
+          360.092,
+          360.849
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "nivasar-i-tunnel",
+        "no": "41",
+        "name": "Nivasar I Tunnel",
+        "chordLengthM": 649.9,
+        "portalA": {
+          "lat": 16.940819,
+          "lng": 73.464149
+        },
+        "portalB": {
+          "lat": 16.944122,
+          "lng": 73.459108
+        },
+        "entryKm": 361.576,
+        "exitKm": 362.227,
+        "chainageLengthM": 650.9,
+        "polylineKm": [
+          362.266,
+          362.916
+        ],
+        "portalOffsetM": 0.2,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "nivasar-ii-tunnel",
+        "no": "42",
+        "name": "Nivasar II Tunnel",
+        "chordLengthM": 465,
+        "portalA": {
+          "lat": 16.938689,
+          "lng": 73.471413
+        },
+        "portalB": {
+          "lat": 16.939339,
+          "lng": 73.467095
+        },
+        "entryKm": 362.582,
+        "exitKm": 363.05,
+        "chainageLengthM": 468,
+        "polylineKm": [
+          363.27,
+          363.738
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "math-tunnel",
+        "no": "43",
+        "name": "Math Tunnel",
+        "chordLengthM": 1259.8,
+        "portalA": {
+          "lat": 16.939703,
+          "lng": 73.509564
+        },
+        "portalB": {
+          "lat": 16.938714,
+          "lng": 73.497766
+        },
+        "entryKm": 365.867,
+        "exitKm": 367.132,
+        "chainageLengthM": 1265.1,
+        "polylineKm": [
+          366.551,
+          367.814
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "anjanari-tunnel",
+        "no": "44",
+        "name": "Anjanari Tunnel",
+        "chordLengthM": 341,
+        "portalA": {
+          "lat": 16.942128,
+          "lng": 73.526695
+        },
+        "portalB": {
+          "lat": 16.941679,
+          "lng": 73.523524
+        },
+        "entryKm": 368.636,
+        "exitKm": 368.977,
+        "chainageLengthM": 341.5,
+        "polylineKm": [
+          369.315,
+          369.656
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "ghatiwali-tunnel",
+        "no": "45",
+        "name": "Ghatiwali Tunnel",
+        "chordLengthM": 678.3,
+        "portalA": {
+          "lat": 16.947083,
+          "lng": 73.563323
+        },
+        "portalB": {
+          "lat": 16.946417,
+          "lng": 73.556984
+        },
+        "entryKm": 372.239,
+        "exitKm": 372.919,
+        "chainageLengthM": 680.4,
+        "polylineKm": [
+          372.913,
+          373.592
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "talawade-tunnel",
+        "no": "46",
+        "name": "Talawade Tunnel",
+        "chordLengthM": 352.2,
+        "portalA": {
+          "lat": 16.939525,
+          "lng": 73.576682
+        },
+        "portalB": {
+          "lat": 16.941488,
+          "lng": 73.574083
+        },
+        "entryKm": 374.257,
+        "exitKm": 374.61,
+        "chainageLengthM": 352.8,
+        "polylineKm": [
+          374.928,
+          375.28
+        ],
+        "portalOffsetM": 0.2,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "adavali-i-tunnel",
+        "no": "47",
+        "name": "Adavali I Tunnel",
+        "chordLengthM": 656.8,
+        "portalA": {
+          "lat": 16.901445,
+          "lng": 73.604368
+        },
+        "portalB": {
+          "lat": 16.906673,
+          "lng": 73.601494
+        },
+        "entryKm": 379.201,
+        "exitKm": 379.86,
+        "chainageLengthM": 659.2,
+        "polylineKm": [
+          379.861,
+          380.517
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "adavali-ii-tunnel",
+        "no": "48",
+        "name": "Adavali II Tunnel",
+        "chordLengthM": 306.5,
+        "portalA": {
+          "lat": 16.898295,
+          "lng": 73.605746
+        },
+        "portalB": {
+          "lat": 16.900853,
+          "lng": 73.604672
+        },
+        "entryKm": 379.934,
+        "exitKm": 380.242,
+        "chainageLengthM": 308.2,
+        "polylineKm": [
+          380.591,
+          380.898
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "berdewadi-tunnel",
+        "no": "49",
+        "name": "Berdewadi Tunnel",
+        "chordLengthM": 4040.8,
+        "portalA": {
+          "lat": 16.859269,
+          "lng": 73.611634
+        },
+        "portalB": {
+          "lat": 16.895253,
+          "lng": 73.606335
+        },
+        "entryKm": 380.587,
+        "exitKm": 384.642,
+        "chainageLengthM": 4055,
+        "polylineKm": [
+          381.242,
+          385.283
+        ],
+        "portalOffsetM": 1.2,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "mandavkarwadi-tunnel",
+        "no": "50",
+        "name": "Mandavkarwadi Tunnel",
+        "chordLengthM": 219.2,
+        "portalA": {
+          "lat": 16.815762,
+          "lng": 73.616499
+        },
+        "portalB": {
+          "lat": 16.817727,
+          "lng": 73.616331
+        },
+        "entryKm": 389.311,
+        "exitKm": 389.531,
+        "chainageLengthM": 220,
+        "polylineKm": [
+          389.935,
+          390.154
+        ],
+        "portalOffsetM": 0.1,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "wahngaon-tunnel",
+        "no": "51",
+        "name": "Wahngaon Tunnel",
+        "chordLengthM": 230.4,
+        "portalA": {
+          "lat": 16.800603,
+          "lng": 73.617787
+        },
+        "portalB": {
+          "lat": 16.802668,
+          "lng": 73.617611
+        },
+        "entryKm": 390.997,
+        "exitKm": 391.228,
+        "chainageLengthM": 231.2,
+        "polylineKm": [
+          391.615,
+          391.845
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "vilavade-tunnel",
+        "no": "52",
+        "name": "Vilavade Tunnel",
+        "chordLengthM": 577.3,
+        "portalA": {
+          "lat": 16.789549,
+          "lng": 73.618591
+        },
+        "portalB": {
+          "lat": 16.794727,
+          "lng": 73.618202
+        },
+        "entryKm": 391.885,
+        "exitKm": 392.464,
+        "chainageLengthM": 579.3,
+        "polylineKm": [
+          392.5,
+          393.077
+        ],
+        "portalOffsetM": 0.2,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "shiravali-i-tunnel",
+        "no": "53",
+        "name": "Shiravali I Tunnel",
+        "chordLengthM": 1759,
+        "portalA": {
+          "lat": 16.76071,
+          "lng": 73.620704
+        },
+        "portalB": {
+          "lat": 16.776501,
+          "lng": 73.619718
+        },
+        "entryKm": 393.919,
+        "exitKm": 395.674,
+        "chainageLengthM": 1755,
+        "polylineKm": [
+          394.533,
+          396.292
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "shiravali-ii-tunnel",
+        "no": "54",
+        "name": "Shiravali II Tunnel",
+        "chordLengthM": 295.8,
+        "portalA": {
+          "lat": 16.755592,
+          "lng": 73.620563
+        },
+        "portalB": {
+          "lat": 16.758252,
+          "lng": 73.620543
+        },
+        "entryKm": 395.948,
+        "exitKm": 396.244,
+        "chainageLengthM": 295.6,
+        "polylineKm": [
+          396.567,
+          396.863
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "konde-tiware-ii-tunnel",
+        "no": "55",
+        "name": "Konde Tiware II Tunnel",
+        "chordLengthM": 287.9,
+        "portalA": {
+          "lat": 16.749829,
+          "lng": 73.620477
+        },
+        "portalB": {
+          "lat": 16.752418,
+          "lng": 73.620509
+        },
+        "entryKm": 396.597,
+        "exitKm": 396.884,
+        "chainageLengthM": 287.3,
+        "polylineKm": [
+          397.216,
+          397.504
+        ],
+        "portalOffsetM": 0.1,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "tiware-tunnel",
+        "no": "56",
+        "name": "Tiware Tunnel",
+        "chordLengthM": 1097.4,
+        "portalA": {
+          "lat": 16.739221,
+          "lng": 73.620344
+        },
+        "portalB": {
+          "lat": 16.749089,
+          "lng": 73.620468
+        },
+        "entryKm": 396.966,
+        "exitKm": 398.061,
+        "chainageLengthM": 1094.9,
+        "polylineKm": [
+          397.587,
+          398.684
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "barewadi-i-tunnel",
+        "no": "57",
+        "name": "Barewadi I Tunnel",
+        "chordLengthM": 722.2,
+        "portalA": {
+          "lat": 16.72702,
+          "lng": 73.620122
+        },
+        "portalB": {
+          "lat": 16.733514,
+          "lng": 73.620231
+        },
+        "entryKm": 398.694,
+        "exitKm": 399.415,
+        "chainageLengthM": 720.6,
+        "polylineKm": [
+          399.319,
+          400.041
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "barewadi-ii-tunnel",
+        "no": "58",
+        "name": "Barewadi II Tunnel",
+        "chordLengthM": 301.7,
+        "portalA": {
+          "lat": 16.71507,
+          "lng": 73.619947
+        },
+        "portalB": {
+          "lat": 16.717783,
+          "lng": 73.61996
+        },
+        "entryKm": 400.44,
+        "exitKm": 400.74,
+        "chainageLengthM": 301,
+        "polylineKm": [
+          401.068,
+          401.37
+        ],
+        "portalOffsetM": 0.6,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "sundal-tunnel",
+        "no": "59",
+        "name": "Sundal Tunnel",
+        "chordLengthM": 421.7,
+        "portalA": {
+          "lat": 16.703453,
+          "lng": 73.619689
+        },
+        "portalB": {
+          "lat": 16.707245,
+          "lng": 73.619665
+        },
+        "entryKm": 401.61,
+        "exitKm": 402.032,
+        "chainageLengthM": 421.9,
+        "polylineKm": [
+          402.241,
+          402.664
+        ],
+        "portalOffsetM": 0.8,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "malewadi-tunnel",
+        "no": "60",
+        "name": "Malewadi Tunnel",
+        "chordLengthM": 330.3,
+        "portalA": {
+          "lat": 16.678582,
+          "lng": 73.621597
+        },
+        "portalB": {
+          "lat": 16.681535,
+          "lng": 73.621261
+        },
+        "entryKm": 404.473,
+        "exitKm": 404.803,
+        "chainageLengthM": 329.6,
+        "polylineKm": [
+          405.111,
+          405.441
+        ],
+        "portalOffsetM": 0.3,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "adawali-tunnel",
+        "no": "61",
+        "name": "Adawali Tunnel",
+        "chordLengthM": 329.1,
+        "portalA": {
+          "lat": 16.670881,
+          "lng": 73.622592
+        },
+        "portalB": {
+          "lat": 16.673817,
+          "lng": 73.622204
+        },
+        "entryKm": 405.336,
+        "exitKm": 405.664,
+        "chainageLengthM": 328.3,
+        "polylineKm": [
+          405.975,
+          406.304
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "ladwadi-tunnel",
+        "no": "62",
+        "name": "Ladwadi Tunnel",
+        "chordLengthM": 268.9,
+        "portalA": {
+          "lat": 16.622741,
+          "lng": 73.62878
+        },
+        "portalB": {
+          "lat": 16.625141,
+          "lng": 73.62847
+        },
+        "entryKm": 410.782,
+        "exitKm": 411.052,
+        "chainageLengthM": 269.5,
+        "polylineKm": [
+          411.429,
+          411.698
+        ],
+        "portalOffsetM": 0,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "rogewadi-tunnel",
+        "no": "63",
+        "name": "Rogewadi Tunnel",
+        "chordLengthM": 139.4,
+        "portalA": {
+          "lat": 16.612669,
+          "lng": 73.630435
+        },
+        "portalB": {
+          "lat": 16.613873,
+          "lng": 73.630069
+        },
+        "entryKm": 412.05,
+        "exitKm": 412.189,
+        "chainageLengthM": 139.7,
+        "polylineKm": [
+          412.694,
+          412.833
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "gopalwadi-tunnel",
+        "no": "64",
+        "name": "Gopalwadi Tunnel",
+        "chordLengthM": 1218.1,
+        "portalA": {
+          "lat": 16.599825,
+          "lng": 73.637509
+        },
+        "portalB": {
+          "lat": 16.609207,
+          "lng": 73.631608
+        },
+        "entryKm": 412.595,
+        "exitKm": 413.817,
+        "chainageLengthM": 1222,
+        "polylineKm": [
+          413.238,
+          414.458
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "berle-tunnel",
+        "no": "65",
+        "name": "Berle Tunnel",
+        "chordLengthM": 410.5,
+        "portalA": {
+          "lat": 16.54906,
+          "lng": 73.675393
+        },
+        "portalB": {
+          "lat": 16.552087,
+          "lng": 73.673188
+        },
+        "entryKm": 420.361,
+        "exitKm": 420.773,
+        "chainageLengthM": 411.4,
+        "polylineKm": [
+          420.988,
+          421.398
+        ],
+        "portalOffsetM": 0.4,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "sherpe-tunnel",
+        "no": "66",
+        "name": "Sherpe Tunnel",
+        "chordLengthM": 308.5,
+        "portalA": {
+          "lat": 16.529322,
+          "lng": 73.689847
+        },
+        "portalB": {
+          "lat": 16.531575,
+          "lng": 73.688158
+        },
+        "entryKm": 423.151,
+        "exitKm": 423.46,
+        "chainageLengthM": 309.2,
+        "polylineKm": [
+          423.771,
+          424.08
+        ],
+        "portalOffsetM": 0.5,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "pernam-tunnel",
+        "no": "66",
+        "name": "Pernam Tunnel",
+        "chordLengthM": 1564.6,
+        "portalA": {
+          "lat": 15.712974,
+          "lng": 73.815525
+        },
+        "portalB": {
+          "lat": 15.726887,
+          "lng": 73.817709
+        },
+        "entryKm": 522.968,
+        "exitKm": 524.541,
+        "chainageLengthM": 1572.7,
+        "polylineKm": [
+          523.623,
+          525.194
+        ],
+        "portalOffsetM": 0.6,
+        "positionalConfidence": "high"
+      },
+      {
+        "id": "old-goa-tunnel",
+        "no": "70",
+        "name": "Old Goa Tunnel",
+        "chordLengthM": 548.2,
+        "portalA": {
+          "lat": 15.503288,
+          "lng": 73.925132
+        },
+        "portalB": {
+          "lat": 15.508215,
+          "lng": 73.925318
+        },
+        "entryKm": 551.425,
+        "exitKm": 551.973,
+        "chainageLengthM": 548.2,
+        "polylineKm": [
+          552.052,
+          552.6
+        ],
+        "portalOffsetM": 0.2,
+        "positionalConfidence": "high"
+      }
+    ],
+    "coverage": {
+      "count": 69,
+      "totalKm": 65.6
+    },
+    "axisBasis": "station-anchored",
+    "anchorCount": 76,
+    "axisMismatchM": 658,
+    "source": "OpenStreetMap way geometry, supplied as CSV (konkan_railway_tunnels_mumbai_goa (1).csv)",
+    "sourceIsOfficial": false,
+    "caveat": "Tunnel positions and lengths are derived from OpenStreetMap way geometry, not official KRCL alignment data. Time-to-exit uses the schedule-derived block speed — there is no live speed in the data source."
+  },
+  "deadReckoning": {
+    "active": false,
+    "staleSinceMs": 2389,
+    "method": "live_signal"
+  },
+  "curvatureEta": {
+    "train": "22229",
+    "train_name": "Mumbai CSMT - Madgaon Vande Bharat Express",
+    "date": "2026-09-14",
+    "weather": "heavy_rain",
+    "weather_factor": 0.65,
+    "max_speed_kmh": 80,
+    "schedule_source": "22229_live_2026-08-08.json",
+    "geometry_len_km": 581.4,
+    "schedule_len_km": 588,
+    "segments": [
+      {
+        "from": "CSMT",
+        "to": "DR",
+        "from_km": 0,
+        "to_km": 9,
+        "distance_km": 9,
+        "baseline_speed_kmh": 77.1,
+        "min_radius_m": 558.6,
+        "curve_capped_speed_kmh": 80,
+        "weather": "heavy_rain",
+        "weather_capped_speed_kmh": 52,
+        "effective_speed_kmh": 52,
+        "running_min": 10.38,
+        "vertex_curve_running_min": 10.38,
+        "vertex_segments": 27,
+        "vertex_capped_by_curve": 27,
+        "geom_vertex_range": [
+          0,
+          27
+        ],
+        "curvature_available": true,
+        "geometry_basis": "own-route",
+        "geometry_reference_train": "22229",
+        "baseline_only_min": 7,
+        "vertex_curve_penalty_min": 3.38072,
+        "vertex_curve_penalty_sec": 202.843,
+        "sched_run_min": 7,
+        "physics_run_min": 10.38,
+        "schedule_slack_min": 0,
+        "hist_delay_min": 5.25,
+        "hist_delay_samples": 4,
+        "dwell_min": 2,
+        "conflict_hold_min": 0,
+        "conflict_holds": [],
+        "segment_eta_min": 17.63,
+        "running_min_applied": 10.38,
+        "effective_speed_applied_kmh": 52
+      },
+      {
+        "from": "DR",
+        "to": "TNA",
+        "from_km": 9,
+        "to_km": 33,
+        "distance_km": 24,
+        "baseline_speed_kmh": 80,
+        "min_radius_m": 1046.9,
+        "curve_capped_speed_kmh": 80,
+        "weather": "heavy_rain",
+        "weather_capped_speed_kmh": 52,
+        "effective_speed_kmh": 52,
+        "running_min": 27.69,
+        "vertex_curve_running_min": 27.69,
+        "vertex_segments": 50,
+        "vertex_capped_by_curve": 50,
+        "geom_vertex_range": [
+          27,
+          77
+        ],
+        "curvature_available": true,
+        "geometry_basis": "own-route",
+        "geometry_reference_train": "22229",
+        "baseline_only_min": 18,
+        "vertex_curve_penalty_min": 9.69231,
+        "vertex_curve_penalty_sec": 581.538,
+        "sched_run_min": 18,
+        "physics_run_min": 27.69,
+        "schedule_slack_min": 0,
+        "hist_delay_min": 2.4,
+        "hist_delay_samples": 5,
+        "dwell_min": 2,
+        "conflict_hold_min": 0,
+        "conflict_holds": [],
+        "segment_eta_min": 32.09,
+        "running_min_applied": 27.69,
+        "effective_speed_applied_kmh": 52
+      },
+      {
+        "from": "TNA",
+        "to": "PNVL",
+        "from_km": 33,
+        "to_km": 68,
+        "distance_km": 35,
+        "baseline_speed_kmh": 67.7,
+        "min_radius_m": 443.8,
+        "curve_capped_speed_kmh": 80,
+        "weather": "heavy_rain",
+        "weather_capped_speed_kmh": 52,
+        "effective_speed_kmh": 52,
+        "running_min": 40.38,
+        "vertex_curve_running_min": 40.38,
+        "vertex_segments": 50,
+        "vertex_capped_by_curve": 50,
+        "geom_vertex_range": [
+          77,
+          127
+        ],
+        "curvature_available": true,
+        "geometry_basis": "own-route",
+        "geometry_reference_train": "22229",
+        "baseline_only_min": 31.02,
+        "vertex_curve_penalty_min": 9.36541,
+        "vertex_curve_penalty_sec": 561.925,
+        "sched_run_min": 31,
+        "physics_run_min": 40.38,
+        "schedule_slack_min": 0,
+        "hist_delay_min": 1.4,
+        "hist_delay_samples": 5,
+        "dwell_min": 2,
+        "conflict_hold_min": 0,
+        "conflict_holds": [],
+        "segment_eta_min": 43.78,
+        "running_min_applied": 40.38,
+        "effective_speed_applied_kmh": 52
+      },
+      {
+        "from": "PNVL",
+        "to": "KHED",
+        "from_km": 68,
+        "to_km": 243,
+        "distance_km": 175,
+        "baseline_speed_kmh": 76.6,
+        "min_radius_m": 268.1,
+        "curve_capped_speed_kmh": 75,
+        "weather": "heavy_rain",
+        "weather_capped_speed_kmh": 48.7,
+        "effective_speed_kmh": 48.7,
+        "running_min": 215.4,
+        "vertex_curve_running_min": 201.93,
+        "vertex_segments": 404,
+        "vertex_capped_by_curve": 404,
+        "geom_vertex_range": [
+          127,
+          531
+        ],
+        "curvature_available": true,
+        "geometry_basis": "own-route",
+        "geometry_reference_train": "22229",
+        "baseline_only_min": 137.08,
+        "vertex_curve_penalty_min": 64.85516,
+        "vertex_curve_penalty_sec": 3891.309,
+        "sched_run_min": 137,
+        "physics_run_min": 215.4,
+        "schedule_slack_min": 0,
+        "hist_delay_min": -1.6,
+        "hist_delay_samples": 5,
+        "dwell_min": 2,
+        "conflict_hold_min": 0,
+        "conflict_holds": [],
+        "segment_eta_min": 202.33,
+        "running_min_applied": 201.93,
+        "effective_speed_applied_kmh": 52
+      },
+      {
+        "from": "KHED",
+        "to": "RN",
+        "from_km": 243,
+        "to_km": 349,
+        "distance_km": 106,
+        "baseline_speed_kmh": 55.8,
+        "min_radius_m": 407.1,
+        "curve_capped_speed_kmh": 80,
+        "weather": "heavy_rain",
+        "weather_capped_speed_kmh": 52,
+        "effective_speed_kmh": 52,
+        "running_min": 122.31,
+        "vertex_curve_running_min": 122.31,
+        "vertex_segments": 289,
+        "vertex_capped_by_curve": 289,
+        "geom_vertex_range": [
+          531,
+          820
+        ],
+        "curvature_available": true,
+        "geometry_basis": "own-route",
+        "geometry_reference_train": "22229",
+        "baseline_only_min": 113.98,
+        "vertex_curve_penalty_min": 8.3292,
+        "vertex_curve_penalty_sec": 499.752,
+        "sched_run_min": 114,
+        "physics_run_min": 122.31,
+        "schedule_slack_min": 0,
+        "hist_delay_min": 5.4,
+        "hist_delay_samples": 5,
+        "dwell_min": 5,
+        "conflict_hold_min": 0,
+        "conflict_holds": [],
+        "segment_eta_min": 132.71,
+        "running_min_applied": 122.31,
+        "effective_speed_applied_kmh": 52
+      },
+      {
+        "from": "RN",
+        "to": "KKW",
+        "from_km": 349,
+        "to_km": 460,
+        "distance_km": 111,
+        "baseline_speed_kmh": 53.3,
+        "min_radius_m": 637.7,
+        "curve_capped_speed_kmh": 80,
+        "weather": "heavy_rain",
+        "weather_capped_speed_kmh": 52,
+        "effective_speed_kmh": 52,
+        "running_min": 128.08,
+        "vertex_curve_running_min": 128.08,
+        "vertex_segments": 141,
+        "vertex_capped_by_curve": 141,
+        "geom_vertex_range": [
+          820,
+          961
+        ],
+        "curvature_available": true,
+        "geometry_basis": "own-route",
+        "geometry_reference_train": "22229",
+        "baseline_only_min": 124.95,
+        "vertex_curve_penalty_min": 3.12383,
+        "vertex_curve_penalty_sec": 187.43,
+        "sched_run_min": 125,
+        "physics_run_min": 128.08,
+        "schedule_slack_min": 0,
+        "hist_delay_min": 1,
+        "hist_delay_samples": 5,
+        "dwell_min": 2,
+        "conflict_hold_min": 0,
+        "conflict_holds": [],
+        "segment_eta_min": 131.08,
+        "running_min_applied": 128.08,
+        "effective_speed_applied_kmh": 52
+      },
+      {
+        "from": "KKW",
+        "to": "THVM",
+        "from_km": 460,
+        "to_km": 542,
+        "distance_km": 82,
+        "baseline_speed_kmh": 55.9,
+        "min_radius_m": 991.1,
+        "curve_capped_speed_kmh": 80,
+        "weather": "heavy_rain",
+        "weather_capped_speed_kmh": 52,
+        "effective_speed_kmh": 52,
+        "running_min": 94.62,
+        "vertex_curve_running_min": 94.62,
+        "vertex_segments": 99,
+        "vertex_capped_by_curve": 99,
+        "geom_vertex_range": [
+          961,
+          1060
+        ],
+        "curvature_available": true,
+        "geometry_basis": "own-route",
+        "geometry_reference_train": "22229",
+        "baseline_only_min": 88.01,
+        "vertex_curve_penalty_min": 6.60107,
+        "vertex_curve_penalty_sec": 396.064,
+        "sched_run_min": 88,
+        "physics_run_min": 94.62,
+        "schedule_slack_min": 0,
+        "hist_delay_min": -10,
+        "hist_delay_samples": 4,
+        "dwell_min": 2,
+        "conflict_hold_min": 0,
+        "conflict_holds": [],
+        "segment_eta_min": 86.62,
+        "running_min_applied": 94.62,
+        "effective_speed_applied_kmh": 52
+      },
+      {
+        "from": "THVM",
+        "to": "MAO",
+        "from_km": 542,
+        "to_km": 588,
+        "distance_km": 46,
+        "baseline_speed_kmh": 28.2,
+        "min_radius_m": 873.6,
+        "curve_capped_speed_kmh": 80,
+        "weather": "heavy_rain",
+        "weather_capped_speed_kmh": 52,
+        "effective_speed_kmh": 28.2,
+        "running_min": 97.87,
+        "vertex_curve_running_min": 97.87,
+        "vertex_segments": 123,
+        "vertex_capped_by_curve": 0,
+        "geom_vertex_range": [
+          1060,
+          1183
+        ],
+        "curvature_available": true,
+        "geometry_basis": "own-route",
+        "geometry_reference_train": "22229",
+        "baseline_only_min": 97.87,
+        "vertex_curve_penalty_min": 0,
+        "vertex_curve_penalty_sec": 0,
+        "sched_run_min": 98,
+        "physics_run_min": 53.08,
+        "schedule_slack_min": 44.9,
+        "hist_delay_min": -26,
+        "hist_delay_samples": 5,
+        "dwell_min": 0,
+        "conflict_hold_min": 0,
+        "conflict_holds": [],
+        "segment_eta_min": 71.87,
+        "running_min_applied": 97.87,
+        "effective_speed_applied_kmh": 28.2
+      }
+    ],
+    "totals": {
+      "distance_km": 588,
+      "naive_flat_speed_min": 441,
+      "running_min": 723.3,
+      "historical_delay_min": -22.1,
+      "dwell_min": 17,
+      "conflict_hold_min": 0,
+      "schedule_slack_min": 44.9,
+      "predicted_eta_min": 718.2,
+      "scheduled_duration_min": 635,
+      "gap_vs_schedule_min": 83.2
+    },
+    "sharpest_curve": {
+      "radius_m": 268.1,
+      "lat": 18.5172,
+      "segment": "PNVL→KHED",
+      "capped_speed_kmh": 75
+    },
+    "curvature_layer_contribution_min": 105.3477,
+    "curvature_layer_covers_km": 588,
+    "historical_delay_audit": {
+      "basis": "incremental (delayArrival differenced along the halt chain)",
+      "segment_increments_sum_min": -22.1,
+      "end_to_end_delay_samples": {
+        "2026-08-19": -43,
+        "2026-08-21": -3,
+        "2026-08-24": -33,
+        "2026-08-26": -20,
+        "2026-08-28": 1
+      },
+      "end_to_end_delay_mean_min": -19.6,
+      "coverage_artifact_min": -2.5,
+      "note": "segment_increments_sum should equal end_to_end_delay_mean. Any gap is a sample-coverage artifact: halts with fewer observed dates make the sum-of-means diverge from the mean-of-sums. Quote end_to_end_delay_mean as the measured average delay; the per-segment increments are for showing WHERE delay accrues, not for a headline number."
+    },
+    "geometry_resolution": {
+      "vertices": 1184,
+      "total_km": 581.4,
+      "spacing_m": {
+        "min": 43,
+        "median": 195,
+        "p75": 420,
+        "max": 11923
+      },
+      "blind_threshold_km": 1,
+      "spans_over_threshold": 147,
+      "curvature_blind_km": 327.2,
+      "curvature_blind_pct": 56.3,
+      "resolvable_pct": 43.7,
+      "caveat": "Curvature results are valid only for the resolvable fraction. In the blind fraction sharp curves may exist but cannot be measured from this polyline. Never present the curvature figure as a route-wide measurement."
+    },
+    "curvature_available": true,
+    "geometry_basis": "own-route",
+    "geometry_coverage": {
+      "blocks_resolved": 8,
+      "blocks_total": 8,
+      "coverage_km": 588,
+      "total_km": 588,
+      "coverage_fraction": 1,
+      "reference_trains": [
+        "22229"
+      ],
+      "unresolved_blocks": [],
+      "unavailable_reason": null,
+      "basis_note": null
+    },
+    "conflict_layer": {
+      "enabled": true,
+      "error": null,
+      "delay_min_applied": 0,
+      "total_hold_min": 0,
+      "held_count": 1,
+      "precedence_count": 16,
+      "conflict_count": 17,
+      "note": "Minutes this train is predicted to stand in a loop while a higher-precedence train passes. 0.0 for a Vande Bharat or Shatabdi is the CORRECT result, not a wiring failure — they take precedence over everything else on this corridor.",
+      "assumptions": {
+        "loopBasis": "assumed-all-stations",
+        "loopDataIsOfficial": false,
+        "priorityBasis": "heuristic-over-train-type",
+        "priorityIsOfficial": false,
+        "reaccelMin": 3,
+        "delayModel": "carried-forward (our delay applied uniformly, no recovery assumed)",
+        "otherTrainsAreScheduled": true,
+        "decisionSupportOnly": true,
+        "singleLineSectionKm": null,
+        "singleLineBasis": "canonical-section"
+      }
+    },
+    "curvature_mode": "vertex",
+    "schedule_source_date": "2026-08-08",
+    "schedule_date_substituted": true,
+    "origin_departure": "2026-09-14T05:25:00+05:30",
+    "predicted_arrival": "2026-09-14T17:23:12+05:30",
+    "scheduled_arrival": "2026-09-14T16:00:00+05:30",
+    "arrival_delta_min": 83.2,
+    "comparison": {
+      "naive_flat_speed_min": 441,
+      "combined_model_min": 718.2,
+      "scheduled_duration_min": 635,
+      "naive_error_min": -194,
+      "model_error_min": 83.2
+    },
+    "is_fallback_date": true
+  }
+}

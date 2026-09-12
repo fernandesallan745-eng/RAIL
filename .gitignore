@@ -6,8 +6,9 @@
 # Dependencies
 node_modules/
 
-# Cache
-.cache/
+# Cache — runtime-only files (regenerated every poll cycle)
+.cache/rr_quota.json
+.cache/fleet_fallback.json
 
 # Offline map pack — binary assets built locally by fetch_tiles.py, and Leaflet
 # vendored from npm. Tens of MB; rebuild on the demo machine instead of
