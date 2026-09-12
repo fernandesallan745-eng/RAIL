@@ -94,10 +94,28 @@
   <!-- Bottom Right Map Control Action Buttons -->
   <div class="map-controls-group">
     <button id="serverSettingsBtn" class="ctrl-btn native-only" title="Server connection" hidden>⌁</button>
+    <!-- Corridor-wide scheduled crossings. OFF by default: it draws ~2,300 markers
+         from static timetables and must never be mistaken for the live fleet,
+         which is one train. The legend below carries that distinction. -->
+    <button id="corridorToggleBtn" class="ctrl-btn" title="Corridor-wide scheduled crossings (all trains)" aria-pressed="false">⇄</button>
     <button id="recenterBtn" class="ctrl-btn" title="Center India">⌖</button>
     <button id="zoomInBtn" class="ctrl-btn" title="Zoom In">+</button>
     <button id="zoomOutBtn" class="ctrl-btn" title="Zoom Out">&minus;</button>
     <button id="fullscreenBtn" class="ctrl-btn" title="Toggle Fullscreen">⛶</button>
+  </div>
+
+  <!-- Legend for the corridor layer. Shown only while that layer is on, and it
+       states positionBasis explicitly: these are two timetables crossing, not two
+       tracked trains. Drawing scheduled meets so they look live is the failure
+       VERIFIED #12/#21 exist to prevent, so this text is not decorative. -->
+  <div id="corridorLegend" class="corridor-legend" hidden>
+    <div class="corridor-legend-title">
+      <span id="corridorLegendCount">Corridor crossings</span>
+      <button id="corridorLegendClose" class="corridor-legend-close" title="Hide layer">&times;</button>
+    </div>
+    <div class="corridor-legend-row"><span class="corridor-dot corridor-dot-opposing"></span> Head-on crossing</div>
+    <div class="corridor-legend-row"><span class="corridor-dot corridor-dot-overtake"></span> Overtake</div>
+    <div id="corridorLegendNote" class="corridor-legend-note"></div>
   </div>
 
   <!-- Slide-Out Train Telemetry Drawer -->
@@ -244,7 +262,7 @@
       }
 
       function bootApp() {
-        load('./offline-tiles.js?v=20260912-2', null, function () { load('./app.js?v=20260912-2', null, null); });
+        load('./offline-tiles.js?v=20260912-3', null, function () { load('./app.js?v=20260912-3', null, null); });
       }
 
       if (typeof L !== 'undefined') {

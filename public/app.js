@@ -98,7 +98,16 @@ let activeRouteLayer = null;
 let activeStationsLayer = null;
 let tunnelsLayer = null;
 let conflictLayer = null;
+let corridorConflictLayer = null;
 let activeTrainMarker = null;
+
+// Corridor-wide scheduled-crossing layer state. Off by default; fetched lazily
+// the first time it is switched on, then cached client-side for the session so a
+// re-toggle is instant and never re-hits the gateway. Every meet here is two
+// SCHEDULED timetables crossing — no live GPS (VERIFIED #12/#21) — which is why
+// it is a separate layer from the live-fleet conflictLayer, not folded into it.
+let corridorLayerOn = false;
+let corridorData = null;
 
 let selectedTrainNumber = null;
 let searchTimeout = null;
@@ -304,6 +313,10 @@ function initMap() {
   // Meet points sit above the tunnels — a crossing is a point event, and it can
   // legitimately fall inside a tunnel's span.
   conflictLayer = L.layerGroup().addTo(map);
+  // Corridor-wide scheduled crossings. Created but deliberately NOT added to the
+  // map: this layer is opt-in (see toggleCorridorLayer). Building the group up
+  // front means the toggle never has to null-check it.
+  corridorConflictLayer = L.layerGroup();
 }
 
 // Layer Switcher
@@ -743,10 +756,14 @@ function renderConflicts(liveData) {
   if (!info || !Array.isArray(info.conflicts)) return;
 
   for (const c of info.conflicts) {
-    // Trains cached before the includeCoordinates fix have no station lat/lng,
-    // so some meets are unmappable. Skip them here; the panel still lists them
-    // and coordsNote says how many are missing — never silently drop the fact.
-    if (c.meetCoordsBasis !== 'interpolated' || c.meetLat == null) continue;
+    // Draw anything that HAS coordinates, whichever basis supplied them: the
+    // train's own station rows ('interpolated') or the shared Konkan alignment
+    // ('shared-corridor-polyline'). Testing for one basis name by hand would
+    // silently drop every roster train — they carry no station coordinates at
+    // all, so the shared polyline is the only thing that can place them. The
+    // panel still lists unmappable meets and coordsNote says how many, so a
+    // missing marker is never an unexplained absence.
+    if (c.meetLat == null || c.meetLng == null) continue;
 
     const held = c.whoIsHeld === 'us';
     const colour = held ? '#f87171' : '#34d399';
@@ -803,6 +820,134 @@ function renderConflicts(liveData) {
     );
 
     conflictLayer.addLayer(marker);
+  }
+}
+
+// ── Corridor-wide scheduled crossings (all trains, opt-in layer) ─────────────
+// Toggled by the ⇄ control. First activation fetches the whole-corridor sweep
+// for today's service date from the gateway, which costs ZERO upstream RailRadar
+// requests — every meet falls out of two cached timetables (VERIFIED #15). The
+// result is cached for the session; a re-toggle just re-adds the built markers.
+async function toggleCorridorLayer() {
+  const btn = document.getElementById('corridorToggleBtn');
+  const legend = document.getElementById('corridorLegend');
+
+  if (corridorLayerOn) {
+    // Hide, but keep the built markers and the cached data — cheap to re-show.
+    map.removeLayer(corridorConflictLayer);
+    corridorLayerOn = false;
+    if (btn) btn.setAttribute('aria-pressed', 'false');
+    if (legend) legend.hidden = true;
+    return;
+  }
+
+  // Fetch once; reuse thereafter.
+  if (!corridorData) {
+    if (btn) btn.classList.add('is-busy');
+    try {
+      const res = await fetch(apiUrl('/api/corridor/conflicts'));
+      const json = await res.json();
+      if (!json.success || !json.data) {
+        // A failure must be visible, not a silently empty layer: "no meets"
+        // and "the sweep did not run" look identical on a map (VERIFIED #9).
+        showCorridorUnavailable(json.reason, json.hint || json.detail);
+        return;
+      }
+      corridorData = json.data;
+      renderCorridorConflicts(corridorData);
+    } catch (err) {
+      console.error('Corridor sweep fetch failed:', err);
+      showCorridorUnavailable('model-unreachable',
+        'start the ETA model: python3 run_server.py 8000');
+      return;
+    } finally {
+      if (btn) btn.classList.remove('is-busy');
+    }
+  }
+
+  corridorConflictLayer.addTo(map);
+  corridorLayerOn = true;
+  if (btn) btn.setAttribute('aria-pressed', 'true');
+  if (legend) legend.hidden = false;
+}
+
+function showCorridorUnavailable(reason, hint) {
+  const legend = document.getElementById('corridorLegend');
+  const count = document.getElementById('corridorLegendCount');
+  const note = document.getElementById('corridorLegendNote');
+  const btn = document.getElementById('corridorToggleBtn');
+  if (!legend) return;
+  legend.hidden = false;
+  if (btn) btn.setAttribute('aria-pressed', 'false');
+  if (count) count.textContent = 'Corridor crossings unavailable';
+  if (note) {
+    note.textContent =
+      reason === 'model-unreachable'
+        ? `The conflict model is not reachable, so the corridor sweep could not run. ${hint || ''}`.trim()
+        : `The corridor sweep could not run (${reason || 'unknown reason'}). ${hint || ''}`.trim();
+  }
+}
+
+// Draw every deduplicated corridor meet. Amber = head-on, violet = overtake —
+// deliberately DIFFERENT hues from the live per-train layer's red/green, because
+// these are scheduled meets, not the tracked fleet train's live crossings.
+function renderCorridorConflicts(data) {
+  if (!corridorConflictLayer) return;
+  corridorConflictLayer.clearLayers();
+
+  const meets = Array.isArray(data.meets) ? data.meets : [];
+  let drawn = 0;
+  for (const m of meets) {
+    if (m.lat == null || m.lng == null) continue;   // undrawable; counted below
+    const overtake = m.kind === 'overtake';
+    const colour = overtake ? '#a78bfa' : '#f59e0b';
+
+    const marker = L.circleMarker([m.lat, m.lng], {
+      radius: 3.5,
+      color: 'rgba(15,23,42,0.9)',
+      weight: 1,
+      fillColor: colour,
+      fillOpacity: 0.85,
+    });
+
+    const heldLine = m.heldTrain
+      ? `<div style="font-size:0.72rem;margin-top:4px;color:#b45309">` +
+        `#${escapeHtml(m.heldTrain)} takes the loop ~${m.holdMin} min` +
+        `${m.holdStation ? ` at ${escapeHtml(m.holdStation)}` : ''}</div>`
+      : '';
+    const km = m.corridorKm != null ? m.corridorKm.toFixed(1)
+      : (m.km != null ? m.km.toFixed(1) : '?');
+
+    marker.bindPopup(
+      `<div style="font-family:system-ui,sans-serif;min-width:210px">
+         <div style="font-weight:700;font-size:0.88rem">${overtake ? 'Overtake' : 'Head-on crossing'} · km ${km}</div>
+         <div style="color:#64748b;font-size:0.72rem;margin-bottom:6px">${escapeHtml(m.betweenFrom || '?')}–${escapeHtml(m.betweenTo || '?')} · ~${escapeHtml(m.clock || '')}</div>
+         <div style="font-size:0.78rem"><strong>#${escapeHtml(m.trainA)}</strong> ${escapeHtml(m.trainAName || '')}</div>
+         <div style="font-size:0.78rem">vs <strong>#${escapeHtml(m.trainB)}</strong> ${escapeHtml(m.trainBName || '')}</div>
+         ${heldLine}
+         <div style="font-size:0.66rem;color:#94a3b8;margin-top:6px;font-style:italic">Scheduled meet — no live position. Loop location assumed; decision support only.</div>
+       </div>`
+    );
+    corridorConflictLayer.addLayer(marker);
+    drawn++;
+  }
+
+  // The legend headline and note are driven off the PAYLOAD's own counts and
+  // honesty text, never restated in prose here, so the UI cannot drift from the
+  // model's flags. positionNote already says "no live GPS position".
+  const count = document.getElementById('corridorLegendCount');
+  const note = document.getElementById('corridorLegendNote');
+  if (count) {
+    const dateStr = data.serviceDate || 'all dates';
+    count.textContent = `${drawn} crossings · ${data.trainsSwept ?? '?'} trains · ${dateStr}`;
+  }
+  if (note) {
+    const undrawable = meets.length - drawn;
+    const extra = undrawable > 0
+      ? ` ${undrawable} meet${undrawable === 1 ? '' : 's'} have no map position and are not shown.`
+      : '';
+    note.textContent = (data.positionNote ||
+      'Every meet is two scheduled timetables crossing, not two tracked trains.') + extra;
   }
 }
 
@@ -868,6 +1013,27 @@ function renderConflictPanel(liveData) {
       : '🔀 Crossing prediction';
 
   if (!rows.length) {
+    // Zero rows has TWO causes that mean opposite things, and rendering both as
+    // "no crossings predicted" is the silent-zero failure of VERIFIED #9:
+    //   - a real result: this train genuinely meets nobody on the single line;
+    //   - an uncomputable one: it places fewer than two stations on the section,
+    //     shares too little of it, or is not a corridor train at all.
+    // The model already decides which and says why, so read its own note rather
+    // than restating the rule here — a UI-side copy would drift from the model.
+    const meta = info._meta || {};
+    const reason = meta.crossingsUnavailableReason || null;
+    if (reason) {
+      header.innerHTML = '🔀 Crossing prediction unavailable';
+      body.innerHTML =
+        `<div style="color:var(--text-muted); padding:6px 0; line-height:1.5;">` +
+          escapeHtml(meta.crossingsUnavailableNote || 'Crossings cannot be computed for this train.') +
+          `<div style="color:var(--text-dim); font-size:0.67rem; margin-top:4px;">` +
+            `Reason code: <code>${escapeHtml(reason)}</code> — a coverage gap, not an outage. ` +
+            `Live position and tunnel tracking above are unaffected.` +
+          `</div>` +
+        `</div>`;
+      return;
+    }
     body.innerHTML =
       '<div style="color:var(--text-dim); padding:6px 0;">No crossings or overtakes predicted on the single-line section for this run.</div>';
     return;
@@ -1532,6 +1698,24 @@ function renderSearchResults(trains) {
 // Setup Event Listeners
 function setupEventListeners() {
   document.getElementById('layerToggleBtn').addEventListener('click', toggleMapLayer);
+
+  // Corridor-wide scheduled crossings. Opt-in, so nothing about the existing
+  // live view changes until it is asked for.
+  const corridorBtn = document.getElementById('corridorToggleBtn');
+  if (corridorBtn) corridorBtn.addEventListener('click', toggleCorridorLayer);
+  const corridorClose = document.getElementById('corridorLegendClose');
+  if (corridorClose) {
+    corridorClose.addEventListener('click', () => {
+      // The × hides the legend AND the layer when it is on, so the two can never
+      // disagree about whether the corridor markers are drawn. When the legend is
+      // showing an unavailable message the layer is already off — just hide it.
+      if (corridorLayerOn) {
+        toggleCorridorLayer();
+      } else {
+        document.getElementById('corridorLegend').hidden = true;
+      }
+    });
+  }
 
   document.getElementById('zoomInBtn').addEventListener('click', () => {
     map.zoomIn();

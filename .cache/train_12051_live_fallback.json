@@ -2,7 +2,7 @@
   "trainNumber": "12051",
   "trainName": "Mumbai CSMT - Madgaon Shatabdi Express",
   "startDate": "2026-09-12",
-  "lastUpdatedAt": "2026-09-12T11:19:57+05:30",
+  "lastUpdatedAt": "2026-09-12T15:19:29+05:30",
   "status": "running",
   "train": {
     "number": "12051",
@@ -41,18 +41,18 @@
   "isLive": true,
   "trackingMode": "real-time",
   "previousHalt": {
-    "stationCode": "CHI",
-    "stationName": "Chiplun",
-    "sequence": 50,
-    "distance": 270.1
-  },
-  "nextHalt": {
     "stationCode": "RN",
     "stationName": "Ratnagiri",
     "sequence": 57,
     "distance": 345.8
   },
-  "delayMinutes": 53,
+  "nextHalt": {
+    "stationCode": "KUDL",
+    "stationName": "Kudal",
+    "sequence": 66,
+    "distance": 485.6
+  },
+  "delayMinutes": 87,
   "geometry": {
     "trainNumber": "12051",
     "format": "geojson",
@@ -9949,19 +9949,19 @@
     }
   },
   "currentLocation": {
-    "stationCode": "AVRD",
-    "stationName": "Aravali Road",
-    "sequence": 53,
+    "stationCode": "KKW",
+    "stationName": "Kankavli",
+    "sequence": 64,
     "status": "departed",
-    "isHalt": false,
+    "isHalt": true,
     "coordinates": {
-      "lat": 17.354435,
-      "lng": 73.53033
+      "lat": 16.142365,
+      "lng": 73.68125
     },
-    "distanceFromOriginKm": 298.9,
-    "distanceFromLastStationKm": 0,
-    "segmentProgress": 0,
-    "delayMinutes": 53
+    "distanceFromOriginKm": 471.57,
+    "distanceFromLastStationKm": 14.27,
+    "segmentProgress": 0.81,
+    "delayMinutes": 87
   },
   "route": [
     {
@@ -10773,10 +10773,10 @@
       "arrivalDay": 1,
       "scheduledDeparture": "2026-09-12T09:54:00+05:30",
       "departureDay": 1,
-      "actualArrival": "2026-09-12T10:42:31+05:30",
-      "actualDeparture": "2026-09-12T10:51:31+05:30",
-      "delayArrival": 51,
-      "delayDeparture": 58,
+      "actualArrival": "2026-09-12T10:44:13+05:30",
+      "actualDeparture": "2026-09-12T10:49:31+05:30",
+      "delayArrival": 52,
+      "delayDeparture": 56,
       "platform": "2",
       "distance": 270.1,
       "speedToNextStationKmph": 52.8
@@ -10826,10 +10826,6 @@
       "arrivalDay": 1,
       "scheduledDeparture": "2026-09-12T10:27:00+05:30",
       "departureDay": 1,
-      "actualArrival": "2026-09-12T11:19:41+05:30",
-      "actualDeparture": "2026-09-12T11:19:41+05:30",
-      "delayArrival": 53,
-      "delayDeparture": 53,
       "distance": 298.9,
       "speedToNextStationKmph": 52.8
     },
@@ -10838,7 +10834,7 @@
       "stationCode": "SGR",
       "stationName": "Sangmeshwar",
       "isHalt": false,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 17.2015922,
       "lng": 73.5463963,
@@ -10854,7 +10850,7 @@
       "stationCode": "UKC",
       "stationName": "Ukshi",
       "isHalt": false,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 17.1301992,
       "lng": 73.4568767,
@@ -10870,7 +10866,7 @@
       "stationCode": "BOKE",
       "stationName": "Bhoke",
       "isHalt": false,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 17.0489169,
       "lng": 73.3810736,
@@ -10886,7 +10882,7 @@
       "stationCode": "RN",
       "stationName": "Ratnagiri",
       "isHalt": true,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 17.00311,
       "lng": 73.35727,
@@ -10894,20 +10890,20 @@
       "arrivalDay": 1,
       "scheduledDeparture": "2026-09-12T11:25:00+05:30",
       "departureDay": 1,
+      "actualArrival": "2026-09-12T12:27:38+05:30",
+      "actualDeparture": "2026-09-12T12:50:52+05:30",
+      "delayArrival": 68,
+      "delayDeparture": 86,
       "platform": "1",
       "distance": 345.8,
-      "speedToNextStationKmph": 49.6,
-      "actualArrival": "2026-09-12T12:15:00+05:30",
-      "delayArrival": 55,
-      "actualDeparture": "2026-09-12T12:20:00+05:30",
-      "delayDeparture": 55
+      "speedToNextStationKmph": 49.6
     },
     {
       "sequence": 58,
       "stationCode": "NIV",
       "stationName": "Nivasar",
       "isHalt": false,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 16.9472452,
       "lng": 73.454825,
@@ -10923,7 +10919,7 @@
       "stationCode": "ADVI",
       "stationName": "Adavali",
       "isHalt": false,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 16.9215451,
       "lng": 73.5928085,
@@ -10939,7 +10935,7 @@
       "stationCode": "VID",
       "stationName": "Vilavade",
       "isHalt": false,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 16.7856781,
       "lng": 73.6191607,
@@ -10955,7 +10951,7 @@
       "stationCode": "RAJP",
       "stationName": "Rajapur Road",
       "isHalt": false,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 16.635634,
       "lng": 73.6267989,
@@ -10971,7 +10967,7 @@
       "stationCode": "VBW",
       "stationName": "Vaibhavwadi Road",
       "isHalt": false,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 16.5123066,
       "lng": 73.7079427,
@@ -10987,7 +10983,7 @@
       "stationCode": "NAN",
       "stationName": "Nandgaon Road",
       "isHalt": false,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 16.3876268,
       "lng": 73.7308816,
@@ -11003,7 +10999,7 @@
       "stationCode": "KKW",
       "stationName": "Kankavli",
       "isHalt": true,
-      "status": "upcoming",
+      "status": "departed",
       "coachPosition": "ENG-LPR-D10-D9-D8-D7-D6-D5-D4-D3-D2-D1-C3-C2-C1-DL1-EV1",
       "lat": 16.2594268,
       "lng": 73.7199483,
@@ -11011,13 +11007,13 @@
       "arrivalDay": 1,
       "scheduledDeparture": "2026-09-12T13:42:00+05:30",
       "departureDay": 1,
+      "actualArrival": "2026-09-12T15:01:42+05:30",
+      "actualDeparture": "2026-09-12T15:08:49+05:30",
+      "delayArrival": 82,
+      "delayDeparture": 87,
       "platform": "1",
       "distance": 457.3,
-      "speedToNextStationKmph": 44.7,
-      "actualArrival": "2026-09-12T14:35:00+05:30",
-      "delayArrival": 55,
-      "actualDeparture": "2026-09-12T14:37:00+05:30",
-      "delayDeparture": 55
+      "speedToNextStationKmph": 44.7
     },
     {
       "sequence": 65,
@@ -11051,10 +11047,10 @@
       "platform": "1",
       "distance": 485.6,
       "speedToNextStationKmph": 62.7,
-      "actualArrival": "2026-09-12T15:15:00+05:30",
-      "delayArrival": 55,
-      "actualDeparture": "2026-09-12T15:17:00+05:30",
-      "delayDeparture": 55
+      "actualArrival": "2026-09-12T15:57:00+05:30",
+      "delayArrival": 97,
+      "actualDeparture": "2026-09-12T15:59:00+05:30",
+      "delayDeparture": 97
     },
     {
       "sequence": 67,
@@ -11088,10 +11084,10 @@
       "platform": "1",
       "distance": 506.5,
       "speedToNextStationKmph": 38.5,
-      "actualArrival": "2026-09-12T15:37:00+05:30",
-      "delayArrival": 55,
-      "actualDeparture": "2026-09-12T15:39:00+05:30",
-      "delayDeparture": 55
+      "actualArrival": "2026-09-12T16:19:00+05:30",
+      "delayArrival": 97,
+      "actualDeparture": "2026-09-12T16:21:00+05:30",
+      "delayDeparture": 97
     },
     {
       "sequence": 69,
@@ -11141,10 +11137,10 @@
       "platform": "1",
       "distance": 536,
       "speedToNextStationKmph": 40.6,
-      "actualArrival": "2026-09-12T16:25:00+05:30",
-      "delayArrival": 55,
-      "actualDeparture": "2026-09-12T16:27:00+05:30",
-      "delayDeparture": 55
+      "actualArrival": "2026-09-12T17:07:00+05:30",
+      "delayArrival": 97,
+      "actualDeparture": "2026-09-12T17:09:00+05:30",
+      "delayDeparture": 97
     },
     {
       "sequence": 72,
@@ -11223,38 +11219,38 @@
       "arrivalDay": 1,
       "platform": "5",
       "distance": 582,
-      "actualArrival": "2026-09-12T17:35:00+05:30",
-      "delayArrival": 55
+      "actualArrival": "2026-09-12T18:17:00+05:30",
+      "delayArrival": 97
     }
   ],
   "tunnels": {
     "inside": null,
     "ahead": {
-      "id": "aravali-tunnel",
-      "no": "20",
-      "name": "Aravali Tunnel",
-      "chordLengthM": 465.8,
+      "id": "pernam-tunnel",
+      "no": "66",
+      "name": "Pernam Tunnel",
+      "chordLengthM": 1564.6,
       "portalA": {
-        "lat": 17.308565,
-        "lng": 73.533372
+        "lat": 15.712974,
+        "lng": 73.815525
       },
       "portalB": {
-        "lat": 17.311837,
-        "lng": 73.536112
+        "lat": 15.726887,
+        "lng": 73.817709
       },
-      "entryKm": 299.485,
-      "exitKm": 299.95,
-      "chainageLengthM": 465.8,
+      "entryKm": 522.968,
+      "exitKm": 524.541,
+      "chainageLengthM": 1572.7,
       "polylineKm": [
-        300.164,
-        300.63
+        523.623,
+        525.194
       ],
-      "portalOffsetM": 0.5,
+      "portalOffsetM": 0.6,
       "positionalConfidence": "high",
-      "metresToEntry": 585,
-      "minutesToEntry": 0.7
+      "metresToEntry": 51398,
+      "minutesToEntry": 69
     },
-    "passedCount": 19,
+    "passedCount": 67,
     "totalCount": 69,
     "list": [
       {
@@ -12858,7 +12854,7 @@
   },
   "deadReckoning": {
     "active": false,
-    "staleSinceMs": 146330,
+    "staleSinceMs": 31143,
     "method": "live_signal"
   },
   "curvatureEta": {

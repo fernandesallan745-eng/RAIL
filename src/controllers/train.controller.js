@@ -440,6 +440,48 @@ export const getTrainLiveStatus = async (req, res, next) => {
   }
 };
 
+export const getCorridorConflicts = async (req, res) => {
+  try {
+    // Every predicted meet on the corridor for one service date, from the model
+    // API's /corridor/conflicts. Pure passthrough — the gateway does no conflict
+    // arithmetic of its own, the same discipline the tunnel and per-train
+    // conflict layers follow, so the two can never disagree about a meet.
+    //
+    // Costs ZERO upstream RailRadar requests: meets fall out of two cached
+    // timetables (VERIFIED #15). That is what makes a corridor-wide layer
+    // affordable at all — polling 206 trains would be impossible against a
+    // 10 req/min ceiling.
+    const { date, at, window, limit, delay } = req.query;
+    const params = {};
+    for (const [k, v] of Object.entries({ date, at, window, limit, delay })) {
+      if (v !== undefined && v !== '') params[k] = v;
+    }
+    const upstream = await axios.get(
+      `${config.modelApi.baseUrl}/corridor/conflicts`,
+      { params, timeout: 15000 }   // a full 206-train sweep, not a single lookup
+    );
+    res.json({ success: true, data: upstream.data });
+  } catch (error) {
+    // Additive layer: a failure here must not break the map. Report the reason
+    // rather than an empty list — "no meets predicted" and "the sweep did not
+    // run" look identical on a map and mean opposite things (VERIFIED #9).
+    const status = error.response?.status;
+    if (status === 422) {
+      return res.status(422).json({
+        success: false,
+        reason: 'invalid-parameters',
+        detail: error.response.data?.detail || null,
+      });
+    }
+    res.status(503).json({
+      success: false,
+      reason: 'model-unreachable',
+      detail: error.message,
+      hint: 'start the ETA model: python3 run_server.py 8000',
+    });
+  }
+};
+
 export const getTunnels = async (req, res, next) => {
   try {
     const zones = getTunnelZones();

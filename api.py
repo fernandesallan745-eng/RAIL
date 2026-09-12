@@ -497,6 +497,56 @@ def get_conflicts(
     return JSONResponse(res, headers={"Cache-Control": "no-store"})
 
 
+@app.get("/corridor/conflicts")
+def get_corridor_conflicts(
+    date: str = Query("today", description="service date YYYY-MM-DD (run_days filter); 'today' for the current date, 'all' to sweep every roster train"),
+    delay: float = Query(0.0, description="delay in minutes applied to EVERY train; 0 is the booked timetable"),
+    at: str = Query(None, description="keep only meets within ±window of this wall clock, e.g. 14:30"),
+    window: int = Query(60, ge=1, le=720, description="half-width in minutes for 'at'"),
+    limit: int = Query(0, ge=0, description="cap the returned meets (0 = all); counts in the header are always for the full sweep"),
+):
+    """
+    Every predicted crossing on the whole Konkan corridor for one service date.
+
+    Costs **no upstream request** — meets fall out of two cached timetables plus
+    a delay (VERIFIED #15).  This sweeps the entire roster, so it is the
+    corridor-wide counterpart to `/conflicts/{train}`.
+
+    **Every marker here is a SCHEDULED meet, not a live one.**  The live fleet is
+    one train; nothing on this layer carries a GPS position.  `positionBasis`,
+    `liveTrains` and `positionNote` say so in the payload, and the map legend
+    must repeat it — drawing scheduled crossings so they look like live ones is
+    exactly the failure VERIFIED #12/#21 exist to prevent.
+    """
+    if delay < -720 or delay > 1440:
+        raise HTTPException(422, detail=f"delay must be between -720 and 1440 minutes, got {delay}")
+    if date == "today":
+        service_date = datetime.now().date()
+    elif date in ("all", ""):
+        service_date = None
+    else:
+        try:
+            service_date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                422, detail=f"date must be YYYY-MM-DD, 'today' or 'all', got {date!r}")
+    if at is not None and not re.fullmatch(r"\d{1,2}:\d{2}", at):
+        raise HTTPException(422, detail=f"at must be HH:MM, got {at!r}")
+
+    import conflict as conflict_mod
+    res = conflict_mod.corridor_conflicts(
+        service_date=service_date, delay_min=delay, at_clock=at, window_min=window)
+
+    if limit and len(res["meets"]) > limit:
+        # Copy rather than mutate: `corridor_conflicts` memoises its result, so
+        # truncating in place would poison every later caller's sweep with one
+        # caller's limit.
+        res = dict(res)
+        res["meets"] = res["meets"][:limit]
+        res["meetsTruncatedTo"] = limit
+    return JSONResponse(res, headers={"Cache-Control": "no-store"})
+
+
 @app.get("/eta/{train_number}/curvature")
 def get_curvature(
     train_number: str,

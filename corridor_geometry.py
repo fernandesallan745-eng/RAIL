@@ -129,6 +129,37 @@ def _perp_offset_m(coords, i, slat, slng, window=3):
     return best
 
 
+def _projected_km(coords, cum, i, slat, slng, window=6):
+    """Along-track km of a station's PERPENDICULAR projection onto the line.
+
+    Distinct from `cum[nearest_vertex]`, and the distinction is VERIFIED #11 for
+    the third time in this project.  Vertex spacing here is median ~195 m but
+    runs to 11.9 km (VERIFIED #8), so a station inside a long span quantises to
+    a vertex up to ~3 km away **along the track** even though it sits ~20 m from
+    the line.  Measured on the 22229 reference against 12051's own coordinates:
+    anchoring on the vertex gave along-track error median 342 m / max 3080 m
+    (SNDD, inside an 11,923 m span); anchoring on the projection gives the
+    numbers reported by `scripts/audit_corridor_points.py`.
+
+    The vertex index is still what `block_geometry` returns — curvature needs an
+    integer range and is unharmed by a vertex either way.  Only the km anchor,
+    which is interpolated *between* anchors, needs the finer position.
+    """
+    best_km, best_d = None, math.inf
+    for j in range(max(0, i - window), min(len(coords) - 1, i + window)):
+        (x0, y0), (x1, y1) = coords[j], coords[j + 1]
+        ax, ay = curvature._to_local_xy(y0, x0, slat, slng)
+        bx, by = curvature._to_local_xy(y1, x1, slat, slng)
+        dx, dy = bx - ax, by - ay
+        l2 = dx * dx + dy * dy
+        t = 0.0 if l2 == 0 else max(0.0, min(1.0, -(ax * dx + ay * dy) / l2))
+        d = math.hypot(ax + t * dx, ay + t * dy)
+        if d < best_d:
+            best_d = d
+            best_km = cum[j] + t * (cum[j + 1] - cum[j])
+    return best_km
+
+
 def _snap_codes(coords, stations):
     """{code: vertex_index} by nearest vertex to each station's own lat/lng.
 
@@ -171,6 +202,7 @@ def _build():
             # cannot be anchored to station codes, so it is unusable here.  Kept
             # visible rather than skipped silently.
             refs.append({"train": train, "coords": coords, "codes": {},
+                         "codeKm": {},
                          "unusable": "no coordinate-bearing live snapshot",
                          "stationSource": None,
                          "vertexOffsets": [], "lineOffsets": []})
@@ -179,6 +211,18 @@ def _build():
         cum = [0.0]
         for (lng0, lat0), (lng1, lat1) in zip(coords[:-1], coords[1:]):
             cum.append(cum[-1] + curvature.haversine_m(lat0, lng0, lat1, lng1) / 1000.0)
+        # Along-track km per code, from the perpendicular projection rather than
+        # the snapped vertex.  See `_projected_km` — this is what removes the
+        # 3 km along-track quantisation error at SNDD.
+        by_code = {s["stationCode"]: s for s in stations}
+        code_km = {}
+        for c, vi in codes.items():
+            s = by_code.get(c)
+            if s is None:
+                continue
+            km = _projected_km(coords, cum, vi, s["lat"], s["lng"])
+            if km is not None:
+                code_km[c] = km
         on_axis = {c: axis.station_km(c) for c in codes
                    if axis.station_km(c) is not None}
         refs.append({
@@ -186,6 +230,7 @@ def _build():
             "coords": coords,
             "cumKm": cum,
             "codes": codes,
+            "codeKm": code_km,
             "unusable": None,
             "stationSource": src,
             "vertexOffsets": vtx_off,
@@ -313,6 +358,105 @@ def route_for(halts):
             "this train's own route file."
         ),
     }
+
+
+_ANCHOR_CACHE = {}
+
+
+def _anchor_table(ref):
+    """[(canonical_km, along_track_km)] for one reference, sorted and deduped.
+
+    Built from station codes that are BOTH anchored on this polyline and present
+    on the canonical axis, so it is the bridge between "km from Roha" and "how
+    far along this line".  Both columns are real distances — the along-track one
+    comes from the perpendicular projection (`_projected_km`), never from a
+    vertex index, which would quantise it by up to ~3 km here.
+
+    Memoised per reference train: the corridor sweep resolves ~2,300 meets and
+    rebuilding an 82-row sorted table for each would be the dominant cost.
+    """
+    hit = _ANCHOR_CACHE.get(ref["train"])
+    if hit is not None:
+        return hit
+    tbl = []
+    for code, along in ref.get("codeKm", {}).items():
+        ckm = axis.station_km(code)
+        if ckm is not None:
+            tbl.append((ckm, along))
+    tbl.sort()
+    # Two codes can share a canonical km, and a repeated km would make the
+    # interpolation below divide by zero.
+    out = []
+    for km, along in tbl:
+        if out and abs(km - out[-1][0]) < 1e-9:
+            continue
+        out.append((km, along))
+    _ANCHOR_CACHE[ref["train"]] = out
+    return out
+
+
+def _point_at_along_km(ref, target):
+    """lat/lng at `target` km along a reference polyline."""
+    cum, coords = ref["cumKm"], ref["coords"]
+    lo, hi = 0, len(cum) - 1
+    while lo < hi - 1:                       # binary search, not a linear walk
+        mid = (lo + hi) // 2
+        if cum[mid] <= target:
+            lo = mid
+        else:
+            hi = mid
+    seg = cum[lo + 1] - cum[lo]
+    t = 0.0 if seg <= 0 else max(0.0, min(1.0, (target - cum[lo]) / seg))
+    (lng0, lat0), (lng1, lat1) = coords[lo], coords[lo + 1]
+    return lat0 + t * (lat1 - lat0), lng0 + t * (lng1 - lng0)
+
+
+def point_at_corridor_km(corridor_km):
+    """lat/lng for a point on the CANONICAL axis, or None if off every polyline.
+
+    Why this exists: meet coordinates were interpolated from the reporting
+    train's own station rows, and **0 of the 1859 full-dataset records carry
+    station coordinates** — so only the handful of cache-backed trains could
+    place a marker (measured: 41 of 2349 corridor meets, 1.7%).  The alignment
+    is shared, though, so a canonical km can be resolved on a reference polyline
+    exactly the way curvature is.
+
+    Anchored between the two nearest station codes rather than by one global
+    scale factor — the same correction VERIFIED #12 measures at median 655 m /
+    max 1576 m on 22229, which is more than a typical Konkan tunnel.
+
+    Returns `(lat, lng, ref_train)`.  Refuses to extrapolate beyond the anchor
+    span: a km south of Madgaon has no cached polyline and must report
+    unavailable rather than be pinned to the last vertex (VERIFIED #9).
+
+    **Only sound on the single-line section.**  North of Roha the corridor's
+    trains take physically different tracks — measured against 12051, whose
+    Trans-Harbour approach diverges from the 22229 reference by up to 10.3 km at
+    Nerul — so callers must gate on `corridor_axis.is_single_line`, which every
+    conflict meet already satisfies.
+    """
+    if corridor_km is None:
+        return None
+    best = None
+    for r in references():
+        if r["unusable"] or not r.get("codeKm"):
+            continue
+        tbl = _anchor_table(r)
+        if len(tbl) < 2 or not (tbl[0][0] <= corridor_km <= tbl[-1][0]):
+            continue
+        lo = max(i for i in range(len(tbl)) if tbl[i][0] <= corridor_km)
+        hi = min(len(tbl) - 1, lo + 1)
+        if hi == lo:
+            lo = hi - 1
+        (km0, a0), (km1, a1) = tbl[lo], tbl[hi]
+        f = 0.0 if km1 == km0 else (corridor_km - km0) / (km1 - km0)
+        lat, lng = _point_at_along_km(r, a0 + f * (a1 - a0))
+        # Prefer the reference whose anchors bracket the point most tightly:
+        # a narrower anchor gap is a smaller interpolation error.
+        gap = abs(km1 - km0)
+        if best is None or gap < best[0]:
+            best = (gap, (lat, lng, r["train"]))
+    return best[1] if best else None
 
 
 def audit():

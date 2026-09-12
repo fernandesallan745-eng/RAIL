@@ -55,6 +55,7 @@ WHAT IS ASSUMED HERE (do not let this drift out of the UI)
 import os, sys, json, glob, bisect, argparse, datetime
 
 import corridor_axis as axis
+import corridor_geometry
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, ".cache")
@@ -822,6 +823,34 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
 
                 meet_lat = _interp(a.get("lat"), b.get("lat"), f)
                 meet_lng = _interp(a.get("lng"), b.get("lng"), f)
+                coords_basis = ("interpolated" if meet_lat is not None
+                                and meet_lng is not None else "unavailable")
+
+                # The same meet on the CANONICAL axis.  meetKm (below) is on our
+                # own km origin, which is what eta_model buckets holds by and
+                # what the drawer shows; but two trains' own axes disagree about
+                # the same physical point, so anything comparing meets ACROSS
+                # trains (the corridor-wide view) must use this one.
+                meet_corridor_km = _interp(a.get("corridorKm"),
+                                           b.get("corridorKm"), f)
+
+                if coords_basis == "unavailable" and meet_corridor_km is not None:
+                    # Fall back to the SHARED alignment.  Own-station coordinates
+                    # exist only for trains cached with includeCoordinates=true
+                    # (VERIFIED #13) — 0 of the 1859 full-dataset records carry
+                    # them, so without this the corridor view could draw 1.7% of
+                    # its meets.  Sound here because every row in this loop is
+                    # on the single-line section, where the corridor's trains
+                    # genuinely share one track; north of Roha they do not
+                    # (12051 via Trans-Harbour diverges from the 22229 reference
+                    # by up to 10.3 km) and `point_at_corridor_km` must not be
+                    # used there.  Kept as a DISTINCT basis value rather than
+                    # relabelled "interpolated": these two are different claims
+                    # about where the number came from.
+                    pt = corridor_geometry.point_at_corridor_km(meet_corridor_km)
+                    if pt is not None:
+                        meet_lat, meet_lng, _ref = pt
+                        coords_basis = "shared-corridor-polyline"
 
                 conflicts.append({
                     "otherTrain": str(other_number),
@@ -834,25 +863,20 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
                     "ourPriority": our_rank,
                     "kind": kind,
                     "meetKm": round(meet_km, 1),
-                    # The same meet on the CANONICAL axis.  meetKm is on our own
-                    # km origin, which is what eta_model buckets holds by and
-                    # what the drawer shows; but two trains' own axes disagree
-                    # about the same physical point, so anything comparing
-                    # meets ACROSS trains (the corridor-wide view) must use this.
-                    "meetCorridorKm": (round(cc, 1) if (cc := _interp(
-                        a.get("corridorKm"), b.get("corridorKm"), f)) is not None
-                        else None),
+                    "meetCorridorKm": (round(meet_corridor_km, 1)
+                                       if meet_corridor_km is not None else None),
                     "meetTimeMin": round(meet_t, 1),
                     "meetClock": _clock(meet_t),
                     "meetLat": meet_lat,
                     "meetLng": meet_lng,
-                    # Coordinates come from OUR train's station rows, so they are
-                    # present only if this train was cached with
-                    # includeCoordinates=true (VERIFIED #13).  Flagged rather
-                    # than silently null so the map can say why a marker is
-                    # missing instead of just not drawing it.
-                    "meetCoordsBasis": ("interpolated" if meet_lat is not None
-                                        and meet_lng is not None else "unavailable"),
+                    # Where the coordinates came from, never just whether they
+                    # exist.  "interpolated" = between OUR OWN two station rows;
+                    # "shared-corridor-polyline" = resolved on a reference
+                    # train's real Konkan alignment via the canonical km, which
+                    # is the right track but not this train's own route file;
+                    # "unavailable" = no marker can be drawn, and the map says
+                    # so rather than silently omitting it.
+                    "meetCoordsBasis": coords_basis,
                     "betweenFrom": a["code"],
                     "betweenFromName": a.get("name"),
                     "betweenTo": b["code"],
@@ -901,7 +925,11 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
                 })
 
     conflicts.sort(key=lambda c: c["meetKm"])
-    mappable = sum(1 for c in conflicts if c["meetCoordsBasis"] == "interpolated")
+    # Drawable = has coordinates from EITHER basis.  Counting only
+    # "interpolated" here understated it the moment the shared-polyline
+    # fallback landed, which would have read as the fallback not working.
+    mappable = sum(1 for c in conflicts
+                   if c["meetCoordsBasis"] != "unavailable")
 
     # How far the delay has moved each meet point.  This is the predictive
     # payload (C6) and it is computed HERE, not in the UI: it needs a second
@@ -994,15 +1022,21 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
             f"are approximate, because the other train's schedule is known only at "
             f"the stations it shares with ours."
         ),
+        # Summarises the per-meet `meetCoordsBasis` values actually present, so
+        # a run resolved off the shared alignment never reports itself as having
+        # used this train's own station rows.
         "coordsBasis": (
-            "interpolated" if conflicts and mappable == len(conflicts)
-            else "partial" if mappable else "unavailable"
+            "unavailable" if not mappable
+            else "partial" if mappable < len(conflicts)
+            else "+".join(sorted({c["meetCoordsBasis"] for c in conflicts}))
         ),
         "coordsNote": (
             None if not conflicts or mappable == len(conflicts) else
             f"{len(conflicts) - mappable} of {len(conflicts)} meet points have no "
-            f"lat/lng: train {our_number} was cached without includeCoordinates, "
-            f"so they cannot be drawn on the map. The km and times are unaffected."
+            f"lat/lng: train {our_number} was cached without includeCoordinates "
+            f"and the meet km falls outside the cached corridor polyline "
+            f"(no geometry south of MAO yet), so they cannot be drawn on the "
+            f"map. The km and times are unaffected."
         ),
         "_meta": {
             "serviceDate": service_date.isoformat() if service_date else None,
@@ -1125,6 +1159,13 @@ def corridor_conflicts(service_date=None, delay_min=0.0, roster=None,
     `at_clock` ("HH:MM") keeps only meets within +/- `window_min` of that wall
     clock, for a "what is crossing right now" view.
     """
+    # Normalise BEFORE the cache key, not after.  `find_conflicts` parses its
+    # own date, so a caller passing "2026-09-11" and one passing
+    # `date(2026, 9, 11)` produce identical results but two different keys —
+    # two full 206-train sweeps for one answer.  Normalising here also keeps
+    # `serviceDate` JSON-serialisable: a bare `date` object 500s the endpoint,
+    # which the CLI never hit because argparse hands it a string.
+    service_date = _parse_date(service_date)
     key = (service_date, delay_min, at_clock, window_min,
            tuple(roster) if roster else None)
     if use_cache and key in _corridor_sweep_cache:
@@ -1204,7 +1245,7 @@ def corridor_conflicts(service_date=None, delay_min=0.0, roster=None,
             rows = keep
 
     out = {
-        "serviceDate": service_date,
+        "serviceDate": service_date.isoformat() if service_date else None,
         "delayMinAppliedToEveryTrain": delay_min,
         "atClock": at_clock,
         "windowMin": window_min if at_clock else None,

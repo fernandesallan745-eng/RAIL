@@ -326,6 +326,17 @@ implies automated train control.
       relocated when none was ever planned.
     - It will show nothing in normal running. **That is the correct result**, not a
       wiring failure — say so rather than tuning until something appears.
+    - **RESTATED for the 206-train roster (2026-09-12): overtakes are not zero on
+      the scheduled timetable, they are FREE.** #19 was measured over the 17 cached
+      *fast mainline* trains. The full roster includes slow passenger specials that
+      genuinely are passed on the working timetable — 10103 and 01155 (Diva–Khed
+      Special) leapfrog three times between VEER and KHED from scheduled halt times
+      at *shared* stations, no delay involved. Measured over all 175 trains with
+      crossings: **263 zero-delay overtakes, every one holding 0.0**. So the true
+      invariant is not "count is zero" (that is false on this roster) but "a
+      scheduled overtake adds nothing to the ETA" — `_charge_hold` nets the hold
+      off the on-time plan, and a pass the timetable already provides for is free.
+      `verify_conflicts.py` C10 asserts the free-ness, not the count.
 20. **In an overtake the train being PASSED takes the loop, regardless of the
     priority ladder** (bug found and fixed 2026-09-05). Two bugs in a row here,
     both caught by one number being implausible rather than merely wrong:
@@ -360,6 +371,92 @@ implies automated train control.
       `conflictsUnavailable` when `conflicts` is **absent**.
     - Same class of hazard as VERIFIED #9: a derived value that looks right until
       the input behind it moves.
+22. **The corridor has a CANONICAL axis already in the data, and per-train km
+    anchoring must stop being used to find the single-line section** (verified
+    2026-09-12). `.cache/konkan_full_corridor_trains.json` carries `kmFromRoha` and
+    `section` on every station row, and nothing read either until now.
+    - **113 distinct station codes, each with exactly one `kmFromRoha` — zero
+      disagreements across all 1859 records.** `section` is authoritative
+      membership: `central-railway-double-line` spans km −142.2…−4.1,
+      `konkan-railway-single-line` spans 0.0…737.1, and **71 of 113** codes are
+      single-line. No anchoring, no direction inference, no guessing.
+    - It is the *same* axis the cache trains use, merely shifted: 12051's own km
+      maps to `kmFromRoha` at **scale 1.0000, max residual 0.00 km**. It also
+      reaches where the reference trains never go — MAO 440.1 → KAWR 500.3 →
+      KT 555.5 → **TOK 737.1**.
+    - `corridor_axis.py` owns it; `conflict.py` joins and walks on `corridorKm`, so
+      the mirrored-chainage arithmetic of VERIFIED #15 is gone and reciprocity is
+      exact rather than ±0.1 km. `singleLineBasis` reports `canonical-section` for
+      **210/210** trains; the old anchor path survives only as a labelled fallback.
+23. **`single_line_span()` had two bugs, and the second one inverted the section
+    for 113 trains** (found and fixed 2026-09-12). This is VERIFIED #17 one step
+    further: a km constant was wrong, and a *per-train anchor* is wrong too.
+    - **Bug 1:** a train calling at Roha but not Madgaon took an `anchored:ROHA-only`
+      branch that assumed "single line runs from Roha to the far end" — which picks
+      **the wrong side of Roha for every up train**. 01446 (Ratnagiri→Panvel) got
+      `[203.8, 278.2]`, the *double*-line Mumbai side, when the truth is
+      `[0.0, 203.8]`. **113 trains** hit that branch, and all 209 counterparts were
+      then rejected as "shares too little of the single-line section" — the direct
+      cause of the zero-crossing trains the user reported.
+    - **Bug 2:** the `fallback-km` branch returned `(ROHA_FALLBACK_KM, max_km)`
+      **unsorted**, so a short train yielded an inverted span (07361 → `[142.2, 24.6]`).
+    - **Do not share an alignment north of Roha.** CSMT→Roha, 12051 runs
+      Trans-Harbour and 22229 runs the main line — physically different tracks, up
+      to **10.3 km apart at Nerul**. The shared-polyline resolution below is sound
+      *only* on the single-line section, which every conflict meet already satisfies.
+24. **VERIFIED #11 for the third time: an anchor table must store the PROJECTED
+    along-track km, never `cum[vertex_index]`** (found and fixed 2026-09-12).
+    Perpendicular projection was already the rule for tunnel portals (#11) and
+    halts (#12); `corridor_geometry._anchor_table` re-introduced the same bug by
+    keying anchors to vertex indices. Vertex spans reach 11.9 km here (#8), so the
+    quantisation is not small:
+
+    | | median | p90 | max |
+    |---|---|---|---|
+    | nearest point on line (the floor) | 23 m | 37 m | 40 m |
+    | vertex anchors (before) | 372 m | 1337 m | 3097 m |
+    | **projected anchors (after)** | **23 m** | **37 m** | **40 m** |
+
+    The fix lands exactly on the floor — the residual is now the projection's own,
+    not the method's. If a fourth axis-mapping surface appears, project it.
+25. **Curvature is gated PER BLOCK, not per train, and carries a `geometry_basis`**
+    (2026-09-12). `.cache/` holds one route file, so the old all-or-nothing guard
+    gave curvature to **1 of 210** trains. `load_route_coords` now falls back to
+    clipping the shared corridor polyline to the train's canonical km span.
+    - Measured: **166 of 210** trains get the layer, **72,961 of 98,143 roster km
+      = 74.3%** (1738 blocks with geometry, 616 without). Basis distribution: 165
+      `shared-corridor-polyline`, 1 `own-route`, 44 `None` with an explicit
+      `geometry_unavailable_reason`.
+    - A clipped shared polyline is **the real Konkan alignment but not that train's
+      own route file** — same class of caveat as `axisBasis` (#12), and the basis
+      must travel with every curvature number.
+    - The missing 25.7% is **south of MAO**: one command (`python3
+      scripts/prime_train.py 56615`, 2 upstream requests) fills it, and
+      `corridor_geometry.py` discovers it by glob, so coverage upgrades with **no
+      code change** — the `loadPackManifest()` pattern from §5b.
+26. **The corridor sweep must key dedup on the WALL-CLOCK minute, and `date`
+    objects do not serialise** (2026-09-12). One meet is computed from both trains'
+    axes and must collapse to one row.
+    - **Never key on `meetClock` or the day-normalised minute.** `meetClock` carries
+      a `'+1d'` suffix and the two views of one meet routinely sit on different
+      journey days — 11003/09021 is `'02:22'` from one axis and `'02:22 +1d'` from
+      the other, same corridor km, same held train. String-keying emitted both and
+      inflated the count. Key: unordered pair + rounded corridor km + `round(t) % 1440`.
+    - **Two passes are needed.** The exact key misses views that interpolate across
+      a wide anchor gap and land a few km apart (11003/11099: 04:12 @ km 78.8 vs
+      04:16 @ km 82.9, both `coarse`, anchor gap 111 km). Measured on the full
+      sweep: **234 exact + 231 tolerance** merges.
+    - `corridor_conflicts` normalises its date **before** the cache key, not after:
+      `"2026-09-11"` and `date(2026, 9, 11)` are the same sweep but two keys, i.e.
+      two full 206-train runs for one answer. It also keeps `serviceDate`
+      JSON-serialisable — a bare `date` object **500s the endpoint**, which the CLI
+      never hit because argparse hands it a string.
+27. **The "+2.9 min discrepancy" flagged in the Phase-5 plan does not exist — it is
+    block mode vs vertex mode** (settled 2026-09-12). `compute_eta` returns **block**
+    mode (running 620.8, ETA 615.7, −19.3 vs 635); `api._eta_payload` layers vertex
+    mode on top (running 617.9, ETA 612.8, −22.2). §4b's headline is the vertex row.
+    620.8 − 617.9 = 615.7 − 612.8 = **+2.9**, exactly. Both modes reproduce §4b
+    unchanged. Compare like with like before opening a defect.
 
 ---
 
@@ -405,10 +502,19 @@ carrying information the timetable does not already contain.
     `sharpest_radius_in_range` remain for compatibility but use the global-scale
     axis — prefer the block/index versions.
   - `geometry_resolution(coords)` → curvature-blind fraction (VERIFIED #8).
+  - `load_route_coords(train)` resolves geometry through a **fallback chain**
+    (VERIFIED #25): the train's own `{train}_route.json` → `geometry_basis:
+    "own-route"`; else the shared Konkan alignment clipped to that train's
+    canonical km span → `"shared-corridor-polyline"`; else `None` +
+    `geometry_unavailable_reason`. Curvature is gated **per block**, not
+    all-or-nothing, so a train reaching past the cached polyline still gets
+    curvature on the blocks that have geometry.
   - Each segment carries `baseline_only_min`, `vertex_curve_penalty_min` and
     `vertex_curve_penalty_sec` so the curvature layer is auditable on its own.
-  - `historical_delay_by_seq(train)` → mean `delayArrival` per stop; currently 0.0
-    everywhere (VERIFIED #4).
+  - `historical_delay_by_seq(train)` → mean **cumulative** `delayArrival` per stop;
+    correct only for "how late at station X". For the ETA layer use
+    `historical_delay_increment_by_seq` — never sum the cumulative view
+    (VERIFIED #9).
   - Per halt-to-halt segment:
     `eta = distance / min(baseline, curve_cap, weather_cap) + hist_delay + dwell`
   - Dwell is counted at the **arriving** halt of each segment, so the origin is
@@ -433,6 +539,29 @@ carrying information the timetable does not already contain.
   Mon/Wed/Fri run-dates, skips what's cached, fetches only the gaps, then
   re-audits every cached run for a real delay signal. Run this when you want
   more dates; it degrades gracefully with no network.
+- **`corridor_axis.py`** — the canonical corridor axis (VERIFIED #22), read out of
+  `.cache/konkan_full_corridor_trains.json` and memoised. `station_km(code)`,
+  `section_of(code)`, `is_single_line(code)`, `annotate(train)` (adds `corridorKm`
+  + `onSingleLine` to every station, for dataset *and* corridor-cache trains),
+  `coverage(train)` → on-axis/off-axis counts, `available()`. `python3
+  corridor_axis.py` self-audits: **113 codes with `kmFromRoha`, 115 with
+  `section`, 71 single-line spanning 0.0 → 737.1 km, zero disagreements**, and
+  names the 2 codes (MRJN, NAND) that are classifiable but not placeable.
+  Nothing downstream may re-derive the single-line section from a train's own km.
+- **`corridor_geometry.py`** — resolves a canonical km to lat/lng, and a block to
+  a polyline, off a *reference* train's route file. `references()`, `available()`,
+  `block_geometry(code_a, code_b)`, `route_for(halts)`,
+  `point_at_corridor_km(km)`. Discovers reference polylines **by glob**, so
+  priming a southern train upgrades coverage with no code change. `python3
+  corridor_geometry.py` self-audits and prints the projection-vs-vertex table
+  that VERIFIED #24 records (median 337.6 m / max 3097.1 m snapping to a vertex
+  vs 22.0 m / 479.1 m projecting onto the line).
+- **`scripts/audit_coverage.py`** — the roster-wide coverage harness (offline,
+  cache-only). Prints per-engine answered counts, the unavailable-reason
+  histogram, `singleLineBasis` / `geometry_basis` / confidence distributions,
+  curvature km coverage and the corridor-sweep dedup tallies. This is the script
+  that found the 71 silent zeros and the 1-of-210 curvature coverage — run it
+  rather than estimating.
 
 ### Verified model numbers for 22229 — SUPERSEDED, see §4b
 This table predates the delay fix (VERIFIED #9) and is kept only to show what the
@@ -818,12 +947,40 @@ Tagline slot: this is the "**Prevent the ripple**" third of the tagline.
 read from `.cache/`; the only live input is our own `delayMinutes`, which the
 gateway already fetches. Never poll other trains for this (VERIFIED #15).
 
+**Roster coverage (measured 2026-09-12, `scripts/audit_coverage.py`).** The layer
+covers the **206-train Konkan roster**, not the 17 cached trains it was built on.
+Answered **210/210**; 183 corridor-eligible; **175 predict crossings**; the 35 that
+predict none all carry an explicit machine-readable reason and **0 are silent
+zeros** (23 `insufficient-corridor-span` — fewer than two single-line stations, so
+there is no traversal to intersect; 8 `no-overlapping-corridor-train`, e.g. Goa
+Express 12779/12780 routing via Londa; 4 `not-a-corridor-train`).
+`singleLineBasis` is `canonical-section` for all 210 (VERIFIED #22).
+- **Corridor-wide sweep:** `GET /corridor/conflicts` returns every meet on the
+  corridor for one service date — **2258 unique meets over 206 trains** (2029
+  head-on, 229 overtake), **84.2% drawable** on the map, after 234 exact + 231
+  tolerance dedup merges (VERIFIED #26). Still **zero upstream requests**.
+- The undrawable ~16% are meets **south of MAO**, where no cached polyline exists
+  yet; the count is stated in the map legend rather than silently dropped, and
+  `scripts/prime_train.py 56615` fills it (VERIFIED #25).
+- Meet location confidence is reported per meet: 108 `fine`, 1019 `moderate`,
+  1676 `coarse`. A `coarse` meet interpolated across a 111 km anchor gap is a real
+  prediction with a real uncertainty — do not quote its km to one decimal in the
+  pitch without the confidence label.
+
 ### Pipeline
+0. **`corridor_axis.py`** (offline) — the canonical `kmFromRoha` / `section` axis
+   read out of `.cache/konkan_full_corridor_trains.json`. Everything below joins on
+   it, so no step re-derives the single-line section from a train's own km
+   (VERIFIED #22/#23). `corridor_geometry.py` sits beside it and resolves a
+   canonical km to lat/lng off a reference polyline (VERIFIED #24).
 1. **`scripts/build_corridor.py`** (offline, no network) — normalises the 17 cached
    `.cache/train_*_live_fallback.json` runs into `.cache/corridor/{train}.json`:
    train meta plus stations as `code/name/km/arrMin/depMin/isHalt/lat/lng`, with
    times **day-normalised** (VERIFIED #16). `--dry-run` prints a per-train table and
    a missing-time audit. Skips `fleet_fallback.json` **by name** (VERIFIED #15).
+   These 17 are the *coordinate-bearing* trains; the other ~190 come from the full
+   dataset and carry no coordinates at all, which is why meets are placed on the
+   shared corridor polyline.
 2. **`conflict.py`** (cache-only, beside `eta_model.py`) — `find_conflicts(train,
    delay_min, offsets=(0,-1,-2))`. Joins on station code, classifies direction, then
    walks the shared stations detecting a **sign flip** in `gap = our_time −
@@ -838,23 +995,64 @@ gateway already fetches. Never poll other trains for this (VERIFIED #15).
    top-level `conflict_layer` block. **`conflicts=False` reproduces §4b exactly** —
    verified byte-identical on `running_min`, `historical_delay_min`, `dwell_min`.
 4. **`GET /conflicts/{train}?delay=&offsets=`** on the model API; `/health` gained
-   `corridor_trains` and `conflict_layer_available`.
+   `corridor_trains` and `conflict_layer_available`. **`GET /corridor/conflicts?
+   date=&at=&window=&limit=&delay=`** returns the whole-roster sweep for one date,
+   deduplicated (VERIFIED #26); `date` defaults to `today`, `all` sweeps every
+   roster train. Every row is labelled `positionBasis: 'scheduled'`, `liveTrains: 0`.
 5. **Gateway** (`train.controller.js`) — a **separate** call from `/eta`, on purpose:
    `/eta` needs route geometry, `/conflicts` needs only timetables, and 12051 is
    exactly the train where one works and the other 404s. Bundling them would let a
-   missing polyline suppress a working conflict layer.
+   missing polyline suppress a working conflict layer. `getCorridorConflicts` is a
+   pure passthrough to the model's `/corridor/conflicts`, cached 1 h (the sweep is
+   date-stable, not minute-to-minute), and costs **zero upstream requests**.
 6. **UI** — `renderConflictPanel()` (three states: HELD red / RIGHT OF WAY green /
    none predicted dim, plus a distinct *unavailable* block) and `renderConflicts()`
    drawing meet markers in `conflictLayer`. The client does **no conflict
-   arithmetic**, exactly as with the tunnel layer.
+   arithmetic**, exactly as with the tunnel layer. A meet is drawn whenever it has
+   coordinates from **either** basis (`interpolated` own-station or
+   `shared-corridor-polyline`) — testing for one basis name by hand silently drops
+   every roster train, since they carry no station coordinates of their own.
+   - **Corridor-wide layer** (opt-in ⇄ toggle, **off by default**): `corridor
+     ConflictLayer` draws every meet from `/api/corridor/conflicts`, amber = head-on
+     / violet = overtake, deliberately different hues from the live red/green so a
+     *scheduled* meet never reads as a live one. The legend states `positionBasis:
+     'scheduled'` and counts undrawable meets rather than hiding them. Fetched once,
+     cached client-side; a re-toggle is instant (~8 ms, no refetch).
 
 ### Verification
-`python3 verify_conflicts.py` — 10 property invariants over 8 trains × 6 delays
-(**174 conflict rows**), plus determinism, type normalisation, ladder ordering,
-delay monotonicity, reciprocity, C10 conditionality and honesty-flag presence.
+`python3 verify_conflicts.py` — 10 property invariants over 8 trains × 6 delays,
+now **2789 conflict rows** (was 174 before the roster widened), plus determinism,
+type normalisation, ladder ordering, delay monotonicity, reciprocity, C10
+conditionality and honesty-flag presence.
 **Reciprocity is the strongest evidence:** computed from 12052's own axis the meet
 lands at km 102.7, which mirrors (582.3 − 102.7) to 479.6 — matching 12051's
 independent view — and both agree 12052 is the one held.
+
+Four invariants had to be **restated, not silenced**, when the roster widened —
+each because the old wording encoded an assumption that was only true of the 17
+cached trains:
+- **C1 single-line** asserts the per-meet `isSingleLine` flag, *not* a km range.
+  The section is decided per station from the canonical `section` label, and on an
+  up train Roha sits at km 440 rather than 142 (VERIFIED #17/#23), so no single
+  span can bound a meet.
+- **C3 holds** reads "a hold is either **0.0 or ≥ `REACCEL_MIN`**", not simply
+  ≥ `REACCEL_MIN`. `_charge_hold` nets the hold off the on-time plan and charges
+  0.0 when a crossing costs nothing the timetable does not already allow. Adding
+  the constant to a zero excess would invent a stop that never happens — the exact
+  signature VERIFIED #20 was caught by. Stale, this one invariant produced 907 of
+  911 failures.
+- **C6 coordinates** tests the flag *against the coordinates* rather than
+  enumerating basis names, so a basis added later still satisfies it. Two bases
+  now supply them (`interpolated`, `shared-corridor-polyline`).
+- **C10 overtakes** — on the on-time timetable overtakes are not zero, they are
+  **free**: 44 of them, every one charged 0.0 (VERIFIED #19 as restated).
+
+`python3 scripts/audit_coverage.py` is the **roster-wide** harness (offline,
+cache-only) and the source of every number in "Roster coverage" above: it prints
+per-engine answered counts, the unavailable-reason histogram, the `singleLineBasis`
+and `geometry_basis` distributions, curvature km coverage, and the corridor-sweep
+dedup tallies. Run it, don't estimate — it is how the 71 silent zeros and the
+1-of-210 curvature coverage were found in the first place.
 
 **Proving a zero layer is actually wired** (per VERIFIED #9 — a zero-valued layer
 hides its own bugs): 12051 and 22229 both *win* every crossing, so the ETA
@@ -880,6 +1078,18 @@ range, sums reconciling three ways, and ETA 615.7 → 697.7 (**+82.0**).
   Section Controller to confirm; nothing is dispatched.
 - A cached delay is labelled **`delayBasis: 'cached'`** and the panel says so
   (VERIFIED #21) — the crossings stay valid, the delay behind them may not.
+- **Zero rows has two opposite meanings and the panel must separate them.** A
+  corridor train that genuinely meets nobody and a train that *cannot* be computed
+  (fewer than two single-line stations, too little shared section, not a corridor
+  train) both arrive as `conflicts: []`. The model decides which and says why in
+  `_meta.crossingsUnavailableReason` / `crossingsUnavailableNote` — but
+  `renderConflictPanel` originally read neither, so all 23
+  `insufficient-corridor-span` trains rendered the cheerful "No crossings or
+  overtakes predicted on the single-line section for this run." That is VERIFIED #9
+  again at the UI layer: the model was honest and the view flattened it. The panel
+  now renders the model's **own note plus the reason code**, and the header changes
+  to *"Crossing prediction unavailable"*. Do not restate the eligibility rule
+  client-side — a second copy would drift from `conflict.py`.
 
 ---
 
@@ -948,6 +1158,14 @@ range, sums reconciling three ways, and ETA 615.7 → 697.7 (**+82.0**).
         precedence ladder (a heuristic over `train.type`, not IR rules).
       - Still open: real loop data (needs a user-supplied OSM extract), and
         freight/unscheduled traffic, which no public source exposes.
+      - **Extended to the whole roster 2026-09-12.** Was effectively 17 trains;
+        now **206**, with `insufficient-corridor-span` / `no-overlapping-corridor-
+        train` / `not-a-corridor-train` as explicit reasons instead of a silent
+        empty panel (VERIFIED #9). Root cause of the gap was `single_line_span`
+        picking the wrong side of Roha for 113 up trains (VERIFIED #23), now
+        replaced by the canonical `section` label (VERIFIED #22). Added
+        `GET /corridor/conflicts` + an opt-in Leaflet layer showing every meet on
+        the corridor for a date — see §5e for the measured coverage.
 - [x] **Phase 6 (done 2026-09-01):** Tunnel identification + time-to-exit for
       GPS-blind zones. **69 real Konkan tunnels** (OSM way geometry, supplied as
       CSV → `build_tunnels.py` → `src/data/konkan-tunnels.json`), projected onto

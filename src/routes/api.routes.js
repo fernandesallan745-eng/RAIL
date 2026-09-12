@@ -9,6 +9,7 @@ import {
   getTrainCategories,
   getLiveFleet,
   getTunnels,
+  getCorridorConflicts,
   proxyPass,
 } from '../controllers/train.controller.js';
 import { cacheMiddleware } from '../middleware/cache.js';
@@ -37,6 +38,13 @@ router.get('/trains/radar/fleet', cacheMiddleware(config.cache.liveTtl), getLive
 
 // STATIC — tunnel zones are local JSON, not upstream data
 router.get('/tunnels/zones', cacheMiddleware(3600), getTunnels);
+
+// STATIC — every predicted crossing on the corridor for a service date.
+// Cached for an hour: the sweep reads only cached TIMETABLES, so its answer
+// changes when the date changes, not minute to minute, and it costs zero
+// upstream requests either way. The TTL is here to spare the 206-train sweep,
+// not the RailRadar quota.
+router.get('/corridor/conflicts', cacheMiddleware(3600), getCorridorConflicts);
 
 // STATIC — search results for a train number/name don't change within a demo
 router.get('/trains/search', cacheMiddleware(config.cache.staticTtl), searchTrains);
