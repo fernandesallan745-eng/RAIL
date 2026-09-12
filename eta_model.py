@@ -22,6 +22,7 @@ import os, json, glob, math
 from datetime import datetime, timedelta
 
 import curvature  # circumradius / permissible speed / haversine helpers
+import corridor_geometry as cgeom
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, ".cache")
@@ -66,6 +67,11 @@ def load_schedule(train=DEFAULT_TRAIN, date=None):
     4. Full corridor dataset (konkan_full_corridor_trains.json) — halt-only,
        no speedToNextStationKmph from the API, so baseline speed is derived
        from consecutive halt times and distances instead.
+    5. Normalised corridor cache (.cache/corridor/{train}.json), built by
+       scripts/build_corridor.py from an older live fallback file.  Reached only
+       by trains that were cached once but are not in the Konkan roster —
+       12989, 22195 and 22308 raised FileNotFoundError here despite having a
+       complete schedule on disk, because step 4 was the end of the chain.
     """
     candidates = []
     if date:
@@ -77,7 +83,15 @@ def load_schedule(train=DEFAULT_TRAIN, date=None):
             j = _load(path)
             return j.get("train", {}), j.get("route", []), os.path.basename(path)
     # Fall back to the full 206-train corridor dataset (no API calls required).
-    return _load_schedule_from_full_dataset(train)
+    try:
+        return _load_schedule_from_full_dataset(train)
+    except FileNotFoundError as e:
+        # Then the normalised corridor cache.  Ordered last because it is the
+        # thinnest source: no `section`/`kmFromRoha`, no pass-through rows.
+        out = _load_schedule_from_corridor_cache(train)
+        if out is None:
+            raise FileNotFoundError(f"{e} No .cache/corridor/{train}.json either.")
+        return out
 
 
 # ── full-corridor-dataset schedule adapter ────────────────────────────────────
@@ -111,6 +125,69 @@ def _hhmm_day_to_iso(hhmm, day):
         return dt.isoformat()
     except (ValueError, AttributeError):
         return None
+
+
+def _load_schedule_from_corridor_cache(train):
+    """Adapt `.cache/corridor/{train}.json` to (train_info, stations, source).
+
+    That file stores day-normalised minutes (VERIFIED #16), not ISO strings, so
+    the times are re-expressed against the same `_REF_DATE` the full-dataset
+    adapter uses.  The service date is deliberately not recovered — it was
+    discarded on purpose when the file was built, and `compute_eta` only ever
+    uses these timestamps for *differences*.
+
+    Returns None (not an exception) when the file is absent, so the caller can
+    report both misses in one message.
+    """
+    path = os.path.join(CACHE, "corridor", f"{train}.json")
+    if not os.path.exists(path):
+        return None
+    j = _load(path)
+
+    def _iso(mins):
+        if mins is None:
+            return None
+        return (_REF_DATE + timedelta(minutes=int(mins))).isoformat()
+
+    stations = []
+    for i, s in enumerate(j.get("stations") or []):
+        if s.get("km") is None:
+            continue
+        stations.append({
+            "stationCode":        s["code"],
+            "stationName":        s.get("name", ""),
+            "distance":           float(s["km"]),
+            "sequence":           i,
+            "isHalt":             bool(s.get("isHalt")),
+            "scheduledArrival":   _iso(s.get("arrMin")),
+            "scheduledDeparture": _iso(s.get("depMin")),
+            "lat":                s.get("lat"),
+            "lng":                s.get("lng"),
+        })
+    if len(stations) < 2:
+        return None
+
+    halts = [s for s in stations if s.get("isHalt")]
+    for k in range(len(halts) - 1):
+        a, b = halts[k], halts[k + 1]
+        a_dep, b_arr = _dt(a.get("scheduledDeparture")), _dt(b.get("scheduledArrival"))
+        dist = b["distance"] - a["distance"]
+        speed = None
+        if a_dep and b_arr and dist > 0:
+            run_min = (b_arr - a_dep).total_seconds() / 60.0
+            speed = dist / run_min * 60.0 if run_min > 0 else None
+        for s in stations:
+            if a["distance"] <= s["distance"] < b["distance"]:
+                s["speedToNextStationKmph"] = speed
+
+    duration = None
+    if halts and halts[0].get("scheduledDeparture") and halts[-1].get("scheduledArrival"):
+        d0, a1 = _dt(halts[0]["scheduledDeparture"]), _dt(halts[-1]["scheduledArrival"])
+        if d0 and a1:
+            duration = round((a1 - d0).total_seconds() / 60.0)
+
+    return ({"name": j.get("name"), "number": j.get("number"), "duration": duration},
+            stations, f"corridor/{train}.json")
 
 
 def _load_schedule_from_full_dataset(train):
@@ -482,8 +559,27 @@ def _dt(iso):
     return datetime.fromisoformat(iso) if iso else None
 
 
+def _shared_geometry_resolution(block_geom):
+    """Curvature-blind fraction over the vertex spans actually used.
+
+    On the shared path there is no single polyline for the train, so resolution
+    is measured over the union of the clipped ranges rather than over a whole
+    reference route — otherwise a Madgaon-Karwar train would inherit the
+    blindness statistic of the entire CSMT-Madgaon polyline.
+    """
+    used = [b for b in block_geom if b is not None]
+    if not used:
+        return None
+    merged = []
+    for bcoords, _bcum, i0, i1, _ref in used:
+        merged.extend(bcoords[i0:i1 + 1])
+    if len(merged) < 3:
+        return None
+    return geometry_resolution(merged)
+
+
 def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_SPEED_KMH,
-                conflicts=False, conflict_delay_min=0.0):
+                conflicts=False, conflict_delay_min=0.0, conflict_service_date=None):
     """
     Build the per-segment breakdown and total predicted ETA.
     Returns a JSON-serialisable dict (used by both the CLI report and the API).
@@ -496,23 +592,48 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
     """
     train_info, stations, sched_src = load_schedule(train, date)
 
+    halts = [s for s in stations if s.get("isHalt")]
+    sched_total_km = halts[-1]["distance"] - halts[0]["distance"]
+
     # Route geometry is optional: curvature needs it, but baseline/dwell/delay/
-    # conflicts do not.  Trains from the full corridor dataset have no _route.json.
+    # conflicts do not.
+    #
+    # Resolved PER BLOCK, not per train.  It used to be all-or-nothing on the
+    # existence of `{train}_route.json`, which meant 205 of the 206 roster
+    # trains lost the curvature layer entirely despite running on the same
+    # physical alignment.  `block_geom[k]` is the geometry for
+    # `halts[k] -> halts[k+1]`, or None, so a train spanning the end of the
+    # cached polyline gets curvature on the blocks that have alignment and an
+    # explicit None on the blocks that do not — rather than a silent zero for
+    # the whole train (VERIFIED #9).
+    #
+    # Two bases, in priority order:
+    #   own-route                 this train's own {train}_route.json
+    #   shared-corridor-polyline  another train's polyline on the same
+    #                             alignment, clipped by station code
+    # `geometry_basis` travels with every curvature number (VERIFIED #12).
+    geom_basis, geom_shared = None, None
+    coords, cum_km, geom_len_km = None, None, None
     try:
         coords = load_route_coords(train)
         cum_km = geometry_cumulative_km(coords)
         geom_len_km = cum_km[-1]
-        has_geometry = True
+        geom_basis = "own-route"
+        halt_idx = snap_halts_to_vertices(coords, halts)
+        block_geom = [
+            (coords, cum_km, halt_idx[k], halt_idx[k + 1], train)
+            if halt_idx[k + 1] - halt_idx[k] >= 2 else None
+            for k in range(len(halts) - 1)
+        ]
     except FileNotFoundError:
-        coords, cum_km, geom_len_km = None, None, None
-        has_geometry = False
+        geom_shared = cgeom.route_for(halts)
+        block_geom = geom_shared["blocks"]
+        geom_basis = geom_shared["basis"]
+        halt_idx = list(range(len(halts)))
+        # The shared path has no single polyline for the train, so the
+        # whole-route length is not defined; coverage km is reported instead.
 
-    halts = [s for s in stations if s.get("isHalt")]
-    sched_total_km = halts[-1]["distance"] - halts[0]["distance"]
-    # Anchor each halt to a real geometry vertex via its own lat/lng.
-    # Only meaningful when we have geometry; without it we still need halt_idx
-    # as placeholders but curvature calls will be skipped.
-    halt_idx = snap_halts_to_vertices(coords, halts) if has_geometry else list(range(len(halts)))
+    has_geometry = any(b is not None for b in block_geom)
 
     wfactor = curvature.WEATHER_SPEED_FACTOR.get(weather, 1.0)
     # INCREMENTAL, not cumulative — delayArrival must be differenced before it can
@@ -533,7 +654,13 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
     if conflicts:
         try:
             import conflict as conflict_mod
-            conflict_result = conflict_mod.find_conflicts(train, conflict_delay_min)
+            # The service date decides WHICH other trains are on the corridor:
+            # only 59 of the 206 roster trains run daily.  It defaults to the
+            # schedule date being modelled, so an /eta for a Monday is not
+            # charged a crossing with a Thursday-only special.
+            conflict_result = conflict_mod.find_conflicts(
+                train, conflict_delay_min,
+                service_date=conflict_service_date if conflict_service_date is not None else date)
             for c in conflict_result["conflicts"]:
                 if c["whoIsHeld"] != "us" or c["ourHoldMin"] <= 0:
                     continue
@@ -550,21 +677,25 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
 
     for k, (a, b) in enumerate(zip(halts[:-1], halts[1:])):
         d0, d1 = a["distance"], b["distance"]
-        i0, i1 = halt_idx[k], halt_idx[k + 1]
         dist_km = d1 - d0
         baseline = a.get("speedToNextStationKmph") or max_speed
 
-        if has_geometry:
+        bg = block_geom[k]
+        seg_geom = bg is not None
+        if seg_geom:
+            bcoords, bcum, i0, i1, bref = bg
             # curvature over this halt-to-halt block
-            min_r, lat_at = sharpest_radius_in_block(coords, i0, i1)
+            min_r, lat_at = sharpest_radius_in_block(bcoords, i0, i1)
             curve_cap = max_speed if math.isinf(min_r) else min(max_speed, CURVE_K * math.sqrt(min_r))
             weather_cap = curve_cap * wfactor
             physics_speed = min(max_speed, curve_cap) * wfactor
             effective = min(baseline, curve_cap, weather_cap)
             vrun_min, n_vseg, n_vcap = block_vertex_running_min(
-                coords, cum_km, i0, i1, dist_km, baseline, max_speed, wfactor
+                bcoords, bcum, i0, i1, dist_km, baseline, max_speed, wfactor
             )
         else:
+            i0 = i1 = None
+            bref = None
             # No route geometry: curvature layer is unavailable for this train.
             # baseline × weather factor is the best speed we can apply.
             min_r, lat_at = math.inf, None
@@ -602,12 +733,18 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             "weather": weather, "weather_capped_speed_kmh": round(weather_cap, 1),
             "effective_speed_kmh": round(effective, 1),
             "running_min": round(running_min, 2),
-            "vertex_curve_running_min": round(vrun_min, 2) if has_geometry else None,
+            "vertex_curve_running_min": round(vrun_min, 2) if seg_geom else None,
             "vertex_segments": n_vseg, "vertex_capped_by_curve": n_vcap,
-            "geom_vertex_range": [i0, i1] if has_geometry else None,
+            "geom_vertex_range": [i0, i1] if seg_geom else None,
+            # Which polyline this block's curvature actually came from, and on
+            # what basis.  None means this block has no alignment available —
+            # NOT that it is straight.
+            "curvature_available": seg_geom,
+            "geometry_basis": (geom_basis if seg_geom else None),
+            "geometry_reference_train": bref,
             "baseline_only_min": round(dist_km / baseline * 60.0, 2),
-            "vertex_curve_penalty_min": round(vrun_min - dist_km / baseline * 60.0, 5) if has_geometry else None,
-            "vertex_curve_penalty_sec": round((vrun_min - dist_km / baseline * 60.0) * 60.0, 3) if has_geometry else None,
+            "vertex_curve_penalty_min": round(vrun_min - dist_km / baseline * 60.0, 5) if seg_geom else None,
+            "vertex_curve_penalty_sec": round((vrun_min - dist_km / baseline * 60.0) * 60.0, 3) if seg_geom else None,
             "sched_run_min": round(sched_run_min, 1),
             "physics_run_min": round(physics_run_min, 2),
             "schedule_slack_min": round(slack_min, 1),
@@ -622,7 +759,7 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             ],
             "segment_eta_min": round(seg_eta, 2),
         })
-        if has_geometry and min_r < sharpest["radius_m"]:
+        if seg_geom and min_r < sharpest["radius_m"]:
             sharpest = {"radius_m": round(min_r, 1), "lat": round(lat_at, 4) if lat_at else None,
                         "segment": f'{a["stationCode"]}→{b["stationCode"]}',
                         "capped_speed_kmh": round(min(max_speed, CURVE_K * math.sqrt(min_r)), 1)}
@@ -662,6 +799,13 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
         "curvature_layer_contribution_min": round(
             sum(x["vertex_curve_penalty_min"] for x in segments
                 if x["vertex_curve_penalty_min"] is not None), 5) if has_geometry else None,
+        # Curvature is summed only over blocks that HAVE alignment, so the
+        # figure must be read against geometry_coverage rather than the full
+        # route length.  A train at 65% coverage has a curvature total for
+        # 65% of its journey, not a smaller curvature effect.
+        "curvature_layer_covers_km": round(sum(
+            s["distance_km"] for s, b in zip(segments, block_geom)
+            if b is not None), 1),
         "historical_delay_audit": {
             "basis": "incremental (delayArrival differenced along the halt chain)",
             "segment_increments_sum_min": round(total_delay, 1),
@@ -677,8 +821,36 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
                 "showing WHERE delay accrues, not for a headline number."
             ),
         },
-        "geometry_resolution": geometry_resolution(coords) if has_geometry else None,
+        # Resolution is measured on the polyline that was actually used.  On
+        # the shared path that is the reference's own geometry, so the
+        # "resolvable ~44%" caveat of VERIFIED #8 is recomputed per reference
+        # rather than inherited.
+        "geometry_resolution": (
+            geometry_resolution(coords) if coords is not None else
+            _shared_geometry_resolution(block_geom)
+        ),
         "curvature_available": has_geometry,
+        "geometry_basis": geom_basis,
+        "geometry_coverage": (
+            {"blocks_resolved": sum(1 for b in block_geom if b is not None),
+             "blocks_total": len(block_geom),
+             "coverage_km": round(sum(
+                 s["distance_km"] for s, b in zip(segments, block_geom)
+                 if b is not None), 1),
+             "total_km": round(total_km, 1),
+             "coverage_fraction": (round(sum(
+                 s["distance_km"] for s, b in zip(segments, block_geom)
+                 if b is not None) / total_km, 4) if total_km else 0.0),
+             "reference_trains": sorted({b[4] for b in block_geom if b is not None}),
+             "unresolved_blocks": [f'{s["from"]}->{s["to"]}'
+                                   for s, b in zip(segments, block_geom)
+                                   if b is None],
+             "unavailable_reason": (geom_shared or {}).get("unavailableReason"),
+             "basis_note": (
+                 None if geom_basis != "shared-corridor-polyline" else
+                 (geom_shared or {}).get("basisNote")
+             )}
+        ),
         # Crossing/overtake hold layer.  Always present so its absence is never
         # ambiguous: `enabled: false` means "not asked for", an `error` means the
         # corridor cache is missing or broken, and 0.0 with enabled=true is a

@@ -309,15 +309,23 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
     t = res["totals"]
 
     # 'vertex' mode swaps the physics layer for per-vertex integration.
-    # When geometry is unavailable, vertex_curve_running_min is None for every
-    # segment — fall through to the block-mode path, which uses running_min.
+    #
+    # Geometry is resolved PER BLOCK, not per train (a train can hold the shared
+    # corridor polyline for its northern blocks and nothing for its southern
+    # ones), so `vertex_curve_running_min` is None on exactly the blocks that
+    # have no alignment.  Fall back to `running_min` per segment rather than
+    # per train: summing a list containing None raises, and switching the whole
+    # train to block mode because one block is unresolved would throw away real
+    # curvature on the blocks that do resolve.
     has_geometry = res.get("curvature_available", False)
     if mode == "vertex" and has_geometry:
-        vrun = sum(s["vertex_curve_running_min"] for s in res["segments"])
         for s in res["segments"]:
-            s["running_min_applied"] = s["vertex_curve_running_min"]
+            applied = s["vertex_curve_running_min"]
+            if applied is None:
+                applied = s["running_min"]
+            s["running_min_applied"] = applied
             s["segment_eta_min"] = round(
-                s["vertex_curve_running_min"] + s["hist_delay_min"]
+                applied + s["hist_delay_min"]
                 + s["dwell_min"] + s["conflict_hold_min"], 2
             )
             # `effective_speed_kmh` is the BLOCK-mode speed: the block's sharpest
@@ -326,9 +334,9 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
             # Publish that mean too, or distance/running_min_applied won't reconcile
             # with the speed field and the breakdown looks self-contradictory.
             s["effective_speed_applied_kmh"] = (
-                round(s["distance_km"] / (s["vertex_curve_running_min"] / 60.0), 1)
-                if s["vertex_curve_running_min"] > 0 else None
+                round(s["distance_km"] / (applied / 60.0), 1) if applied > 0 else None
             )
+        vrun = sum(s["running_min_applied"] for s in res["segments"])
         total = vrun + t["historical_delay_min"] + t["dwell_min"] + t["conflict_hold_min"]
         t["running_min"] = round(vrun, 1)
         t["predicted_eta_min"] = round(total, 1)
@@ -435,6 +443,7 @@ def get_conflicts(
     train_number: str,
     delay: float = Query(0.0, description="our train's current delay in minutes (carried forward, no recovery assumed)"),
     offsets: str = Query("0,-1,-2", description="departure-day offsets to scan for other trains' instances"),
+    date: str = Query("today", description="service date YYYY-MM-DD (run_days filter); 'today' for the current date, 'all' to count every roster train"),
 ):
     """
     Crossing & overtake prediction: where this train meets others on single line,
@@ -458,9 +467,25 @@ def get_conflicts(
     if not offs:
         raise HTTPException(422, detail="offsets must contain at least one integer")
 
+    # Only 59 of the 206 roster trains run daily, so without a date the layer
+    # counts roughly twice the traffic actually on the corridor.  'today' is the
+    # default because the live caller is always asking about now; 'all' stays
+    # available as the explicitly-unfiltered upper bound.
+    if date == "today":
+        service_date = datetime.now().date()
+    elif date in ("all", ""):
+        service_date = None
+    else:
+        try:
+            service_date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                422, detail=f"date must be YYYY-MM-DD, 'today' or 'all', got {date!r}")
+
     try:
         import conflict as conflict_mod
-        res = conflict_mod.find_conflicts(train_number, delay, offs)
+        res = conflict_mod.find_conflicts(train_number, delay, offs,
+                                          service_date=service_date)
     except FileNotFoundError as e:
         raise HTTPException(
             404,

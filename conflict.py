@@ -52,7 +52,9 @@ WHAT IS ASSUMED HERE (do not let this drift out of the UI)
     python3 conflict.py --train 12051 --delay 45
     python3 conflict.py --train 22229 --delay 150
 """
-import os, sys, json, glob, argparse
+import os, sys, json, glob, bisect, argparse, datetime
+
+import corridor_axis as axis
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, ".cache")
@@ -73,16 +75,72 @@ REACCEL_MIN = 3.0
 ROHA_FALLBACK_KM = 142.2
 SECTION_ANCHORS = ("ROHA", "MAO")
 
+# A train must place at least this many stations on the single-line section
+# before a crossing can be located at all.  Two is not a tunable threshold: one
+# station is a point, and a point has no traversal for another train's path to
+# intersect.  25 of the 206 roster trains touch the section exactly once.
+MIN_SINGLE_LINE_STATIONS = 2
+
 # A train must share this much of the single-line section before a crossing with
 # it is meaningful.  Goa Express (12779/12780) joins the route only at Madgaon
 # and shares 3 stations — excluded here on physical grounds, not by a magic count.
-MIN_SHARED_IN_SECTION = 4
+#
+# The COUNT was 4 and that was the magic number, not the span.  Two is the
+# mathematical floor: interpolating the other train's clock onto our chainage
+# needs two anchors and nothing more.  Everything 4 was standing in for is
+# already measured elsewhere — the *physical* overlap by MIN_SHARED_SPAN_KM
+# (which is what actually excludes Goa Express, sharing 3 stations over a few km
+# at Madgaon), and the *looseness* of a meet by anchorMaxGapKm, reported per row.
+# Measured cost of the old value: 2103 counterpart pairs over the first 60 trains
+# were rejected by the count alone while passing the span test, including every
+# counterpart of 10109 Madgaon-Karwar (3 stations, 60.3 km — a tight, entirely
+# real overlap) and both Ernakulam Durontos.
+MIN_SHARED_IN_SECTION = 2
 MIN_SHARED_SPAN_KM = 25.0
+
+# Anchor spacing at which a meet stops being precisely located.  Not a rejection
+# threshold — a LABEL.  The other train's clock is linear between anchors, so a
+# meet interpolated across a 250 km gap is a real crossing at an approximate
+# place, and the payload must say which it is rather than presenting both at the
+# same confidence.  Measured on accepted meets: median 51 km, p90 125 km,
+# max 251 km — looseness was already present under the old count gate, just
+# unlabelled.
+ANCHOR_GAP_FINE_KM = 25.0
+ANCHOR_GAP_MODERATE_KM = 80.0
+
+# Corridor-wide dedup tolerance (see `corridor_conflicts`).  Two views of ONE
+# physical meet disagree by at most about half the coarser view's anchor gap,
+# because that gap IS the location uncertainty — so the km tolerance is derived
+# from the data per pair, not fixed.  The clock tolerance is fixed at 30 min.
+#
+# Measured over the 2026-09-11 sweep: of 417 same-pair-same-kind neighbour
+# deltas, 249 sit within 5 km/10 min, 314 within 25 km/30 min, 321 within
+# 50 km/45 min, and only 5 more appear out to 100 km/60 min.  The curve
+# flattens there, which is the signature of ~321 true duplicates and ~96
+# genuinely separate events — so a tolerance in that flat region separates them
+# without over-merging.  The counter-example the rule must NOT merge is
+# 01132/09029 overtake, whose two rows are 140 km and 3.5 h apart.
+CORRIDOR_DEDUP_MIN = 30.0
+CORRIDOR_DEDUP_KM_FLOOR = 2.0
+CORRIDOR_DEDUP_GAP_FRACTION = 0.5
 
 # A train's journey can span several days, so the instance occupying our
 # corridor today may have departed 1-2 days ago.  Scanning only offset 0 finds
-# 2 of 12051's 5 crossings.
-DEFAULT_OFFSETS = (0, -1, -2)
+# 2 of 12051's 5 crossings (VERIFIED #16).
+#
+# (0, -1, -2) was not a conservative window, it was a WRONG one — it shifts the
+# other train only EARLIER.  See `_offset_window`.  Kept as an explicit override
+# so the old behaviour is still reproducible.
+LEGACY_OFFSETS = (0, -1, -2)
+
+# Sentinel: derive the window per candidate pair.  This is the default.
+AUTO_OFFSETS = "auto"
+DEFAULT_OFFSETS = AUTO_OFFSETS
+
+# Widening either side of the exactly-needed offset, for a corridor occupancy
+# window that straddles midnight.  One day is sufficient and measured: going to
+# 2 finds no additional crossing on any roster train.
+OFFSET_MARGIN_DAYS = 1
 
 # Ordered longest-match-first: 'JAN SHATABDI' contains 'SHATABDI', so the plain
 # SHATABDI rule must never be reached first.  Rank 1 = highest precedence.
@@ -168,9 +226,15 @@ def adapt_full_dataset_train(record):
       (that path is already handled at conflict.py:363-364)
 
     Only corridor_stations (halt stations) are available — non-halt pass-through
-    stations are absent.  That is fine: the conflict walk only needs enough shared
-    stations to bracket a sign flip, and every halt on the single-line section is
-    included.
+    stations are absent.  This is NOT harmless, and the walk compensates for it.
+    A halts-only train can share as few as 5 stations with ours, so consecutive
+    shared stations sit up to ~140 km apart; read as one block section, that
+    charged 22229 a 123 min wait for a Rajdhani to clear track the two would
+    really have crossed at an intermediate station.  `find_conflicts` therefore
+    treats the shared codes as ANCHORS for the other train's clock and walks OUR
+    own station list, surfacing `anchorCount` / `anchorMaxGapKm` /
+    `otherTimesBasis` on every row so a loosely-located meet is visible rather
+    than implied.
     """
     stations = []
     for s in record.get("corridor_stations", []):
@@ -223,12 +287,23 @@ def load_corridor_train(number):
     path = os.path.join(CORRIDOR, f"{number}.json")
     if os.path.exists(path):
         with open(path) as f:
-            return json.load(f)
+            train = json.load(f)
+        # The corridor cache is built from a live fallback, which carries no
+        # calendar; the roster does.  Without this backfill the 17 richest
+        # trains — including both demo trains — are the only ones the run-day
+        # filter cannot see, so 22229 (Mon/Wed/Fri) would be modelled as
+        # crossing 22119 Tejas (Tue/Thu/Sat), a meet that cannot happen.
+        if not train.get("run_days"):
+            record = _load_full_dataset().get(str(number))
+            if record and record.get("run_days"):
+                train["run_days"] = record["run_days"]
+                train["run_days_source"] = "full-dataset-backfill"
+        return axis.annotate(train)
 
     full = _load_full_dataset()
     record = full.get(str(number))
     if record is not None:
-        return adapt_full_dataset_train(record)
+        return axis.annotate(adapt_full_dataset_train(record))
 
     raise FileNotFoundError(
         f"Train {number} not found in corridor cache ({CORRIDOR}) "
@@ -267,22 +342,76 @@ def station_time(s):
 def single_line_span(train):
     """(lo_km, hi_km, basis) of single-line track on THIS train's own axis.
 
-    Found by station code rather than a constant so it holds for both
-    directions: Roha sits at km 142.2 on a down train and km 440.0 on an up
-    train.  Taking the sorted span between the Roha and Madgaon anchors is
-    direction-agnostic.
+    RETAINED AS A FALLBACK ONLY.  `single_line_membership` below is what
+    `find_conflicts` uses; this runs only when the canonical axis is missing
+    entirely (the dataset file is absent).  Both of its branches were wrong and
+    are fixed here rather than left as a trap:
+
+    * **One-anchor branch picked the wrong side of Roha for every up train.**
+      "Single line runs from Roha to the far end" is true only for a train whose
+      far end is Madgaon.  01446 runs Ratnagiri -> Panvel, so its far end is
+      PNVL at own-km 278.2 and the branch returned [203.8, 278.2] — the Central
+      Railway DOUBLE line — instead of [0.0, 203.8].  113 of the 206 roster
+      trains took this branch, and each then rejected all 209 counterparts as
+      "shares too little of the single-line section".  Orientation now comes
+      from a second canonical station rather than from an assumption.
+    * **Fallback branch returned its pair unsorted**, so any train whose own
+      axis ends before km 142.2 got an inverted span that can contain nothing
+      (07361 -> [142.2, 24.6]).
     """
     km = {s["code"]: s["km"] for s in train["stations"]}
     roha, mao = km.get(SECTION_ANCHORS[0]), km.get(SECTION_ANCHORS[1])
     if roha is not None and mao is not None:
         lo, hi = sorted((roha, mao))
         return lo, hi, "anchored:ROHA-MAO"
+
     if roha is not None:
-        # Only one anchor: assume single line runs from Roha to the far end.
+        # Orient off any OTHER station the canonical axis knows: whichever side
+        # of Roha carries a station with positive canonical km is the Konkan
+        # side.  Falls back to the far end only when nothing can orient it.
+        for s in train["stations"]:
+            ck = s.get("corridorKm")
+            if ck is not None and ck > 0 and s["code"] != SECTION_ANCHORS[0]:
+                lo, hi = sorted((roha, s["km"]))
+                # Extend to the far end on that same side of Roha.
+                same_side = [t["km"] for t in train["stations"]
+                             if (t["km"] - roha) * (s["km"] - roha) >= 0]
+                return min(same_side), max(same_side), "anchored:ROHA+oriented"
         far = max(s["km"] for s in train["stations"])
         lo, hi = sorted((roha, far))
-        return lo, hi, "anchored:ROHA-only"
-    return ROHA_FALLBACK_KM, max(s["km"] for s in train["stations"]), "fallback-km"
+        return lo, hi, "anchored:ROHA-only-unoriented"
+
+    lo, hi = sorted((ROHA_FALLBACK_KM, max(s["km"] for s in train["stations"])))
+    return lo, hi, "fallback-km"
+
+
+def single_line_membership(train):
+    """(test, basis, note) — is a given station of `train` on single line?
+
+    The canonical `section` label is authoritative: it needs no anchor, no
+    direction inference and no arithmetic, and it is consistent to zero
+    disagreements across all 1859 dataset records (`corridor_axis.audit()`).
+    A station code the axis does not know is **off the Konkan corridor**, not
+    unclassified — measured: the 1052 unknown codes are Ernakulam, Bikaner,
+    Jhansi and the like, reached by corridor trains on the rest of their long
+    journeys.  Answering False for them is the correct classification, not a
+    lossy default.
+
+    Only when the dataset file itself is absent does this degrade to the
+    km-span heuristic, and it says so in the basis (the `axisBasis` pattern of
+    VERIFIED #12 — degrade loudly, never silently).
+    """
+    if axis.available():
+        return (lambda s: s.get("onSingleLine") is True,
+                "canonical-section",
+                "Station-level `section` label from the corridor dataset; "
+                "direction-agnostic and independent of the train's own km origin.")
+
+    lo, hi, basis = single_line_span(train)
+    return (lambda s: lo <= s["km"] <= hi,
+            f"fallback:{basis}",
+            "Canonical corridor axis unavailable — section inferred from this "
+            "train's own km axis, which is unreliable for up trains.")
 
 
 # --- Core --------------------------------------------------------------------
@@ -293,6 +422,25 @@ def _interp(a, b, f):
     return a + f * (b - a)
 
 
+def _piecewise_at(xs, ys, x):
+    """Linear interpolation of `ys` over strictly-increasing `xs`, evaluated at `x`.
+
+    Used to read the other train's clock at one of OUR stations.  Clamped at both
+    ends rather than extrapolated: outside the outermost shared station we have no
+    evidence of where the other train is, and the caller never asks outside that
+    span (`nodes` is clipped to it).
+    """
+    if x <= xs[0]:
+        return ys[0]
+    if x >= xs[-1]:
+        return ys[-1]
+    i = bisect.bisect_right(xs, x) - 1
+    x0, x1 = xs[i], xs[i + 1]
+    if x1 == x0:
+        return ys[i]
+    return ys[i] + (x - x0) / (x1 - x0) * (ys[i + 1] - ys[i])
+
+
 def _clock(minutes):
     """Day-normalised minutes -> 'HH:MM' (+1d marker for a later journey day)."""
     if minutes is None:
@@ -301,20 +449,175 @@ def _clock(minutes):
     return f"{mod // 60:02d}:{mod % 60:02d}" + (f" +{day}d" if day else "")
 
 
+WEEKDAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
+
+
+def _runs_on(train, service_date, offset_days):
+    """Does this train's run occupy our corridor on `service_date`?
+
+    Returns (bool, basis).  `offset_days` is the instance offset already used to
+    place the run: an instance on its own day 2 DEPARTED a day earlier, so the
+    run-day to test is the service date shifted by that offset.
+
+    Only 59 of the 206 roster trains run daily.  88 run on exactly one day a
+    week, so an unfiltered scan charges a crossing with a Thursday-only special
+    to a Monday run — 09022 (Thu) and 09124 (Mon) are a measured example: both
+    were being billed 7.7 min at the identical km, and they can never both be
+    there.  Any given weekday has 85-98 of the 206 actually running.
+
+    A train with no `run_days` (the 17 corridor-cache files, which are built from
+    a live fallback and carry no calendar) is INCLUDED and flagged rather than
+    dropped: excluding it would silently lose real crossings.
+    """
+    days = train.get("run_days")
+    if not days:
+        return True, "no-calendar"
+    if service_date is None:
+        return True, "no-service-date"
+    d = service_date + datetime.timedelta(days=offset_days)
+    return (WEEKDAYS[d.weekday()] in {str(x).lower()[:3] for x in days},
+            "run-days")
+
+
+def _parse_date(value):
+    """'YYYY-MM-DD' | date | None -> date | None. Never raises on a bad string."""
+    if value is None or isinstance(value, datetime.date):
+        return value
+    try:
+        return datetime.datetime.strptime(str(value)[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _location_confidence(anchor_gap_km):
+    """How precisely a meet is located, from the widest anchor gap behind it.
+
+    'fine'     — anchors about a block apart; the meet sits between two stations
+                 whose times we actually know for both trains.
+    'moderate' — several blocks; the km is good to roughly a block.
+    'coarse'   — the other train's clock is a straight line across a long
+                 unanchored stretch. The crossing is real (two timetables do
+                 cross); WHERE it happens is approximate.
+    """
+    if anchor_gap_km <= ANCHOR_GAP_FINE_KM:
+        return "fine"
+    if anchor_gap_km <= ANCHOR_GAP_MODERATE_KM:
+        return "moderate"
+    return "coarse"
+
+
+def _charge_hold(c, excess_min):
+    """Charge a conflict row only the wait it adds OVER the on-time plan.
+
+    `excess_min` is `rawWaitMin - scheduledWaitMin`.  A booked timetable already
+    absorbs its planned crossings inside its block times, so only the excess is
+    a real cost; a negative excess (the delay happened to improve the meet) is
+    floored at zero rather than credited, because a train cannot bank time it
+    was never scheduled to lose.
+
+    REACCEL_MIN rides on top only when something is actually charged.  Adding it
+    to a zero excess would make every planned crossing cost exactly the constant
+    — and a hold that lands exactly on a modelling constant is the bug signature
+    VERIFIED #20 was found by.
+    """
+    excess = max(0.0, round(excess_min, 6))
+    hold = round(excess + REACCEL_MIN, 1) if excess > 0 else 0.0
+    if c["whoIsHeld"] == "us":
+        c["ourHoldMin"], c["theirHoldMin"] = hold, 0.0
+    else:
+        c["ourHoldMin"], c["theirHoldMin"] = 0.0, hold
+    c["excessWaitMin"] = round(excess, 1)
+
+
+def corridor_day_span(train, on_single_line):
+    """(first_day, last_day) of this train's own journey spent on single line.
+
+    Day 0 is its departure day, read off the day-normalised minute axis of
+    VERIFIED #16.  None when it places no timed station on the section.
+    """
+    ts = [station_time(s) for s in train.get("stations") or []
+          if on_single_line(s)]
+    ts = [t for t in ts if t is not None]
+    if not ts:
+        return None
+    return min(ts) // 1440, max(ts) // 1440
+
+
+def _offset_window(our_days, their_days, margin=OFFSET_MARGIN_DAYS):
+    """Departure-day offsets at which `them` could share our corridor window.
+
+    The fixed (0, -1, -2) window only ever shifted the other train EARLIER, so
+    it could never find a counterpart that departed LATER in absolute terms.
+    That is not a rare case: **65 of the 206 roster trains reach Konkan on their
+    own day >= 1** (deepest 06904, days 3-4), and the trains they meet there
+    departed one to three days after them.  Measured cost: 02198 Coimbatore
+    Special found **0** crossings over 174 usable counterparts, and finds **25**
+    once positive offsets are scanned.  A zero that large over a 723 km overlap
+    is the signature VERIFIED #9 warns about — a layer reporting nothing looks
+    identical to a layer that is switched off.
+
+    Deriving the window removes the constant rather than doubling it.  Their
+    corridor day `d` aligns with our corridor day `D` at offset `D - d`, so the
+    needed range is `[our_first - their_last, our_last - their_first]`, widened
+    by `margin`.
+
+    It is **not** free: measured over 626 pairs the derived window is 3.92
+    offsets on average (min 3, max 5) against the old fixed 3, so this is about
+    30% more scanning.  Stated because the first version of this docstring
+    claimed the opposite.  The floor is 3 rather than 1 because `margin` widens
+    a same-day pair to [-1, 0, +1]; what the derivation buys is the *upper*
+    end, which no fixed tuple reached.
+    """
+    lo = our_days[0] - their_days[1] - margin
+    hi = our_days[1] - their_days[0] + margin
+    return tuple(range(lo, hi + 1))
+
+
 def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
-                   others=None, _with_baseline=True):
+                   others=None, service_date=None, _with_baseline=True):
     """Predict every crossing / overtake for one run of `our_number`.
 
     `delay_min` is applied uniformly to our whole journey — i.e. the delay is
     assumed to be *carried*, not recovered.  That is deliberately pessimistic
     and is stated in the payload as `delayModel`.
     """
+    service_date = _parse_date(service_date)
     us = load_corridor_train(our_number)
     our_label, our_rank = normalise_type(us.get("type"))
-    lo_km, hi_km, section_basis = single_line_span(us)
+    skipped_not_running = 0
+    # Filtering the OTHER trains but not ourselves leaves the same bug one level
+    # up: on a Tuesday, 22229 (Mon/Wed/Fri) does not run at all, yet it was being
+    # charged 26.1 min for a crossing with 22119 Tejas (Tue/Thu/Sat).  Reported,
+    # not refused — a caller may legitimately model a hypothetical service — but
+    # the flag must travel with the answer.
+    we_run, our_run_basis = _runs_on(us, service_date, 0)
+    on_single_line, section_basis, section_note = single_line_membership(us)
+    our_coverage = axis.coverage(us)
+    our_corridor_days = corridor_day_span(us, on_single_line)
+    offsets_auto = offsets == AUTO_OFFSETS
+    offsets_seen = set()
 
     our_st = {s["code"]: s for s in us["stations"]}
-    candidates = others if others is not None else list_corridor_trains()
+
+    # A train that places fewer than two stations on the single-line section
+    # cannot have a crossing LOCATED, and must say so.  Returning an empty
+    # conflicts list with no explanation reads as "no crossings predicted",
+    # which is a different and much stronger claim — the zero-layer hazard of
+    # VERIFIED #9.  Two populations land here: 25 roster trains that touch the
+    # section exactly once, and stray non-corridor trains that have a cache file
+    # (12989 Dadar-Ajmer, 22195 Jhansi-Bandra, 22308 Bikaner-Howrah all place
+    # ZERO stations on the corridor).
+    our_single_line = [s for s in us["stations"] if on_single_line(s)]
+    eligible = len(our_single_line) >= MIN_SINGLE_LINE_STATIONS
+    ineligible_reason = None
+    if not eligible:
+        ineligible_reason = (
+            "not-a-corridor-train" if not our_single_line
+            else "insufficient-corridor-span"
+        )
+
+    candidates = ([] if not eligible else
+                  others if others is not None else list_corridor_trains())
 
     conflicts, considered = [], []
 
@@ -331,7 +634,7 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
 
         # Restrict to the single-line section: a meet on double track needs no
         # hold, so shared stations outside it cannot produce a conflict.
-        in_section = [c for c in shared_codes if lo_km <= our_st[c]["km"] <= hi_km]
+        in_section = [c for c in shared_codes if on_single_line(our_st[c])]
         span = 0.0
         if in_section:
             kms = [our_st[c]["km"] for c in in_section]
@@ -354,29 +657,73 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
         considered.append(rec)
 
         # Walk in OUR direction of travel.
-        walk = sorted(in_section, key=lambda c: our_st[c]["km"])
-        walk = [c for c in walk if station_time(our_st[c]) is not None
-                and station_time(their_st[c]) is not None]
-        if len(walk) < 2:
+        anchors = sorted(in_section, key=lambda c: our_st[c]["km"])
+        anchors = [c for c in anchors if station_time(our_st[c]) is not None
+                   and station_time(their_st[c]) is not None]
+        if len(anchors) < 2:
             continue
+
+        # The shared codes ANCHOR the other train's clock to our chainage; they
+        # must not also set the RESOLUTION of the walk.  A halts-only source (the
+        # 206-train roster) shares as few as 5 stations, so two consecutive
+        # anchors can sit 140 km apart with a dozen of our own crossing stations
+        # in between — and the hold rule below reads the bracketing pair as ONE
+        # block section.  Walking the anchors directly therefore charged 22229 a
+        # 123 min wait for a Rajdhani to clear 139.8 km of track the two would
+        # really have crossed at one of the intermediate stations.  Interpolating
+        # their clock onto OUR stations leaves the meet point where it was and
+        # puts the hold on a block that actually exists.
+        anchor_km = [our_st[c]["km"] for c in anchors]
+        anchor_t = [station_time(their_st[c]) for c in anchors]
+        anchor_max_gap = max(y - x for x, y in zip(anchor_km, anchor_km[1:]))
+
+        # Clipped to the anchor span: past the outermost shared station there is
+        # no evidence of where the other train is, and clamping out there would
+        # invent a flat clock.
+        nodes = sorted(
+            (s for s in us["stations"]
+             if station_time(s) is not None
+             and anchor_km[0] <= s["km"] <= anchor_km[-1]),
+            key=lambda s: s["km"],
+        )
+        if len(nodes) < 2:
+            continue
+
+        their_time_at = [_piecewise_at(anchor_km, anchor_t, s["km"]) for s in nodes]
+        anchor_set = set(anchors)
 
         # Same direction or opposing?  Their own chainage either rises or falls
         # as we advance.  Offset-independent, so it is decided once.
-        their_km_first, their_km_last = their_st[walk[0]]["km"], their_st[walk[-1]]["km"]
+        their_km_first = their_st[anchors[0]]["km"]
+        their_km_last = their_st[anchors[-1]]["km"]
         same_direction = their_km_last > their_km_first
         kind = "overtake" if same_direction else "opposing"
 
         their_label, their_rank = normalise_type(them.get("type"))
 
-        for off in offsets:
-            shift = off * 1440
-            gaps = []
-            for c in walk:
-                ours = station_time(our_st[c]) + delay_min
-                theirs = station_time(their_st[c]) + shift
-                gaps.append(ours - theirs)
+        # Offsets are a property of THIS PAIR's day alignment, not a global
+        # constant.  `rec` is already in `considered` and is mutated by
+        # reference so the window that was actually scanned is auditable.
+        if offsets_auto:
+            their_days = corridor_day_span(them, on_single_line)
+            pair_offsets = (_offset_window(our_corridor_days, their_days)
+                            if our_corridor_days and their_days
+                            else LEGACY_OFFSETS)
+        else:
+            pair_offsets = offsets
+        rec["offsetsScanned"] = list(pair_offsets)
+        offsets_seen.update(pair_offsets)
 
-            for i in range(len(walk) - 1):
+        for off in pair_offsets:
+            running, run_basis = _runs_on(them, service_date, off)
+            if not running:
+                skipped_not_running += 1
+                continue
+            shift = off * 1440
+            gaps = [(station_time(s) + delay_min) - (t + shift)
+                    for s, t in zip(nodes, their_time_at)]
+
+            for i in range(len(nodes) - 1):
                 g0, g1 = gaps[i], gaps[i + 1]
                 # Half-open sign test.  A gap of exactly 0 means the two trains
                 # are timetabled to the same minute at that station — which is
@@ -391,37 +738,30 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
                     continue                      # guard the interpolation
 
                 f = g0 / (g0 - g1)
-                a, b = our_st[walk[i]], our_st[walk[i + 1]]
+                a, b = nodes[i], nodes[i + 1]
                 meet_km = _interp(a["km"], b["km"], f)
                 meet_t = _interp(station_time(a) + delay_min,
                                  station_time(b) + delay_min, f)
 
                 # Who yields.
                 our_t_a = station_time(a) + delay_min
-                their_t_a = station_time(their_st[walk[i]]) + shift
+                their_t_a = their_time_at[i] + shift
                 our_t_b = station_time(b) + delay_min
-                their_t_b = station_time(their_st[walk[i + 1]]) + shift
+                their_t_b = their_time_at[i + 1] + shift
 
-                our_hold = their_hold = 0.0
-                hold_station = None
                 overtaker = None
                 precedence_note = None
 
+                # WHO stands aside.
                 if same_direction:
                     # An overtake is physically forced: the train being PASSED
                     # takes the loop, whatever the ladder says — you cannot pass
                     # on single line otherwise.  The flip direction says who
-                    # passes whom, and getting this backwards produces a hold of
-                    # exactly REACCEL_MIN with a zero wait, which is impossible.
+                    # passes whom (VERIFIED #20).
                     #   gap + -> - : we were behind at A, ahead at B -> we pass
                     #   gap - -> + : they pass us
-                    if g0 > 0:
-                        overtaker, who = str(our_number), "them"
-                        their_hold = max(0.0, our_t_a - their_t_a) + REACCEL_MIN
-                    else:
-                        overtaker, who = str(other_number), "us"
-                        our_hold = max(0.0, their_t_a - our_t_a) + REACCEL_MIN
-                    hold_station = walk[i]
+                    overtaker = str(our_number) if g0 > 0 else str(other_number)
+                    who = "them" if overtaker == str(our_number) else "us"
                     # Precedence does not decide the loop here, but it does
                     # decide whether a controller grants the pass at all.  Flag
                     # the mismatch rather than invent a different number.
@@ -433,22 +773,52 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
                             "refuse the pass and hold it behind instead"
                         )
                 else:
-                    # Head-on: the lower-ranked train waits at its own entry to
-                    # the section until the other has cleared.  We enter at A,
-                    # an opposing train enters at B.  Equal rank: later arrival yields.
+                    # Head-on: precedence decides, because the controller chooses
+                    # WHERE to cross the pair and can give the higher-ranked train
+                    # a clear run by holding the other one back.  Each train can
+                    # only ever be held on the side it enters from — we at A, an
+                    # opposing train at B.
                     if our_rank < their_rank:
                         who = "them"
                     elif our_rank > their_rank:
                         who = "us"
-                    else:
+                    elif our_t_a != their_t_b:
                         who = "us" if our_t_a > their_t_b else "them"
-
-                    if who == "us":
-                        our_hold = max(0.0, their_t_a - our_t_a) + REACCEL_MIN
-                        hold_station = walk[i]
                     else:
-                        their_hold = max(0.0, our_t_b - their_t_b) + REACCEL_MIN
-                        hold_station = walk[i + 1]
+                        # Exact tie. `our_t_a > their_t_b` is False from BOTH
+                        # trains' axes, so each would conclude the other holds.
+                        # The train number is the only tie-break that gives the
+                        # two runs the same answer (reciprocity, C-check).
+                        who = ("us" if str(our_number) > str(other_number)
+                               else "them")
+
+                hold_station = a["code"] if who == "us" else b["code"]
+
+                # HOW LONG.  The wait is the two trains' OCCUPANCY OVERLAP of the
+                # A-B section, not the time for one to clear the whole of it.  We
+                # hold the section from our departure at A to our arrival at B;
+                # an opposing train holds it from its departure at B to its
+                # arrival at A.  Only where those windows intersect does anyone
+                # actually stand.
+                #
+                # Clearance-time — `their_t_a - our_t_a`, "wait at A until they
+                # have run the whole block" — is what produced 16345's 601.8 min
+                # of holds and charged 22229 a 123 min wait for a Rajdhani.  On
+                # the SGR-UKC example it bills 48 min for a crossing the working
+                # timetable makes at UKC with one minute in hand: 16345 runs
+                # 17:10 -> 17:45 while 12052 runs 17:44 -> 17:58, so the windows
+                # touch for exactly that minute and nothing more.
+                our_in = (a.get("depMin") if a.get("depMin") is not None
+                          else station_time(a)) + delay_min
+                our_out = our_t_b
+                # The other train's clock is interpolated onto our chainage, so
+                # there is no separate departure for it; at a non-halt station the
+                # two are equal anyway, and every halt it makes is an anchor.
+                their_in, their_out = their_t_b, their_t_a
+                if same_direction:
+                    # Running the same way, both windows point the same way.
+                    their_in, their_out = their_t_a, their_t_b
+                raw_wait = max(0.0, min(our_out, their_out) - max(our_in, their_in))
 
                 meet_lat = _interp(a.get("lat"), b.get("lat"), f)
                 meet_lng = _interp(a.get("lng"), b.get("lng"), f)
@@ -464,6 +834,14 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
                     "ourPriority": our_rank,
                     "kind": kind,
                     "meetKm": round(meet_km, 1),
+                    # The same meet on the CANONICAL axis.  meetKm is on our own
+                    # km origin, which is what eta_model buckets holds by and
+                    # what the drawer shows; but two trains' own axes disagree
+                    # about the same physical point, so anything comparing
+                    # meets ACROSS trains (the corridor-wide view) must use this.
+                    "meetCorridorKm": (round(cc, 1) if (cc := _interp(
+                        a.get("corridorKm"), b.get("corridorKm"), f)) is not None
+                        else None),
                     "meetTimeMin": round(meet_t, 1),
                     "meetClock": _clock(meet_t),
                     "meetLat": meet_lat,
@@ -475,31 +853,54 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
                     # missing instead of just not drawing it.
                     "meetCoordsBasis": ("interpolated" if meet_lat is not None
                                         and meet_lng is not None else "unavailable"),
-                    "betweenFrom": walk[i],
+                    "betweenFrom": a["code"],
                     "betweenFromName": a.get("name"),
-                    "betweenTo": walk[i + 1],
+                    "betweenTo": b["code"],
                     "betweenToName": b.get("name"),
+                    # The hold is charged for clearing THIS block, so its
+                    # length is what makes a hold plausible or absurd.
+                    "holdBlockKm": round(b["km"] - a["km"], 1),
+                    # Their clock is scheduled AT a shared station and
+                    # interpolated between two of them.  A wide anchor gap
+                    # means a loosely-located meet -- surfaced, not hidden.
+                    "otherTimesBasis": ("scheduled-at-shared-station"
+                                        if (a["code"] in anchor_set
+                                            and b["code"] in anchor_set)
+                                        else "interpolated-between-shared-stations"),
+                    "anchorCount": len(anchors),
+                    "anchorMaxGapKm": round(anchor_max_gap, 1),
+                    "locationConfidence": _location_confidence(anchor_max_gap),
                     "instanceOffsetDays": off,
+                    "runDayBasis": run_basis,
                     "isSingleLine": True,
                     "whoIsHeld": who,
                     "overtakingTrain": overtaker,
                     "precedenceNote": precedence_note,
-                    "ourHoldMin": round(our_hold, 1),
-                    "theirHoldMin": round(their_hold, 1),
+                    # The PHYSICAL wait at the crossing station, before the
+                    # on-time plan is netted off.  Kept so the charged hold below
+                    # can be audited against the number it came from.
+                    "rawWaitMin": round(raw_wait, 1),
+                    # Filled in by the baseline pass: only the wait OVER AND
+                    # ABOVE the on-time plan is charged (see holdBasis).
+                    "ourHoldMin": 0.0,
+                    "theirHoldMin": 0.0,
                     "holdStation": hold_station,
                     "holdStationName": (our_st[hold_station] or {}).get("name")
                                        if hold_station else None,
                     "holdBasis": (
-                        "overtake: the train being passed takes the loop and waits "
-                        "for the faster one to clear, plus REACCEL_MIN"
+                        "overtake: the train being passed takes the loop while the "
+                        "faster one passes. No on-time counterpart exists (VERIFIED "
+                        "#19), so the whole wait is charged, plus REACCEL_MIN"
                         if same_direction else
-                        "head-on: the lower-priority train waits at its entry to the "
-                        "section until the other clears, plus REACCEL_MIN"
+                        "head-on: the pair cross at whichever bracketing station "
+                        "their timetables are closest at, and whoever arrives first "
+                        "stands aside. Only the wait OVER the on-time plan is "
+                        "charged — the booked timetable already contains the "
+                        "planned crossing — plus REACCEL_MIN"
                     ),
                 })
 
     conflicts.sort(key=lambda c: c["meetKm"])
-    our_total = round(sum(c["ourHoldMin"] for c in conflicts), 1)
     mappable = sum(1 for c in conflicts if c["meetCoordsBasis"] == "interpolated")
 
     # How far the delay has moved each meet point.  This is the predictive
@@ -510,7 +911,7 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
     # is no upstream request behind it.
     if delay_min and _with_baseline:
         base = find_conflicts(our_number, 0.0, offsets, others,
-                              _with_baseline=False)
+                              service_date=service_date, _with_baseline=False)
         by_key = {(c["otherTrain"], c["instanceOffsetDays"]): c
                   for c in base["conflicts"]}
         for c in conflicts:
@@ -520,11 +921,57 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
             c["scheduledMeetKm"] = b["meetKm"] if b else None
             c["shiftKm"] = round(c["meetKm"] - b["meetKm"], 1) if b else None
             c["existsOnTime"] = b is not None
+            c["scheduledWaitMin"] = b["rawWaitMin"] if b else 0.0
+            _charge_hold(c, c["rawWaitMin"] - c["scheduledWaitMin"])
     else:
+        # On the booked timetable every crossing is already planned and its wait
+        # is already inside the scheduled block times — 16345 is paced at
+        # 23.6 km/h from SGR to UKC precisely because a crossing sits in there.
+        # Charging it again on top of a schedule-derived running time would
+        # double-count it, so at zero delay this layer contributes exactly 0.
+        # That is the same structural result VERIFIED #19 records for overtakes,
+        # and it doubles as the layer's own wiring check: a non-zero total here
+        # means the model is inventing conflicts the timetable does not have.
         for c in conflicts:
             c["scheduledMeetKm"] = c["meetKm"]
             c["shiftKm"] = 0.0
             c["existsOnTime"] = True
+            c["scheduledWaitMin"] = c["rawWaitMin"]
+            _charge_hold(c, 0.0)
+
+    # Three distinct reasons a train shows no crossings, and only one of them
+    # is a prediction.  `corridorEligible` answers "can this train have a
+    # crossing located at all"; it does not answer "was there anything to
+    # cross".  The 8 trains that reach here — Goa Express 12779/12780 (routes
+    # via Londa) and the six Vasco-Kulem branch passengers 56961-56966 — are
+    # real corridor trains with 3 single-line stations over 7.6 km, and every
+    # one of the 209 counterparts fails MIN_SHARED_SPAN_KM against them.  An
+    # empty list with no reason reads as "no crossings predicted", which is a
+    # far stronger claim than "none could be computed" (VERIFIED #9).
+    used_any = any(r["used"] for r in considered)
+    unavailable_reason = ineligible_reason
+    if unavailable_reason is None and eligible and not used_any:
+        unavailable_reason = "no-overlapping-corridor-train"
+    unavailable_note = None
+    if unavailable_reason == "no-overlapping-corridor-train":
+        unavailable_note = (
+            f"Train {our_number} runs on the Konkan single-line section but "
+            f"shares less than {MIN_SHARED_SPAN_KM:.0f} km of it with any of "
+            f"the {len(considered)} other corridor trains, so no crossing "
+            f"could be computed. This is NOT a prediction of zero crossings."
+        )
+    elif unavailable_reason is not None:
+        unavailable_note = (
+            f"Train {our_number} places {len(our_single_line)} station(s) on "
+            f"the Konkan single-line section; at least "
+            f"{MIN_SINGLE_LINE_STATIONS} are needed to locate a crossing. "
+            f"This is NOT a prediction of zero crossings — none could be "
+            f"computed."
+        )
+
+    our_total = round(sum(c["ourHoldMin"] for c in conflicts), 1)
+    by_conf = {k: sum(1 for c in conflicts if c["locationConfidence"] == k)
+               for k in ("fine", "moderate", "coarse")}
 
     return {
         "train": str(our_number),
@@ -538,6 +985,15 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
         "heldCount": sum(1 for c in conflicts if c["whoIsHeld"] == "us"),
         "precedenceCount": sum(1 for c in conflicts if c["whoIsHeld"] == "them"),
         "mappableCount": mappable,
+        "locationConfidenceCounts": by_conf,
+        "coarseNote": (
+            None if not by_conf["coarse"] else
+            f"{by_conf['coarse']} of {len(conflicts)} meets are located across an "
+            f"anchor gap wider than {ANCHOR_GAP_MODERATE_KM:.0f} km. Those "
+            f"crossings are real — two timetables do cross — but the km and clock "
+            f"are approximate, because the other train's schedule is known only at "
+            f"the stations it shares with ours."
+        ),
         "coordsBasis": (
             "interpolated" if conflicts and mappable == len(conflicts)
             else "partial" if mappable else "unavailable"
@@ -549,11 +1005,43 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
             f"so they cannot be drawn on the map. The km and times are unaffected."
         ),
         "_meta": {
-            "singleLineSectionKm": [round(lo_km, 1), round(hi_km, 1)],
+            "serviceDate": service_date.isoformat() if service_date else None,
+            "runDayFilter": (
+                "applied" if service_date else "none - every roster train counted"
+            ),
+            "runDayNote": (
+                "Only 59 of the 206 roster trains run daily; 88 run one day a "
+                "week. Without a service date every train is counted, which "
+                "roughly doubles the traffic actually on the corridor. Trains "
+                "with no calendar (the corridor-cache files) are always counted "
+                "and carry runDayBasis 'no-calendar'."
+            ),
+            "instancesSkippedNotRunning": skipped_not_running,
+            "ourTrainRunDays": us.get("run_days"),
+            "ourTrainRunsOnDate": we_run,
+            "ourTrainRunDayBasis": our_run_basis,
+            "ourTrainRunDayNote": (
+                None if we_run else
+                f"Train {our_number} is not booked to run on "
+                f"{service_date.isoformat() if service_date else 'this date'} "
+                f"(runs {us.get('run_days')}). The crossings below are for a "
+                f"hypothetical service on that date, not a scheduled one."
+            ),
             "singleLineBasis": section_basis,
-            "singleLineNote": (
+            "singleLineNote": section_note,
+            "singleLineStations": len(our_single_line),
+            "corridorEligible": eligible,
+            "corridorIneligibleReason": ineligible_reason,
+            "corridorIneligibleNote": unavailable_note if not eligible else None,
+            # What the UI should render instead of an empty panel.  None means
+            # the layer ran and the answer is genuinely "no crossings".
+            "crossingsUnavailableReason": unavailable_reason,
+            "crossingsUnavailableNote": unavailable_note,
+            "usableCounterparts": sum(1 for r in considered if r["used"]),
+            "corridorCoverage": our_coverage,
+            "sectionNote": (
                 "CSMT->Roha is Central Railway double line; a meet there needs "
-                "no hold and is excluded. Konkan Railway Roha->Madgaon is single line."
+                "no hold and is excluded. Konkan Railway Roha->Thokur is single line."
             ),
             "loopBasis": "assumed-all-stations",
             "loopDataIsOfficial": False,
@@ -582,10 +1070,16 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
                 "Other trains' times are SCHEDULED, not live. Only our own delay "
                 "is live. No upstream request is made for any other train."
             ),
-            "offsetsScanned": list(offsets),
+            "offsetsScanned": sorted(offsets_seen),
+            "offsetsBasis": "derived-per-pair" if offsets_auto else "explicit",
+            "ourCorridorDays": (list(our_corridor_days)
+                                if our_corridor_days else None),
             "offsetsNote": (
                 "A multi-day train's instance on our corridor today may have "
-                "departed 1-2 days ago; scanning only offset 0 misses most crossings."
+                "departed days earlier OR later, so the departure-day offset "
+                "window is derived per pair from both trains' corridor "
+                "occupancy days rather than fixed. The offsets actually "
+                "scanned for each counterpart are on its trainsConsidered row."
             ),
             "decisionSupportOnly": True,
             "controlNote": (
@@ -597,19 +1091,357 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
     }
 
 
+# --- corridor-wide sweep -----------------------------------------------------
+#
+# The per-train view answers "where does THIS train meet others".  This answers
+# "where does anything meet anything" for a whole service date.
+#
+# It costs zero additional upstream requests — every meet falls out of two static
+# timetables (VERIFIED #15) — but it must never imply we have live positions for
+# the roster.  We have live position for exactly ONE train (FLEET_TRAINS=12051,
+# FLEET_MAX_TRAINS=1; live is never cached, so fleet size IS the per-poll request
+# count against a 10 req/min ceiling).  So every row is labelled
+# `positionBasis: "scheduled"` and the aggregate carries `liveTrains`.
+#
+# Deduplication is by unordered pair + rounded corridor km + wall clock, NOT by
+# the day-normalised minute.  A meet computed from A's axis and from B's axis is
+# one physical event, but the two views may reach it at different journey-day
+# offsets (A sees B at offset -1 while B sees A at +1), so the absolute minute
+# differs by 1440 while `meetClock` agrees.  Keying on the minute would emit the
+# same meet twice and inflate the corridor count.
+
+_corridor_sweep_cache = {}
+
+
+def corridor_conflicts(service_date=None, delay_min=0.0, roster=None,
+                       at_clock=None, window_min=60, use_cache=True):
+    """Every predicted meet on the corridor for one service date, deduplicated.
+
+    `delay_min` is applied to EVERY train, so the default 0.0 is the booked
+    timetable — which is conflict-free by construction for holds (VERIFIED #19)
+    but still full of *crossings*.  The crossings are the point here; the holds
+    are legitimately 0.0 and reported as such.
+
+    `at_clock` ("HH:MM") keeps only meets within +/- `window_min` of that wall
+    clock, for a "what is crossing right now" view.
+    """
+    key = (service_date, delay_min, at_clock, window_min,
+           tuple(roster) if roster else None)
+    if use_cache and key in _corridor_sweep_cache:
+        return _corridor_sweep_cache[key]
+
+    trains = list(roster) if roster else sorted(_load_full_dataset().keys())
+
+    meets, per_train, failed = {}, [], []
+    dup_hits = no_axis = 0
+    for n in trains:
+        try:
+            r = find_conflicts(n, delay_min, service_date=service_date)
+        except Exception as e:                                   # noqa: BLE001
+            failed.append({"train": str(n), "error": f"{type(e).__name__}: {e}"})
+            continue
+        m = r["_meta"]
+        per_train.append({
+            "train": r["train"], "name": r["trainName"],
+            "type": r["trainTypeNormalised"], "priority": r["ourPriority"],
+            "crossings": len(r["conflicts"]),
+            "unavailableReason": m["crossingsUnavailableReason"],
+            "runsOnDate": m["ourTrainRunsOnDate"],
+        })
+        for c in r["conflicts"]:
+            pair = tuple(sorted((r["train"], c["otherTrain"])))
+            ckm = c["meetCorridorKm"]
+            # Key on the WALL-CLOCK minute, never on `meetClock` or the
+            # day-normalised minute.  `meetClock` carries a '+1d' suffix and
+            # the two views of one meet routinely sit on different journey
+            # days — 11003/09021 is '02:22' from one axis and '02:22 +1d' from
+            # the other, same corridor km, same held train.  String-keying
+            # emitted both and inflated the corridor count.
+            clock_min = round(c["meetTimeMin"]) % 1440
+            if ckm is None:
+                # No canonical km — the bracketing stations are off the corridor
+                # axis.  `meetKm` is on OUR OWN axis and therefore differs
+                # between the two views of the same meet, so it cannot be part
+                # of the key.  Fall back to pair + clock, and count these
+                # separately: dedup is weaker here and saying so is cheaper than
+                # a silently doubled row.
+                k = (pair, None, clock_min)
+                no_axis += 1
+            else:
+                k = (pair, round(ckm, 0), clock_min)
+            if k in meets:
+                dup_hits += 1
+                _merge_view(meets, k, _corridor_meet_row(r, c))
+                continue
+            meets[k] = _corridor_meet_row(r, c)
+
+    # Pass 2: tolerance merge.  The exact key above cannot catch the case where
+    # both views interpolate the same meet across a wide anchor gap and land a
+    # few km and a few minutes apart (11003/11099: 04:12 @ km 78.8 vs 04:16 @
+    # km 82.9, both `coarse`, anchor gap 111 km).  Those are one meet.
+    rows, tol_merged = _tolerance_merge(list(meets.values()))
+
+    # corridorKm is None for meets whose bracketing stations are off the
+    # canonical axis, so it cannot be a bare sort key.  Sort those last rather
+    # than dropping them: the meet is real, only its corridor position is
+    # unknown, and the row says so via corridorKm: null.
+    rows.sort(key=lambda x: (x["timeMin"],
+                             x["corridorKm"] if x["corridorKm"] is not None
+                             else float("inf")))
+
+    filtered_out = 0
+    if at_clock:
+        want = _hhmm_to_min(at_clock)
+        if want is not None:
+            keep = []
+            for x in rows:
+                # Compare on the wall clock, wrapped, so a window straddling
+                # midnight still matches.
+                d = abs((x["timeMin"] % 1440) - want)
+                if min(d, 1440 - d) <= window_min:
+                    keep.append(x)
+            filtered_out = len(rows) - len(keep)
+            rows = keep
+
+    out = {
+        "serviceDate": service_date,
+        "delayMinAppliedToEveryTrain": delay_min,
+        "atClock": at_clock,
+        "windowMin": window_min if at_clock else None,
+        "meets": rows,
+        "meetCount": len(rows),
+        "trainsSwept": len(per_train),
+        "trainsFailed": failed,
+        "trainsWithCrossings": sum(1 for t in per_train if t["crossings"]),
+        "trainsUnavailable": sum(1 for t in per_train if t["unavailableReason"]),
+        "perTrain": per_train,
+        "duplicateViewsMerged": dup_hits,
+        "duplicateViewsMergedByTolerance": tol_merged,
+        "meetsWithoutCanonicalKm": no_axis,
+        "filteredOutByClock": filtered_out,
+        "locationConfidenceCounts": {
+            k: sum(1 for x in rows if x["locationConfidence"] == k)
+            for k in ("fine", "moderate", "coarse")
+        },
+        "kindCounts": {
+            k: sum(1 for x in rows if x["kind"] == k)
+            for k in ("opposing", "overtake")
+        },
+        # --- honesty block; see the module comment above -----------------
+        "positionBasis": "scheduled",
+        "liveTrains": 0,
+        "positionNote": (
+            "Every meet on this layer is computed from two SCHEDULED timetables. "
+            "No train here carries a live GPS position — the live fleet is one "
+            "train, shown separately. A marker is where two timetables cross, "
+            "not where two trains are."
+        ),
+        "loopBasis": "assumed-all-stations",
+        "loopDataIsOfficial": False,
+        "priorityBasis": "heuristic-over-train-type",
+        "priorityIsOfficial": False,
+        "otherTrainsAreScheduled": True,
+        "decisionSupportOnly": True,
+        "dedupNote": (
+            f"{dup_hits + tol_merged} meets were seen from both trains' axes and "
+            f"merged into one row, keeping the better-located view: "
+            f"{dup_hits} on an exact key (unordered pair + corridor km + "
+            f"wall-clock minute, never the day-normalised minute or the clock "
+            f"string, which carries a '+1d' suffix) and {tol_merged} more within "
+            f"a tolerance derived from each pair's own anchor gap."
+        ),
+    }
+    if use_cache:
+        _corridor_sweep_cache[key] = out
+    return out
+
+
+_CONF_RANK = {"fine": 0, "moderate": 1, "coarse": 2}
+
+
+def _merge_view(store, key, new_row):
+    """Fold a second view of one meet into the stored row.
+
+    Keeps the FINER-located of the two rather than whichever arrived first: the
+    two trains have different anchor densities on the shared corridor, so one
+    view is often materially better located than the other.
+    """
+    old = store[key]
+    views = old.get("viewCount", 1) + 1
+    if _CONF_RANK[new_row["locationConfidence"]] < _CONF_RANK[old["locationConfidence"]]:
+        store[key] = new_row
+    store[key]["viewCount"] = views
+    # Both views are kept as provenance so a disagreement is inspectable rather
+    # than silently resolved.
+    store[key].setdefault("mergedViews", []).append(
+        {"from": old["trainA"], "corridorKm": old["corridorKm"],
+         "clock": old["clock"], "locationConfidence": old["locationConfidence"]}
+    )
+    return store[key]
+
+
+def _tolerance_merge(rows):
+    """Merge same-pair, same-kind rows that are one meet seen twice.
+
+    The km tolerance is derived per pair from `anchorMaxGapKm` — the measured
+    location uncertainty — rather than fixed, so a tightly-anchored pair is held
+    to a tight tolerance and only a loosely-anchored one is given slack.
+    """
+    groups = {}
+    for x in rows:
+        groups.setdefault(
+            (tuple(sorted((x["trainA"], x["trainB"]))), x["kind"]), []
+        ).append(x)
+
+    out, merged = [], 0
+    for _k, grp in groups.items():
+        if len(grp) == 1:
+            out.append(grp[0])
+            continue
+        grp.sort(key=lambda x: x["timeMin"] % 1440)
+        kept = []
+        for x in grp:
+            hit = None
+            for y in kept:
+                # The journey-day guard.  Pass 1 keys on minute-of-day on
+                # purpose: a daily pair meeting at the SAME km and the SAME
+                # minute on consecutive days is one entry in a daily corridor
+                # picture.  Pass 2's window is fuzzy, so it must not bridge two
+                # genuinely different meets that happen to fall near the same
+                # minute-of-day several days apart.  06904/22654 is the case:
+                # journey days 1 and 4, 4.8 km and 37 min apart — it survived
+                # only because 37 > 30, which is luck, not a rule.
+                if abs(x["timeMin"] // 1440 - y["timeMin"] // 1440) > 1:
+                    continue
+                dt = abs((x["timeMin"] % 1440) - (y["timeMin"] % 1440))
+                dt = min(dt, 1440 - dt)
+                if dt > CORRIDOR_DEDUP_MIN:
+                    continue
+                if x["corridorKm"] is None or y["corridorKm"] is None:
+                    hit = y
+                    break
+                gap = max(x.get("anchorMaxGapKm") or 0.0,
+                          y.get("anchorMaxGapKm") or 0.0)
+                tol = max(CORRIDOR_DEDUP_KM_FLOOR,
+                          CORRIDOR_DEDUP_GAP_FRACTION * gap)
+                if abs(x["corridorKm"] - y["corridorKm"]) <= tol:
+                    hit = y
+                    break
+            if hit is None:
+                kept.append(x)
+            else:
+                merged += 1
+                idx = kept.index(hit)
+                store = {0: hit}
+                _merge_view(store, 0, x)
+                kept[idx] = store[0]
+        out.extend(kept)
+    return out, merged
+
+
+def _corridor_meet_row(result, c):
+    """One deduplicated corridor meet, flattened for the map layer."""
+    return {
+        "trainA": result["train"], "trainAName": result["trainName"],
+        "trainAType": result["trainTypeNormalised"],
+        "trainB": c["otherTrain"], "trainBName": c["otherName"],
+        "trainBType": c["otherType"],
+        "kind": c["kind"],
+        "km": c["meetKm"],
+        "corridorKm": c["meetCorridorKm"],
+        "timeMin": c["meetTimeMin"],
+        "clock": c["meetClock"],
+        "lat": c["meetLat"], "lng": c["meetLng"],
+        "coordsBasis": c["meetCoordsBasis"],
+        "betweenFrom": c["betweenFrom"], "betweenTo": c["betweenTo"],
+        "isSingleLine": c["isSingleLine"],
+        "whoIsHeld": c["whoIsHeld"],
+        "heldTrain": (result["train"] if c["whoIsHeld"] == "us"
+                      else c["otherTrain"] if c["whoIsHeld"] == "them" else None),
+        "holdStation": c["holdStation"],
+        "holdMin": (c["ourHoldMin"] if c["whoIsHeld"] == "us" else c["theirHoldMin"]),
+        "existsOnTime": c["existsOnTime"],
+        "locationConfidence": c["locationConfidence"],
+        "anchorMaxGapKm": c["anchorMaxGapKm"],
+        "instanceOffsetDays": c["instanceOffsetDays"],
+        "viewCount": 1,
+        # Repeated per row, not only in the header, because a single marker's
+        # tooltip is read without the header in view.
+        "positionBasis": "scheduled",
+    }
+
+
 # --- CLI ---------------------------------------------------------------------
+
+def _main_corridor(args):
+    """--corridor: the whole-roster sweep, with every intermediate count."""
+    res = corridor_conflicts(service_date=args.date, delay_min=args.delay,
+                             at_clock=args.at, window_min=args.window)
+    if args.json:
+        print(json.dumps(res, indent=2))
+        return 0
+
+    print(f"=== corridor-wide crossings  {res['serviceDate'] or '(no service date)'} ===")
+    print(f"trains swept          : {res['trainsSwept']}"
+          + (f"  ({len(res['trainsFailed'])} failed)" if res["trainsFailed"] else ""))
+    print(f"  with >=1 crossing   : {res['trainsWithCrossings']}")
+    print(f"  labelled unavailable: {res['trainsUnavailable']}")
+    print(f"delay applied to all  : +{res['delayMinAppliedToEveryTrain']:.0f} min")
+    print(f"unique meets          : {res['meetCount']}"
+          f"   (merged {res['duplicateViewsMerged']} second views on the exact key"
+          f" + {res['duplicateViewsMergedByTolerance']} within tolerance)")
+    print(f"  no canonical km     : {res['meetsWithoutCanonicalKm']}"
+          f"  (dedup is weaker for these — pair+clock only)")
+    if res["atClock"]:
+        print(f"clock filter          : {res['atClock']} +/-{res['windowMin']} min"
+              f"  ({res['filteredOutByClock']} dropped)")
+    print(f"kinds                 : {res['kindCounts']}")
+    print(f"location confidence   : {res['locationConfidenceCounts']}")
+    print(f"position basis        : {res['positionBasis']}  "
+          f"(live trains on this layer: {res['liveTrains']})")
+    print(f"  {res['positionNote']}")
+    print()
+    print(f"{'clock':>6}  {'corrKm':>7}  {'pair':<14} {'kind':<9} "
+          f"{'held':<7} {'conf':<9} between")
+    for x in res["meets"][:60]:
+        ckm = "     -" if x["corridorKm"] is None else f"{x['corridorKm']:>7.1f}"
+        print(f"{x['clock']:>6}  {ckm:>7}  "
+              f"{x['trainA'] + '/' + x['trainB']:<14} {x['kind']:<9} "
+              f"{str(x['heldTrain'] or '-'):<7} {x['locationConfidence']:<9} "
+              f"{x['betweenFrom']}->{x['betweenTo']}")
+    if len(res["meets"]) > 60:
+        print(f"  ... and {len(res['meets']) - 60} more")
+    return 0
+
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
     ap.add_argument("--train", default="12051")
     ap.add_argument("--delay", type=float, default=0.0,
                     help="our train's delay in minutes (carried forward)")
-    ap.add_argument("--offsets", default=",".join(str(o) for o in DEFAULT_OFFSETS))
+    ap.add_argument("--offsets", default=AUTO_OFFSETS,
+                    help="'auto' (default, derived per pair) or e.g. '0,-1,-2'")
+    ap.add_argument("--date", default=None,
+                    help="service date YYYY-MM-DD; filters candidates by run_days. "
+                         "Omit to count every roster train (loudly flagged).")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--corridor", action="store_true",
+                    help="sweep the WHOLE roster instead of one train and print "
+                         "every deduplicated meet on the corridor")
+    ap.add_argument("--at", default=None,
+                    help="with --corridor: keep only meets within --window of "
+                         "this wall clock, e.g. 14:30")
+    ap.add_argument("--window", type=int, default=60,
+                    help="with --at: half-width in minutes (default 60)")
     args = ap.parse_args()
 
-    offsets = tuple(int(o) for o in args.offsets.split(",") if o.strip())
-    result = find_conflicts(args.train, args.delay, offsets)
+    if args.corridor:
+        return _main_corridor(args)
+
+    offsets = (AUTO_OFFSETS if args.offsets.strip().lower() == AUTO_OFFSETS
+               else tuple(int(o) for o in args.offsets.split(",") if o.strip()))
+    result = find_conflicts(args.train, args.delay, offsets,
+                            service_date=args.date)
 
     if args.json:
         print(json.dumps(result, indent=2))
@@ -619,9 +1451,20 @@ def main():
     print(f"=== {result['train']} {result['trainName']} "
           f"[{result['trainTypeNormalised']}, priority {result['ourPriority']}] ===")
     print(f"Delay applied: +{result['delayMinApplied']:.0f} min ({m['delayModel']})")
-    print(f"Single-line section: km {m['singleLineSectionKm'][0]}"
-          f"-{m['singleLineSectionKm'][1]}  [{m['singleLineBasis']}]")
-    print(f"Offsets scanned: {m['offsetsScanned']}")
+    cov = m["corridorCoverage"]
+    print(f"Single-line stations: {m['singleLineStations']}  "
+          f"[{m['singleLineBasis']}]  "
+          f"corridor {cov['onAxis']}/{cov['stations']} on axis"
+          + (f", {cov['offAxis']} off-corridor" if cov["offAxis"] else ""))
+    if m["crossingsUnavailableReason"]:
+        print(f"\n  ** {m['crossingsUnavailableReason']}: "
+              f"{m['crossingsUnavailableNote']}")
+    print(f"Offsets scanned: {m['offsetsScanned']}  [{m['offsetsBasis']}]"
+          + (f"  our corridor days {m['ourCorridorDays']}"
+             if m["ourCorridorDays"] else ""))
+    print(f"Service date: {m['serviceDate'] or '(none)'}  "
+          f"run-day filter: {m['runDayFilter']}  "
+          f"instances skipped: {m['instancesSkippedNotRunning']}")
     print()
 
     used = [t for t in m["trainsConsidered"] if t["used"]]
@@ -635,22 +1478,32 @@ def main():
     print()
 
     if not result["conflicts"]:
+        if m["crossingsUnavailableReason"]:
+            print("No crossings COMPUTED — see the note above. "
+                  "This is not the same as 'no crossings'.")
+            return 0
         print("No crossings or overtakes predicted.")
         return 0
 
     print(f"{'km':>7} {'time':>9} {'kind':<9} {'vs':<7} {'their type':<14}"
-          f"{'section':<14}{'held':<6}{'hold':>7}  off")
-    print("-" * 96)
+          f"{'section':<14}{'held':<6}{'hold':>7}  {'loc':<9} off")
+    print("-" * 106)
     for c in result["conflicts"]:
         held = {"us": "US", "them": "them", "none": "-"}[c["whoIsHeld"]]
         hold = c["ourHoldMin"] if c["whoIsHeld"] == "us" else c["theirHoldMin"]
         print(f"{c['meetKm']:>7.1f} {c['meetClock']:>9} {c['kind']:<9} "
               f"{c['otherTrain']:<7} {c['otherType']:<14}"
               f"{c['betweenFrom'] + '-' + c['betweenTo']:<14}{held:<6}"
-              f"{hold:>6.1f}m  {c['instanceOffsetDays']:>+d}")
-    print("-" * 96)
+              f"{hold:>6.1f}m  {c['locationConfidence']:<9} "
+              f"{c['instanceOffsetDays']:>+d}")
+    print("-" * 106)
     print(f"Our total hold: {result['totalHoldMin']:.1f} min "
           f"({result['heldCount']} held, {result['precedenceCount']} we take precedence)")
+    lc = result["locationConfidenceCounts"]
+    print(f"Meet location: {lc['fine']} fine, {lc['moderate']} moderate, "
+          f"{lc['coarse']} coarse")
+    if result["coarseNote"]:
+        print(f"  {result['coarseNote']}")
     print()
     print(f"ASSUMED: loop locations ({m['loopBasis']}); priority ladder "
           f"({m['priorityBasis']}); reaccel {m['reaccelMin']} min.")
