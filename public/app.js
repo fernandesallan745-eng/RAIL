@@ -846,8 +846,6 @@ function renderConflictPanel(liveData) {
   const held = info.heldCount || 0;
   const total = info.totalHoldMin || 0;
 
-  // Amber/red only when WE lose time. A crossing we win is information, not an
-  // alert — colouring it red would train the operator to ignore the colour.
   const accent = held ? '#f87171' : rows.length ? '#34d399' : '#94a3b8';
   panel.style.background = held
     ? 'rgba(239, 68, 68, 0.08)'
@@ -858,68 +856,147 @@ function renderConflictPanel(liveData) {
   header.style.color = accent;
 
   header.innerHTML = held
-    ? `🔀 LOOP HOLD PREDICTED — ~${total.toFixed(0)} min at ${held} crossing${held > 1 ? 's' : ''}`
+    ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">` +
+        `<span>🔀 Loop Holds Predicted</span>` +
+        `<span style="background:rgba(239,68,68,0.22); color:#fca5a5; font-size:0.72rem; padding:2px 8px; border-radius:12px; font-weight:700;">~${Math.round(total)} min delay</span>` +
+      `</div>`
     : rows.length
-      ? `🔀 Right of way at all ${rows.length} crossing${rows.length > 1 ? 's' : ''}`
+      ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;">` +
+          `<span>🔀 Clear Single-Line Corridor</span>` +
+          `<span style="background:rgba(52,211,153,0.18); color:#34d399; font-size:0.72rem; padding:2px 8px; border-radius:12px; font-weight:600;">Right of way</span>` +
+        `</div>`
       : '🔀 Crossing prediction';
 
-  const out = [];
-
   if (!rows.length) {
-    out.push(
-      '<span style="color:var(--text-dim)">No crossings or overtakes predicted on the ' +
-        'single-line section for this run.</span>'
-    );
-  } else {
-    // The delay driving these meets is either a live fix or one recovered from
-    // the disk cache after an upstream failure. The crossings are equally valid
-    // either way — the corridor schedules are static — but a cached delay may no
-    // longer be the train's actual delay, which moves every meet. Saying "live"
-    // there would be the one false claim this panel could make.
-    const cachedDelay = info.delayBasis === 'cached';
-    const delayNote =
-      info.delayMinApplied
-        ? ` at ${cachedDelay ? 'a <strong style="color:#fbbf24">cached</strong>' : 'the <strong>live</strong>'} ` +
-          `delay of <strong style="color:#fbbf24">+${info.delayMinApplied} min</strong>`
-        : cachedDelay
-          ? ' at a cached on-time position'
-          : ' on the scheduled timetable';
-    out.push(
-      `<strong style="color:#fff">${rows.length}</strong> meet${rows.length > 1 ? 's' : ''} ` +
-        `predicted${delayNote} — ` +
-        `<strong style="color:#f87171">${held} held</strong> · ` +
-        `<strong style="color:#34d399">${info.precedenceCount || 0} we win</strong>`
-    );
+    body.innerHTML =
+      '<div style="color:var(--text-dim); padding:6px 0;">No crossings or overtakes predicted on the single-line section for this run.</div>';
+    return;
+  }
 
-    for (const r of rows) {
-      const isHeld = r.whoIsHeld === 'us';
-      const icon = isHeld ? '⏸' : '✓';
-      const col = isHeld ? '#f87171' : '#34d399';
-      const what = isHeld
-        ? `<strong style="color:${col}">held ~${r.ourHoldMin} min</strong> at ${escapeHtml(r.holdStationName || r.holdStation || '?')}`
-        : `<strong style="color:${col}">#${escapeHtml(r.otherTrain)} looped ~${r.theirHoldMin} min</strong>`;
+  const heldRows = rows.filter(r => r.whoIsHeld === 'us');
+  const winRows = rows.filter(r => r.whoIsHeld !== 'us');
+
+  // Executive summary pills
+  const cachedDelay = info.delayBasis === 'cached';
+  const delayBadgeText = info.delayMinApplied
+    ? `+${info.delayMinApplied}m ${cachedDelay ? 'cached' : 'live'} delay`
+    : 'On-time timetable';
+
+  let html = `
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; margin-bottom:8px;">
+      <span style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); padding:2px 8px; border-radius:10px; font-size:0.68rem; color:#cbd5e1;">
+        ${rows.length} meets
+      </span>
+      <span style="background:${held ? 'rgba(239,68,68,0.18)' : 'rgba(52,211,153,0.15)'}; color:${held ? '#fca5a5' : '#34d399'}; border:1px solid ${held ? 'rgba(239,68,68,0.3)' : 'rgba(52,211,153,0.3)'}; padding:2px 8px; border-radius:10px; font-size:0.68rem; font-weight:600;">
+        ${held ? `⚠️ ${held} hold${held > 1 ? 's' : ''}` : '✓ 0 holds'}
+      </span>
+      <span style="background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.25); padding:2px 8px; border-radius:10px; font-size:0.68rem; color:#34d399;">
+        ✓ ${winRows.length} priority pass${winRows.length === 1 ? '' : 'es'}
+      </span>
+      <span style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); padding:2px 8px; border-radius:10px; font-size:0.68rem; color:#fbbf24;">
+        ${delayBadgeText}
+      </span>
+    </div>
+  `;
+
+  // 1. Prominently display the actual holds (the few items the operator/user cares about)
+  if (heldRows.length > 0) {
+    html += `
+      <div style="margin-bottom:8px;">
+        <div style="font-size:0.68rem; font-weight:700; color:#fca5a5; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px;">
+          Stations where train will hold
+        </div>
+        <div style="display:flex; flex-direction:column; gap:5px;">
+    `;
+
+    for (const r of heldRows) {
       const shift =
         r.shiftKm != null && Math.abs(r.shiftKm) >= 0.1
-          ? ` <span style="color:#fbbf24">(${Math.abs(r.shiftKm).toFixed(1)} km ${r.shiftKm < 0 ? 'earlier' : 'later'} than planned)</span>`
+          ? ` <span style="color:#fbbf24; font-size:0.66rem;">(${Math.abs(r.shiftKm).toFixed(1)} km ${r.shiftKm < 0 ? 'earlier' : 'later'})</span>`
           : r.existsOnTime === false
-            ? ' <span style="color:#fbbf24">(delay-created, not on the timetable)</span>'
+            ? ' <span style="color:#fbbf24; font-size:0.66rem;">(delay-created)</span>'
             : '';
-      out.push(
-        `<span style="color:${col}">${icon}</span> km ${r.meetKm.toFixed(1)} ~${escapeHtml(r.meetClock)} · ` +
-          `${r.kind === 'overtake' ? 'overtake' : 'crossing'} vs <strong style="color:#fff">#${escapeHtml(r.otherTrain)}</strong> ` +
-          `<span style="color:var(--text-dim)">${escapeHtml(r.otherType)}</span> → ${what}${shift}`
-      );
+
+      const station = escapeHtml(r.holdStationName || r.holdStation || 'Loop station');
+
+      html += `
+        <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.25); border-left:3px solid #f87171; border-radius:6px; padding:6px 9px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; color:#fff; font-size:0.78rem; display:flex; align-items:center; gap:5px;">
+              <span>⏸</span>
+              <span>${station}</span>
+              <span style="color:#94a3b8; font-weight:normal; font-size:0.7rem;">~${escapeHtml(r.meetClock)}</span>
+            </div>
+            <div style="color:#cbd5e1; font-size:0.7rem; margin-top:2px;">
+              ${r.kind === 'overtake' ? 'Overtake' : 'Crossing'} vs <strong style="color:#fff">#${escapeHtml(r.otherTrain)}</strong>
+              <span style="color:#94a3b8;">${escapeHtml(r.otherType)}</span>${shift}
+            </div>
+          </div>
+          <div style="text-align:right; margin-left:8px; flex-shrink:0;">
+            <span style="background:rgba(239,68,68,0.25); color:#fca5a5; font-weight:700; font-size:0.74rem; padding:2px 7px; border-radius:4px; white-space:nowrap; border:1px solid rgba(239,68,68,0.3);">
+              ~${r.ourHoldMin} min
+            </span>
+          </div>
+        </div>
+      `;
     }
+
+    html += `
+        </div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div style="background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.25); border-radius:6px; padding:7px 10px; color:#34d399; font-size:0.74rem; display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+        <span>✓</span>
+        <span><strong>Clear priority:</strong> Train has right of way for all scheduled meets. No loop waits predicted.</span>
+      </div>
+    `;
   }
 
-  // Coordinate coverage. Some corridor trains were cached before the
-  // includeCoordinates fix (VERIFIED #13), so their meets have km and times but
-  // no lat/lng and cannot be drawn. Degrade loudly, exactly like axisBasis.
+  // 2. Collapsible accordion for right-of-way passes (keeps the list short and clean)
+  if (winRows.length > 0) {
+    html += `
+      <details style="margin-top:4px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:5px 8px;">
+        <summary style="cursor:pointer; color:#34d399; font-weight:600; font-size:0.72rem; display:flex; justify-content:space-between; align-items:center; user-select:none; outline:none;">
+          <span>✓ ${winRows.length} Meets with Right-of-Way (No delay)</span>
+          <span style="color:#64748b; font-size:0.68rem;">Click to view ▾</span>
+        </summary>
+        <div style="margin-top:6px; max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; padding-right:4px; border-top:1px solid rgba(255,255,255,0.06); padding-top:6px;">
+    `;
+
+    for (const r of winRows) {
+      const shift =
+        r.shiftKm != null && Math.abs(r.shiftKm) >= 0.1
+          ? ` (${Math.abs(r.shiftKm).toFixed(1)} km ${r.shiftKm < 0 ? 'earlier' : 'later'})`
+          : '';
+
+      html += `
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.69rem; color:#94a3b8; padding:2px 0; border-bottom:1px solid rgba(255,255,255,0.03);">
+          <span>
+            <span style="color:#34d399;">✓</span> ~${escapeHtml(r.meetClock)} ·
+            <strong style="color:#e2e8f0;">#${escapeHtml(r.otherTrain)}</strong>
+            <span style="color:#64748b;">${escapeHtml(r.otherType)}</span>
+          </span>
+          <span style="color:#64748b; font-size:0.65rem;">
+            km ${r.meetKm.toFixed(1)}${shift}
+          </span>
+        </div>
+      `;
+    }
+
+    html += `
+        </div>
+      </details>
+    `;
+  }
+
+  // Coordinate coverage note
   if (info.coordsNote) {
-    out.push(`<span style="color:#fbbf24">⚠ ${escapeHtml(info.coordsNote)}</span>`);
+    html += `<div style="color:#fbbf24; font-size:0.68rem; margin-top:6px;">⚠ ${escapeHtml(info.coordsNote)}</div>`;
   }
 
-  body.innerHTML = out.join('<br/>');
+  body.innerHTML = html;
 }
 
 // Draw Track and Stations on Map

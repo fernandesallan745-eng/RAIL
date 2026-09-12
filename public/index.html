@@ -178,15 +178,18 @@
                  1. loop LOCATIONS are assumed (no track-count data exists here)
                  2. the priority ladder is OUR heuristic, not IR precedence rules
                  3. the other trains' times are SCHEDULED, only our delay is live -->
-          <div id="conflictPanelCaveat" style="font-size: 0.68rem; color: var(--text-dim); margin-top: 6px; font-style: italic; line-height: 1.35;">
-            Crossing geometry is computed from the other trains' <strong>scheduled</strong>
-            times (static) against this train's <strong>live</strong> delay — we do not
-            poll other trains. Loop locations are <strong>assumed</strong> at every
-            timetable station on the single-line section; this source carries no
-            track-count data. Precedence is a <strong>heuristic over train type</strong>,
-            not official Indian Railways rules — the real call is a Section
-            Controller's. Prediction only; no dispatch action is issued.
-          </div>
+          <details id="conflictPanelCaveat" style="font-size: 0.67rem; color: var(--text-dim); margin-top: 8px; line-height: 1.35;">
+            <summary style="cursor: pointer; user-select: none; color: #64748b; font-style: italic; outline: none;">ℹ️ Dispatch & Precedence Assumptions ▾</summary>
+            <div style="margin-top: 4px; padding: 6px 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 4px; color: var(--text-muted);">
+              Crossing geometry is computed from the other trains' <strong>scheduled</strong>
+              times (static) against this train's <strong>live</strong> delay — we do not
+              poll other trains. Loop locations are <strong>assumed</strong> at every
+              timetable station on the single-line section; this source carries no
+              track-count data. Precedence is a <strong>heuristic over train type</strong>,
+              not official Indian Railways rules — the real call is a Section
+              Controller's. Prediction only; no dispatch action is issued.
+            </div>
+          </details>
         </div>
 
         <!-- Shown instead of the panel above when the conflict model could not be
@@ -241,7 +244,7 @@
       }
 
       function bootApp() {
-        load('./offline-tiles.js?v=20260912-1', null, function () { load('./app.js?v=20260912-1', null, null); });
+        load('./offline-tiles.js?v=20260912-2', null, function () { load('./app.js?v=20260912-2', null, null); });
       }
 
       if (typeof L !== 'undefined') {
