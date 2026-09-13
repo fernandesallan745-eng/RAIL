@@ -57,6 +57,33 @@ const pickParams = (query, allowed) => {
 };
 
 /**
+ * GET /api/model/run-state/:trainNumber — the run-day calendar answer alone.
+ *
+ * Pure passthrough. Only the roster knows which weekdays a train runs, and the
+ * roster is 7.9 MB — too large to parse per request in Node, which is why the
+ * calendar lives in conflict.py and this route exists at all. Costs zero
+ * upstream RailRadar requests.
+ *
+ * Note this is the CALENDAR half only. The live half (running / completed /
+ * awaiting-departure) is resolved by resolveRunState in train.controller.js and
+ * rides on the live payload as `data.runState`; that is what the UI reads. This
+ * route is for the admin console and for asking about a date other than today.
+ */
+export const getModelRunState = async (req, res) => {
+  try {
+    const { trainNumber } = req.params;
+    const params = pickParams(req.query, ['date']);
+    const upstream = await axios.get(
+      `${config.modelApi.baseUrl}/run-state/${trainNumber}`,
+      { params, timeout: 5000 }
+    );
+    res.json({ success: true, data: upstream.data });
+  } catch (error) {
+    sendModelError(res, error, 'train');
+  }
+};
+
+/**
  * GET /api/model/eta/:trainNumber — the full layered ETA breakdown.
  *
  * Pure passthrough: the gateway does no ETA arithmetic of its own, the same discipline

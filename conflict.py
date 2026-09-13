@@ -480,6 +480,106 @@ def _runs_on(train, service_date, offset_days):
             "run-days")
 
 
+#: How far ahead `run_state` will look for the next service before giving up.
+#: 8 rather than 7 so a train that runs only on `service_date`'s own weekday
+#: reports next week's date instead of "none in range" — the 88 single-day
+#: trains are exactly the ones a user most needs a next-service date for.
+NEXT_RUN_SEARCH_DAYS = 8
+
+
+def run_state(number, service_date=None):
+    """Does train `number` run on `service_date`, and if not, when next?
+
+    This is the calendar half of the UI's run-state answer; the live half
+    (`running` / `completed` / `not-started`) outranks it and is resolved by the
+    gateway, which has the live payload.  Only the roster knows the calendar, so
+    only this side can answer "not running today".
+
+    Deliberately reuses `_runs_on` rather than re-deriving the weekday test:
+    that function already encodes the measured 59-daily / 88-single-day
+    distribution and the "no calendar means INCLUDE and flag" rule, and a second
+    copy of the rule in another language is exactly the drift this project keeps
+    getting bitten by (VERIFIED #12/#22).
+
+    `runs_today` is **tri-state on purpose**.  `None` means the calendar is
+    unknown, which is a different answer from `False` ("scheduled not to run"),
+    and flattening the two would be VERIFIED #9 at the calendar layer — the same
+    mistake the crossings panel made when it rendered "no crossings" for trains
+    that could not be computed at all.
+
+    `nextRunDate` is **inclusive of `service_date`**: a train running today
+    reports today.  The UI only reads it on the not-running branch, where the
+    ambiguity cannot arise.
+    """
+    d = _parse_date(service_date) or datetime.date.today()
+
+    try:
+        train = load_corridor_train(number)
+    except FileNotFoundError:
+        return {
+            "train": str(number),
+            "serviceDate": d.isoformat(),
+            "runsToday": None,
+            "runDays": None,
+            "nextRunDate": None,
+            "basis": "not-a-corridor-train",
+            "isCorridorTrain": False,
+            "note": (f"Train {number} is not on the Konkan corridor roster, so no "
+                     f"run calendar is available for it here."),
+        }
+
+    runs, basis = _runs_on(train, d, 0)
+    days = train.get("run_days")
+    name = train.get("name")
+
+    # No calendar: say so, never guess. `_runs_on` returns True for these so the
+    # crossing sweep keeps them, but "included in the sweep" is not evidence the
+    # train runs today and must not be reported as such.
+    if not days:
+        return {
+            "train": str(number),
+            "serviceDate": d.isoformat(),
+            "runsToday": None,
+            "runDays": None,
+            "nextRunDate": None,
+            "basis": "no-calendar",
+            "isCorridorTrain": True,
+            "trainName": name,
+            "note": (f"No run calendar is cached for train {number}, so whether it "
+                     f"runs on {d.isoformat()} is unknown — not a 'no'."),
+        }
+
+    day_set = {str(x).lower()[:3] for x in days}
+    ordered = [w for w in WEEKDAYS if w in day_set]
+
+    next_run = None
+    for step in range(0 if runs else 1, NEXT_RUN_SEARCH_DAYS):
+        cand = d + datetime.timedelta(days=step)
+        if WEEKDAYS[cand.weekday()] in day_set:
+            next_run = cand
+            break
+
+    if runs:
+        note = f"Runs on {d.strftime('%a %d %b')}."
+    else:
+        nxt = (f" Next service {next_run.strftime('%a %d %b')}."
+               if next_run else "")
+        note = (f"Does not run on {d.strftime('%A')}. "
+                f"Scheduled days: {', '.join(w.capitalize() for w in ordered)}.{nxt}")
+
+    return {
+        "train": str(number),
+        "serviceDate": d.isoformat(),
+        "runsToday": bool(runs),
+        "runDays": ordered,
+        "nextRunDate": next_run.isoformat() if next_run else None,
+        "basis": "roster-run-days" if basis == "run-days" else basis,
+        "isCorridorTrain": True,
+        "trainName": name,
+        "note": note,
+    }
+
+
 def _parse_date(value):
     """'YYYY-MM-DD' | date | None -> date | None. Never raises on a bad string."""
     if value is None or isinstance(value, datetime.date):

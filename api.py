@@ -80,7 +80,7 @@ def root():
         ),
         "endpoints": ["/health", "/eta/{train_number}", "/eta/{train_number}/curvature",
                       "/conflicts/{train_number}", "/corridor/conflicts",
-                      "/geometry/{train_number}"],
+                      "/run-state/{train_number}", "/geometry/{train_number}"],
         # This service is JSON only. The operator/audit UI is the map-centric admin
         # page served by the Node gateway on :5050 (/admin), which proxies the
         # endpoints above — it is the same origin as the user map, so it is also
@@ -239,6 +239,25 @@ def health(train: str = eta_model.DEFAULT_TRAIN):
         for p in glob.glob(os.path.join(eta_model.CACHE, "corridor", "*.json"))
     )
 
+    # Run-state coverage for the queried train, plus the roster-wide split for
+    # today. Reported here because a train that is not running today is the
+    # single most common reason a live panel legitimately has nothing to show,
+    # and an operator hitting /health needs to distinguish that from a fault.
+    run_state = None
+    roster_split = None
+    try:
+        import conflict as conflict_mod
+        today = datetime.now().date()
+        run_state = conflict_mod.run_state(train, today)
+        counts = {"running": 0, "not-running": 0, "no-calendar": 0}
+        for t in conflict_mod.list_corridor_trains():
+            rt = conflict_mod.run_state(t, today)["runsToday"]
+            counts["running" if rt is True else
+                   "not-running" if rt is False else "no-calendar"] += 1
+        roster_split = counts
+    except Exception as e:  # cache-only layer; /health must survive its absence
+        run_state = {"unavailable": True, "reason": str(e)[:200]}
+
     return {
         "status": "ok",
         "cache_dir": eta_model.CACHE,
@@ -246,6 +265,14 @@ def health(train: str = eta_model.DEFAULT_TRAIN):
         "cached_trains": cached_trains,
         "corridor_trains": corridor_trains,
         "conflict_layer_available": train in corridor_trains,
+        "run_state": run_state,
+        "run_state_roster_split": roster_split,
+        "run_state_note": (
+            "Only 59 of the 206 roster trains run daily and 88 run on exactly one "
+            "weekday, so on any given date most of the roster is NOT running. "
+            "runsToday is tri-state: null means the calendar is unknown, which is "
+            "not the same answer as false."
+        ),
         "corridor_note": (
             "Static timetables for crossing/overtake prediction, built offline by "
             "scripts/build_corridor.py. Schedules do not expire, so these need no "
@@ -486,6 +513,52 @@ def get_conflicts(
                 f"`python3 scripts/build_corridor.py` (offline, no API calls). ({e})"
             ),
         )
+    return JSONResponse(res, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/run-state/{train_number}")
+def get_run_state(
+    train_number: str,
+    date: str = Query("today", description="service date YYYY-MM-DD, or 'today'"),
+):
+    """
+    Does this train run on `date`, and if not, when does it next?
+
+    This is the **calendar** half of the run-state answer.  The live half
+    (`running` / `completed` / `not-started`) outranks it and is resolved by the
+    Node gateway, which holds the live payload; only the roster knows the
+    calendar, so only this endpoint can answer "not running today".
+
+    Costs **no upstream request** — it reads the cached roster.
+
+    `runsToday` is tri-state.  `null` means the calendar is unknown, which is a
+    different answer from `false` ("scheduled not to run"); `basis` says which.
+    Never collapse the two in a UI — that is VERIFIED #9 at the calendar layer.
+    """
+    # Unlike /conflicts, 'all' is meaningless here: a calendar answer needs a
+    # date.  Reject it rather than silently substituting today, which would
+    # return a confident answer to a question that was not asked.
+    if date == "today":
+        service_date = datetime.now().date()
+    elif date in ("all", ""):
+        raise HTTPException(
+            422,
+            detail="date must be YYYY-MM-DD or 'today'; a run-state answer is "
+                   "specific to one service date, so 'all' is not meaningful here",
+        )
+    else:
+        try:
+            service_date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                422, detail=f"date must be YYYY-MM-DD or 'today', got {date!r}")
+
+    import conflict as conflict_mod
+    # No try/except FileNotFoundError here: run_state answers for an unknown
+    # train with basis 'not-a-corridor-train' rather than raising, because
+    # "this train is off our corridor" is a real, renderable answer — the
+    # search results are all-India while the corridor roster is not.
+    res = conflict_mod.run_state(train_number, service_date)
     return JSONResponse(res, headers={"Cache-Control": "no-store"})
 
 

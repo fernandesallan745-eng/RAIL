@@ -17,6 +17,7 @@ import {
   getModelEta,
   getModelHealth,
   getModelGeometry,
+  getModelRunState,
   flushGatewayCache,
 } from '../controllers/admin.controller.js';
 import { config } from '../config/env.js';
@@ -73,6 +74,11 @@ router.get('/lookup/categories', cacheMiddleware(86400), getTrainCategories);
 router.get('/model/health', cacheMiddleware(60), getModelHealth);
 router.get('/model/eta/:trainNumber', cacheMiddleware(300), getModelEta);
 router.get('/model/geometry/:trainNumber', cacheMiddleware(config.cache.staticTtl), getModelGeometry);
+// Run-day calendar for one train on one date. Deliberately a SHORT TTL, not the
+// 24 h static one: the answer is date-specific, and a day-long cache would keep
+// serving yesterday's "runs today" across midnight — the same staleness the
+// persist strip in train.controller.js exists to prevent (VERIFIED #21).
+router.get('/model/run-state/:trainNumber', cacheMiddleware(300), getModelRunState);
 
 // ─── Operator actions ────────────────────────────────────────────────────────────────────────
 // POST-only, and deliberately the only mutating route in this API. It clears this process's

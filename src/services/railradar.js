@@ -795,9 +795,17 @@ class RailRadarService {
         return {
           number: liveData.trainNumber || num,
           name: liveData.trainName || trainInfo.name || `Train ${num}`,
-          type: trainInfo.type || 'Express',
-          category: trainInfo.category || 'Express',
-          status: liveData.status || 'running',
+          // null, not 'Express'. Same rule as `speed` below: a class we were not
+          // told is an unknown, and the popup renders unknowns as '—'.
+          type: trainInfo.type || null,
+          category: trainInfo.category || null,
+          // `|| 'running'` here would assert motion for a train upstream never
+          // said was moving — and the run-state layer keys off this field.
+          status: liveData.status || null,
+          // Upstream's own service date for this snapshot. It is what separates
+          // the three meanings of 'not-started' (see resolveRunState), so it must
+          // travel with the fleet entry, not just the drawer payload.
+          startDate: liveData.startDate ?? null,
           // Absent liveness must not read as "live". `?? true` here is how a
           // completed, never-tracked run (01132) ended up rendered as a live
           // train — see trackingMode/isTracked below.

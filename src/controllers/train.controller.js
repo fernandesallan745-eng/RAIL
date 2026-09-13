@@ -14,8 +14,212 @@ if (!fs.existsSync(FALLBACK_DIR)) {
   fs.mkdirSync(FALLBACK_DIR, { recursive: true });
 }
 
-export const getHealth = (req, res) => {
-  // Upstream posture (quota burned, 429 count, scheduler queue depth, active fleet) is
+/** Local calendar date as YYYY-MM-DD. `toISOString()` is UTC and would roll the
+ *  date over after 18:30 IST, reporting tomorrow's run-state all evening. */
+const localDateStr = (d = new Date()) => {
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
+
+/**
+ * Decide, server-side, what run-state a train is actually in.
+ *
+ * This exists because the UI was rendering `distanceFromOriginKm: 0` as a
+ * measured zero ("0 km covered") for trains that had not departed or were not
+ * running at all — VERIFIED #9 at the UI layer, and the defect the user
+ * reported. The answer is resolved HERE, not in the browser, so the map and the
+ * admin console cannot drift, and so the calendar logic stays in one language
+ * (`conflict.py`) rather than being re-derived in JavaScript.
+ *
+ * Resolution order — live observation outranks the calendar, because a train
+ * that is observably running is running whatever the roster says:
+ *
+ *   1. status 'running'      -> running
+ *   2. status 'completed'    -> completed
+ *   3. status 'not-started'  -> AMBIGUOUS, split by `startDate`:
+ *        startDate  > date   -> not running on `date`; upstream is already
+ *                               showing the NEXT run (VERIFIED #4)
+ *        startDate == date   -> scheduled today, awaiting departure
+ *        startDate  < date   -> stale snapshot; defer to the calendar
+ *   4. anything else         -> defer to the calendar
+ *
+ * Step 3 is the part that is easy to get wrong. 'not-started' reads like "has
+ * not departed yet", but 22229 and 07361 are both 'not-started' *because they
+ * do not run today* — upstream had moved on to 2026-09-14 and 2026-09-15
+ * respectively. Verified against the roster calendar: for every cached
+ * not-started train with a future startDate, upstream's date and the
+ * independently-computed nextRunDate agree exactly (2 of 2, zero
+ * disagreements). Treating all three cases as "awaiting departure" would put
+ * tomorrow's run on today's map.
+ *
+ * Costs ZERO upstream requests: `status`/`startDate` ride on the live payload we
+ * already fetched, and the calendar is read from the cached roster.
+ */
+export const resolveRunState = async (trainNumber, liveData, serviceDate) => {
+  const date = serviceDate || localDateStr();
+  const status = liveData && typeof liveData.status === 'string'
+    ? liveData.status.toLowerCase()
+    : null;
+  // Plain 'YYYY-MM-DD' upstream (verified on 3 cached trains), but slice
+  // defensively in case it ever arrives as a full ISO timestamp.
+  const startDate = liveData && liveData.startDate
+    ? String(liveData.startDate).slice(0, 10)
+    : null;
+
+  const base = {
+    train: String(trainNumber),
+    serviceDate: date,
+    liveStatus: status,
+    startDate,
+    // Prediction/reporting only, never a control action (CLAUDE.md §2).
+    decisionSupportOnly: true,
+  };
+
+  if (status === 'running') {
+    return { ...base, state: 'running', basis: 'live-status', isMoving: true };
+  }
+  if (status === 'completed') {
+    return { ...base, state: 'completed', basis: 'live-status', isMoving: false };
+  }
+
+  // The calendar is consulted for everything else. Asked for unconditionally
+  // (not just on the miss) so the payload can report BOTH sources and flag a
+  // disagreement instead of quietly preferring one.
+  let calendar = null;
+  try {
+    const rs = await axios.get(
+      `${config.modelApi.baseUrl}/run-state/${trainNumber}`,
+      { params: { date }, timeout: 1500 }
+    );
+    calendar = rs.data || null;
+  } catch (err) {
+    const is422 = err.response && err.response.status === 422;
+    calendar = {
+      unavailable: true,
+      reason: is422 ? 'invalid-date' : 'model-unreachable',
+      detail: is422 ? (err.response.data?.detail || null) : err.message,
+    };
+  }
+  const calendarOk = calendar && !calendar.unavailable;
+  const runsToday = calendarOk ? calendar.runsToday : undefined;
+
+  if (status === 'not-started') {
+    if (startDate && startDate > date) {
+      // Upstream has rolled to the next run: this train is NOT running on
+      // `date`. Prefer upstream's own date over the roster's — it is the live
+      // source — but carry both so the disagreement is auditable, not hidden.
+      return {
+        ...base,
+        state: 'not-running-today',
+        basis: 'live-start-date',
+        isMoving: false,
+        nextRunDate: startDate,
+        calendarNextRunDate: calendarOk ? calendar.nextRunDate : null,
+        calendarAgrees: calendarOk ? calendar.nextRunDate === startDate : null,
+        runDays: calendarOk ? calendar.runDays : null,
+        note: `Not running on ${date}. Upstream is showing the next run on ${startDate}.`,
+        calendar,
+      };
+    }
+    if (startDate && startDate < date) {
+      // A snapshot older than the service date. Its 'not-started' described a
+      // past day, so it says nothing about today — fall through to the calendar
+      // rather than claiming a departure that may already have happened.
+      return {
+        ...base,
+        state: runsToday === true ? 'awaiting-departure'
+          : runsToday === false ? 'not-running-today'
+            : 'unknown',
+        basis: calendarOk ? 'roster-calendar-stale-snapshot' : 'unresolved',
+        isMoving: false,
+        nextRunDate: calendarOk ? calendar.nextRunDate : null,
+        runDays: calendarOk ? calendar.runDays : null,
+        note: `Cached snapshot is from ${startDate}, before ${date}; run-state taken from the roster calendar instead.`,
+        calendar,
+      };
+    }
+    // startDate == date, or absent: scheduled today and not yet away. This is
+    // the state that used to render "0 km covered (0%)" with a 15% bar.
+    return {
+      ...base,
+      state: 'awaiting-departure',
+      basis: startDate ? 'live-start-date' : 'live-status',
+      isMoving: false,
+      runDays: calendarOk ? calendar.runDays : null,
+      note: 'Scheduled today; has not departed yet, so no distance has been covered.',
+      calendar,
+    };
+  }
+
+  // No usable live status: the calendar is all we have.
+  if (runsToday === true) {
+    return {
+      ...base, state: 'scheduled-today', basis: 'roster-calendar', isMoving: null,
+      runDays: calendar.runDays,
+      note: 'Runs today per the roster calendar; no live status available for it.',
+      calendar,
+    };
+  }
+  if (runsToday === false) {
+    return {
+      ...base, state: 'not-running-today', basis: 'roster-calendar', isMoving: false,
+      nextRunDate: calendar.nextRunDate, runDays: calendar.runDays,
+      note: calendar.note, calendar,
+    };
+  }
+  // Tri-state preserved to the end: unknown is NOT "does not run" (VERIFIED #9).
+  return {
+    ...base,
+    state: 'unknown',
+    basis: calendarOk ? (calendar.basis || 'no-calendar') : 'unresolved',
+    isMoving: null,
+    note: calendarOk
+      ? (calendar.note || 'Run calendar unavailable for this train.')
+      : 'Neither a live status nor a run calendar is available for this train.',
+    calendar,
+  };
+};
+
+/**
+ * Attach `runState` to every entry of a fleet array, in place.
+ *
+ * The map draws a non-running train at its ORIGIN STATION (railradar.js falls
+ * back to source lat/lng when there is no live position), so a train that is not
+ * running today is a marker sitting on the map like any other. Without this the
+ * popup reported a green "On Time" for it — the same class of defect as the
+ * drawer's "0 km covered (0%)".
+ *
+ * Costs zero upstream RailRadar requests: run-state is `status`/`startDate` from
+ * the payload we already have, plus the cached roster calendar.
+ *
+ * DELIBERATELY NOT called before the disk persist (VERIFIED #21): run-state is
+ * derived from a service date, so a persisted copy would be wrong the moment the
+ * file outlives the day. Fallback reads call this again to recompute.
+ */
+const attachFleetRunStates = async (fleet) => {
+  if (!Array.isArray(fleet) || !fleet.length) return fleet;
+  const date = localDateStr();
+  await Promise.all(fleet.map(async (entry) => {
+    if (!entry || !entry.number) return;
+    try {
+      entry.runState = await resolveRunState(entry.number, entry, date);
+    } catch (err) {
+      // Never fatal: a marker with an unresolved state is still a real position.
+      entry.runState = {
+        train: String(entry.number),
+        serviceDate: date,
+        state: 'unknown',
+        basis: 'unresolved',
+        isMoving: null,
+        note: 'Run-state could not be resolved.',
+        detail: err.message,
+      };
+    }
+  }));
+  return fleet;
+};
+
+export const getHealth = (req, res) => {  // Upstream posture (quota burned, 429 count, scheduler queue depth, active fleet) is
   // surfaced here rather than left in the server logs because with live caching disabled
   // the monthly cap — 1,000 req/key/month — is now the binding constraint, not the cache.
   // "How much budget is left and did we get throttled?" has to be answerable from the
@@ -219,6 +423,25 @@ export const getTrainLiveStatus = async (req, res, next) => {
       );
     }
 
+    // 5. Run-state (running / awaiting-departure / not-running-today / completed).
+    //
+    // Resolved server-side so the map and the admin console cannot disagree, and
+    // so the run-day calendar lives only in conflict.py. Costs no upstream
+    // request. Never fatal — an unresolved run-state must not blank the drawer.
+    try {
+      enhancedData.runState = await resolveRunState(trainNumber, liveData);
+    } catch (err) {
+      enhancedData.runState = {
+        train: String(trainNumber),
+        state: 'unknown',
+        basis: 'unresolved',
+        isMoving: null,
+        note: 'Run-state could not be resolved.',
+        detail: err.message,
+      };
+      console.warn(`[Run state] Unresolved for ${trainNumber}: ${err.message}`);
+    }
+
     // Success path: Persist a copy of the enhanced train status to disk cache
     if (enhancedData) {
       try {
@@ -230,7 +453,12 @@ export const getTrainLiveStatus = async (req, res, next) => {
         // in the payload saying so. It is recomputed on read instead, from the
         // fallback's own delayMinutes, at no upstream cost. `conflictsUnavailable`
         // is dropped for the same reason: the model may be back by then.
-        const { conflicts, conflictsUnavailable, ...persistable } = enhancedData;
+        //
+        // `runState` is stripped for exactly the same reason (VERIFIED #21): it is
+        // derived from a SERVICE DATE, so a persisted "runs today" is wrong the
+        // moment the file outlives the day it was written — and "not running
+        // today" is the one answer a user would act on. Recomputed on read below.
+        const { conflicts, conflictsUnavailable, runState, ...persistable } = enhancedData;
         fs.writeFileSync(trainFile, JSON.stringify(persistable, null, 2), 'utf-8');
       } catch (writeErr) {
         console.error(`[Controller] Failed to write disk fallback for train #${trainNumber}:`, writeErr.message);
@@ -428,6 +656,28 @@ export const getTrainLiveStatus = async (req, res, next) => {
         );
       }
 
+      // Recompute run-state here for the same reason as the conflict block, and
+      // it matters MORE here: the persisted snapshot may have been written days
+      // ago, so its own `status`/`startDate` describe that day, not today.
+      // `resolveRunState` handles exactly that case (startDate < serviceDate ->
+      // defer to the roster calendar) rather than replaying a stale departure.
+      // Delete first: enhanceLiveData spreads the fallback object through, so an
+      // older cache file written before the strip above would otherwise keep a
+      // stale block alive through a FAILED recompute.
+      delete enhancedData.runState;
+      try {
+        enhancedData.runState = await resolveRunState(trainNumber, enhancedData);
+      } catch (err) {
+        enhancedData.runState = {
+          train: String(trainNumber),
+          state: 'unknown',
+          basis: 'unresolved',
+          isMoving: null,
+          note: 'Run-state could not be resolved from the cached snapshot.',
+          detail: err.message,
+        };
+      }
+
       return res.json({
         success: true,
         trainNumber,
@@ -582,6 +832,9 @@ export const getLiveFleet = async (req, res, next) => {
         const cachedFleet = cached?.data?.fleet || cached?.fleet;
         if (cachedFleet && cachedFleet.length > 0) {
           console.log(`[LiveFleet Controller] Recovered in-memory cached fleet from key "${key}"`);
+          // Recomputed, never re-served: the cached copy's run-state (if any) was
+          // computed on the day it was cached (VERIFIED #21).
+          await attachFleetRunStates(cachedFleet);
           return res.json({
             success: true,
             data: {
@@ -605,6 +858,9 @@ export const getLiveFleet = async (req, res, next) => {
           const diskPayload = JSON.parse(fs.readFileSync(FALLBACK_FILE, 'utf-8'));
           if (diskPayload && diskPayload.fleet && diskPayload.fleet.length > 0) {
             console.log(`[LiveFleet Controller] Recovered disk-persisted cached fleet from ${FALLBACK_FILE}`);
+            // Same as the in-memory branch: recompute against today's date rather
+            // than trusting whatever day the file was written (VERIFIED #21).
+            await attachFleetRunStates(diskPayload.fleet);
             return res.json({
               success: true,
               data: {
@@ -643,6 +899,13 @@ export const getLiveFleet = async (req, res, next) => {
     // answered, nothing is running), and distinct from serving yesterday's positions.
     if (data) {
       data.is_cached_fallback = false;
+    }
+
+    // After the disk write, exactly like `is_cached_fallback` above and for the
+    // same reason: run-state is derived from today's date and must not be baked
+    // into the persisted copy (VERIFIED #21).
+    if (data && Array.isArray(data.fleet)) {
+      await attachFleetRunStates(data.fleet);
     }
 
     res.json({
