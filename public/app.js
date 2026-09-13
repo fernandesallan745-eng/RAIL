@@ -142,33 +142,12 @@ async function bootstrapApp() {
   setupEventListeners();
   startAutoRefresh();
   startLiveClock();
-  wireAuditLink();
-}
 
-// The audit console (/admin) is served by the Python FastAPI model service, not this Node
-// server, so it lives on a different port. Read that port from /api/health rather than
-// hardcoding a second copy of it here, and reuse the browser's own hostname so the link
-// also works when the demo laptop is reached from another device on the LAN.
-async function wireAuditLink() {
-  const el = document.getElementById('auditLink');
-  if (!el) return;
-  try {
-    const res = await fetch(apiUrl('/api/health'));
-    const j = await res.json();
-    const base = j?.modelApi?.baseUrl;
-    if (!base) return;
-    const u = new URL(base);
-    // 127.0.0.1/localhost is correct for the SERVER; for the browser, follow this page's host
-    if (u.hostname === '127.0.0.1' || u.hostname === 'localhost') {
-      u.hostname = new URL(getApiBase() || location.href).hostname;
-    }
-    u.pathname = '/admin';
-    el.href = u.toString();
-    el.hidden = false;
-  } catch (e) {
-    // model service unreachable → leave the link hidden rather than offering a dead one
-    console.warn('[audit link] model service not reachable:', e.message);
-  }
+  // Signal that the map and every layer group exist. bootstrapApp is async (it awaits
+  // loadPackManifest), so a second script loaded alongside this one would find `map`
+  // still null if it ran on DOMContentLoaded — admin.js listens for this instead of
+  // racing or polling. Harmless on the user page, which has no listener.
+  document.dispatchEvent(new CustomEvent('gati:ready'));
 }
 
 // index.html loads this file via an injected <script>, which does NOT delay

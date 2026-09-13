@@ -57,11 +57,12 @@ processes when you press `Ctrl+C`. To run them separately for troubleshooting,
 use `python3 run_server.py` for the model on `:8000` and `npm run server`
 for the gateway on `:5050`.
 
-Visit **`http://localhost:5050`** for the live map. The Python engine also serves
-`/dashboard` (analytical view) and `/admin` (model audit console) on `:8000`.
-The Node layer calls `http://127.0.0.1:8000/eta/{train}` and attaches the result
-as `curvatureEta` on the live payload — so the map and the dashboard show the
-*same* model.
+Visit **`http://localhost:5050`** for the live map, and **`http://localhost:5050/admin`**
+for the operator console — the same map with admin panels on top (every map and model
+layer, upstream quota, model query controls). Both are served by the Node gateway, so
+both work from the phone. The Node layer calls `http://127.0.0.1:8000/eta/{train}` and
+attaches the result as `curvatureEta` on the live payload — so the map and the console
+show the *same* model.
 
 `server.js` auto-increments the port if the configured one is busy, so **read the
 startup banner** for the actual URL rather than assuming 5050.
@@ -126,10 +127,10 @@ stale address white-screens the app before the setup screen can run. Re-run plai
 `npm run ios:sync` to go back to the bundled default.
 
 The iOS wrapper permits local HTTP only for device testing; use HTTPS before any
-distribution beyond your local network. Note that `/dashboard` and `/admin` live
-on the Python engine, which binds loopback only — they are Mac-only unless you
-start it with `GATI_MODEL_HOST=0.0.0.0`. The live map itself works on the phone
-regardless, because the Node gateway proxies the model server-side.
+distribution beyond your local network. The live map **and** the `/admin` console
+both work on the phone, because the Node gateway serves both and proxies the model
+server-side. The Python engine binds loopback only, so its raw JSON endpoints stay
+Mac-only unless you start it with `GATI_MODEL_HOST=0.0.0.0`.
 
 ---
 
@@ -338,7 +339,14 @@ long while the live tier is 0 is **deliberate** — see the note at
 
 The Python engine on `:8000` additionally serves `GET /eta/{train}?date=&weather=&mode=`,
 `/eta/{train}/curvature`, `/conflicts/{train}?delay=&offsets=`,
-`/geometry/{train}?max_points=`, `/health`, `/dashboard` and `/admin`.
+`/corridor/conflicts?date=&at=&window=&limit=&delay=`, `/geometry/{train}?max_points=`
+and `/health`. It is a **pure JSON service** — it serves no HTML.
+
+The gateway proxies the model at `/api/model/eta/:train`, `/api/model/health` and
+`/api/model/geometry/:train` (the admin console uses these; FastAPI has no CORS
+middleware, so a browser on `:5050` cannot call `:8000` directly). `POST
+/api/admin/cache/flush` clears the gateway's in-memory cache only and never touches
+`.cache/`.
 
 The gateway calls `/conflicts/{train}` itself on every live request and attaches
 the result to the payload as `conflicts`, tagged `delayBasis: "live"`. When the

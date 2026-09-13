@@ -525,16 +525,18 @@ carrying information the timetable does not already contain.
   isolation, weather sensitivity). Run this to re-verify any layer.
 - **`api.py`** — Phase 4 FastAPI wrapper. `GET /eta/{train}?date=&weather=&mode=`,
   plus `/health` (per-date real-signal vs zero-echo audit), `/eta/{train}/curvature`,
-  `/dashboard` (serves `dashboard.html`) and `/geometry/{train}?max_points=` (polyline
-  for drawing; stride-decimated but every halt vertex forced in, each with a
+  `/conflicts/{train}`, `/corridor/conflicts` and `/geometry/{train}?max_points=`
+  (polyline for drawing; stride-decimated but every halt vertex forced in, each with a
   `point_index` — curvature never uses the decimated set).
+  **It serves no HTML.** The `/dashboard` and `/admin` routes were removed 2026-09-13
+  along with the two static pages; this is a pure JSON service, and the operator UI is
+  `public/admin.html` on the Node gateway (§5f). One reason it had to move: `run_server.py`
+  binds `127.0.0.1`, so a page served from here is unreachable from the phone (§5d).
   In `mode=vertex` each segment also carries `effective_speed_applied_kmh`, the block's
   *mean* vertex-integrated speed. Without it `distance / running_min_applied` does not
   reconcile with `effective_speed_kmh` (which is the block-mode number) and the
   breakdown reads as self-contradictory.
   Start with: `python3 -m uvicorn api:app --reload --port 8000`
-- **`dashboard.html`** — Phase 8 UI. Static, dependency-free, reads only the endpoints
-  above. See the Phase 8 entry in §6 for the honesty wiring that must stay in it.
 - **`fetch_dates.py`** — cache-first historical-date fetcher. Computes valid
   Mon/Wed/Fri run-dates, skips what's cached, fetches only the gaps, then
   re-audits every cached run for a real delay signal. Run this when you want
@@ -621,9 +623,10 @@ npm run server                                     # Node proxy + Leaflet UI on 
 Open **http://localhost:5050**. The Node layer calls FastAPI at
 `http://127.0.0.1:8000/eta/{train}` and attaches the result as `curvatureEta`
 on the live-status payload, so the curvature/delay ETA is the *same* model
-documented above — just surfaced through the map UI instead of `dashboard.html`.
-`dashboard.html` (served by FastAPI `/dashboard`) still exists as the analytical
-static view; the Leaflet UI is the live-tracking view.
+documented above — just surfaced through the map UI.
+**Both** UIs now live here: `/` is the live-tracking map and `/admin` is the
+operator console (§5f). The old FastAPI-served `dashboard.html` and `admin.html`
+were deleted 2026-09-13.
 
 **Port 5050, not 5000 — do not "fix" this back.** On macOS, port 5000 is held by
 **ControlCenter (AirPlay Receiver)**, which answers with HTTP 403; Chrome renders
@@ -720,6 +723,14 @@ dotenv does not overwrite pre-set variables. `server.js` still auto-increments o
     endpoint never calls `enhanceLiveData`, so a wider fleet does not multiply it.
     It cannot be split into a static endpoint: `entryKm`/`exitKm` are on *that
     train's* timetable axis.
+- `public/admin.html` + `public/admin.js` + `public/admin.css` — the operator
+  console at `/admin`. Same shell and the same `app.js`, with admin-only panels on
+  top; see §5f for why it is a reuse rather than a fork, and what each panel reads.
+- `src/controllers/admin.controller.js` — the one mutating route in the codebase,
+  `POST /api/admin/cache/flush`. Clears the Node gateway's in-memory node-cache
+  **only** and reports `keysBefore`/`keysAfter`/`diskCacheTouched: false`. It must
+  never touch `.cache/`, which is the offline corpus the whole model reads —
+  rebuilding it would cost ~1000 upstream requests.
 - `public/offline-tiles.js` — `createOfflineLayer()`, an offline-first
   `L.TileLayer`. Requests `/tiles/<layer>/{z}/{x}/{y}.png` first and falls back
   to the CDN **per tile**, so a partial pack works and a full pack needs no
@@ -1093,6 +1104,114 @@ range, sums reconciling three ways, and ETA 615.7 → 697.7 (**+82.0**).
 
 ---
 
+## 5f. Admin / operator console (`/admin`, added 2026-09-13)
+
+One page replaced **both** `dashboard.html` and `admin.html`, which were deleted.
+They were two text-and-table views of the same model the map already talks to, they
+duplicated each other's layer breakdown, and because `run_server.py` binds
+`127.0.0.1` they were **unreachable from the phone** (§5d) — so the iOS demo had no
+admin surface at all. The replacement is the *same* Leaflet UI with admin panels on
+top, served by Node at `/admin`.
+
+### Why it reuses `app.js` rather than forking it
+
+- **`app.js` hard-fails on a foreign DOM.** It dereferences `searchInput`,
+  `layerToggleBtn`, `trainDrawer`, `drawerCloseBtn`, `coachRakeContainer`,
+  `conflictPanel`, `tunnelPanel`, `zoomInBtn`/`zoomOutBtn`/`recenterBtn`/
+  `fullscreenBtn` and `serverSetupForm` with **no null checks**. So `admin.html` must
+  carry the same structural IDs — a requirement, not copy-paste convenience. It is
+  also exactly what "look the same as the user page" means.
+- **Classic-script globals are shareable by bare name.** `map`, `railwayLayer`,
+  `fleetMarkersLayer`, `activeRouteLayer`, `activeStationsLayer`, `tunnelsLayer`,
+  `conflictLayer`, `corridorConflictLayer` and `selectedTrainNumber` sit in the shared
+  global lexical scope, so `admin.js` reads them directly. It must **never re-declare**
+  one — `let map` in the second file is a `SyntaxError`, not a shadow. Hence the IIFE.
+- **`bootstrapApp()` is async** (it awaits `loadPackManifest()`), so `map` is still
+  `null` when a second script first runs. `app.js` therefore dispatches a
+  `gati:ready` CustomEvent at the end of it and `admin.js` waits on that rather than
+  racing or polling. Harmless on the user page, which has no listener.
+- **FastAPI has no CORS middleware**, so a :5050 page cannot call :8000 from the
+  browser. The Node proxy routes (`/api/model/eta|health|geometry`) are mandatory,
+  not a preference.
+
+### Panels
+
+- **Map layers** — a switchboard over the Leaflet groups `app.js` already builds,
+  each row showing a live feature count so an empty layer is visibly empty rather
+  than ambiguously absent (VERIFIED #9). Two traps here:
+  - **The checkbox reflects `map.hasLayer()`, never local state.** The ⇄ button and
+    the legend's × can both turn the corridor layer off behind our back.
+  - **The corridor row delegates to `toggleCorridorLayer()`** instead of calling
+    `addLayer`/`removeLayer` itself, because that function also owns the ⇄ button's
+    `aria-pressed`, the legend and the lazy fetch. Verified: ticking the checkbox
+    flips `aria-pressed` false→true, unhides the legend and draws 1976 features, so
+    the three controls cannot disagree.
+  - `railwayLayer` is a **`TileLayer`, not a `LayerGroup`** — no `getLayers()`, so
+    its count renders "—" rather than a fabricated 0.
+- **ETA layers** — the contribution ladder from `/api/model/eta/:n`, with a
+  reconciliation self-check (`naive + Σcontributions − total`, flagged above 0.05).
+- **Upstream quota & ops** — from `/api/health` → `upstream`, which is
+  `getDiagnostics()`: *"counts, indices and config — never a key value."* Note
+  `health.upstream` is that whole object and it has its **own** nested `upstream`, so
+  in-flight/queued live at `up.upstream.inFlight`. It can also be
+  `{unavailable: true, reason}` while the service reloads — the panel renders that
+  branch and says quota state is **unknown, not zero**, because `/health` is the
+  endpoint an operator hits precisely *when things are broken*.
+
+### Ops — the only mutating route in the codebase
+
+`POST /api/admin/cache/flush` clears the Node gateway's node-cache **only**, POST-only
+so a crawler or prefetch cannot trigger it, and returns before/after key counts so the
+effect is visible rather than assumed. **Verified 2026-09-13:** 5 → 0 keys, and
+`.cache/` byte-identical across the flush (content hash `5b309edc…` both sides).
+- **`ls -l .cache | md5` is not a valid before/after test on its own.** The gateway's
+  own fleet poll rewrites `rr_quota.json` and `fleet_fallback.json` on its own
+  schedule, so that hash moves for reasons unrelated to the flush. Hash file
+  *contents* (`find .cache -name '*.json' | sort | xargs md5 -q | md5`).
+- Force-refresh is labelled **"spends 1 upstream request"** on the button itself. The
+  user's "nothing that touches quota unexpectedly" means *unexpectedly*, not *never*.
+
+### Verified 2026-09-13
+
+- Regression gates unchanged (this touches no model code): `report_eta.py` →
+  vertex 612.8 / block 615.7 / timetable 634.9; `verify_conflicts.py` → ALL CHECKS
+  PASSED.
+- 22229 ladder matches §4b exactly: 441.0 → +176.9 baseline → +0.0013 curvature →
+  −22.1 delay → +17.0 dwell → 0.0 holds = **612.8**, reconciles.
+- **Silent-zero control:** 12051 renders `bandPm: "unavailable"` with
+  `no-dated-runs-cached`, not a zero band.
+- **No key values reach the browser:** `rr_live_` 0 hits in the full `outerHTML`;
+  the quota panel shows indices only, cross-checked against `/api/health`.
+- **Model-down path:** with uvicorn stopped, HTTP 503 and the panel prints
+  `model-unreachable … → start the ETA model: python3 run_server.py 8000` — not a
+  blank panel and not a fabricated zero. Recovers on restart with no reload.
+- **User page unaffected:** drawer, coach rake, 11 halts, tunnel and conflict panels
+  all intact; the only console errors are the documented pack-less
+  `/tiles/pack.json` 404 probe.
+- **`/api/health` is a FLAT envelope** — no `data` wrapper. A probe written as
+  `j.data?.cache ?? j.cache` silently reads the fallback and hides that. Check the
+  shape before trusting a path.
+
+### Honesty wiring carried over from Phase 8 (§6) — re-verified in the browser
+
+Deleting the page that carried this list did not retire it. All of it is in
+`admin.js`: the prototype-data-source + no-automated-control banner; the
+untuned-placeholder warning whenever `weather != clear`; `n=` per delay cell with the
+sum-of-means note for the −2.5 min coverage artifact; the "resolvable ~44%" caveat
+read from `geometry_resolution` rather than hardcoded; `geometry_basis` beside every
+curvature number (VERIFIED #25); the observed band with its "not a confidence
+interval" caveat and its `unavailable_reason` branch; and the **`curve +` →
+`curve+wx +` rename** under non-clear weather — confirmed live: under `heavy_rain`
+the row reads *"+ curvature + weather = +105.3"*, because `vertex_curve_penalty_min`
+has the weather factor folded in and is **not** curvature alone there.
+
+The `#queryMeta` header states the parameters the on-screen ladder was actually
+computed with, and marks itself **stale** when the selectors move without a re-run —
+otherwise the header would describe a query whose result is not on screen. Necessary
+because clear/heavy_rain/fog totals all look alike out of context.
+
+---
+
 ## 6. Build Phases
 
 - [x] **Phase 0:** RailRadar signup, key working, confirmed real data returns.
@@ -1115,21 +1234,38 @@ range, sums reconciling three ways, and ETA 615.7 → 697.7 (**+82.0**).
       per-segment breakdown + total ETA + predicted arrival clock time (JSON).
       Also `/health` and `/eta/{train}/curvature`. All routes verified
       end-to-end via `fastapi.testclient` including 422/404 paths.
-- [x] **Phase 8 (done, built out of order — needed something visible for 1 Sep):**
+- [x] **Phase 8 (done, built out of order — needed something visible for 1 Sep;
+      SUPERSEDED 2026-09-13 by the admin console, see §5f):**
       `dashboard.html`, served by `GET /dashboard`, plus `GET /geometry/{train}` for the
-      polyline. Single static file, no build step, no npm, **no CDN** — every number is
-      fetched live from `/eta`, `/geometry` and `/health` and nothing is hardcoded.
-      - **Not a tiled map.** There is no network egress in this environment, so Mapbox
-        would render blank. The route is inline SVG drawn from the real 1184-vertex
+      polyline. Single static file, no build step, no npm, **no CDN** — every number was
+      fetched live from `/eta`, `/geometry` and `/health` and nothing was hardcoded.
+      **`dashboard.html` and `admin.html` have both been DELETED** and their `/dashboard`
+      and `/admin` FastAPI routes removed; the model API is a pure JSON service again.
+      Everything below is retained because the *findings* and the honesty obligations
+      outlived the files — they now live in `public/admin.html` on Node :5050.
+      - **Not a tiled map.** There was no network egress in that environment, so Mapbox
+        would render blank. The route was inline SVG drawn from the real 1184-vertex
         polyline, north-up, viewBox sized from the data aspect (a fixed wide box flattens
-        a 3.9°-latitude corridor into a smear). Halt labels alternate sides and are
+        a 3.9°-latitude corridor into a smear). Halt labels alternated sides and were
         decluttered per side by sorting on y — CSMT→DR→TNA→PNVL doubles back, so latitude
         is **not** monotonic along the journey and four labels land in a ~32 px band.
+        *(The replacement is a real Leaflet map, so this constraint is gone — but the
+        non-monotonic-latitude finding still applies to any future static route drawing.)*
       - Panels: KPI row, route SVG, per-segment table, layer-contribution ladder,
         historical-delay panel (5 per-date bars + spread + coverage artifact), curvature
         panel, build status.
-      - `weather` and `mode` selectors re-query the API live. Verified: clear/vertex
-        612.8, clear/block 615.7, heavy_rain 718.2, fog 923.2 min.
+      - `weather` and `mode` selectors re-query the API live. **Always state the mode
+        with a weather number** — re-measured 2026-09-13, the two modes diverge far
+        more under a binding weather cap than the +2.9 min of VERIFIED #27:
+
+        | weather | vertex | block |
+        |---|---|---|
+        | clear | 612.8 | 615.7 |
+        | heavy_rain | 718.2 | 731.6 |
+        | fog | 905.8 | 923.2 |
+
+        The older one-line form ("heavy_rain 718.2, fog 923.2") **mixed modes** —
+        718.2 is vertex, 923.2 is block. Both were right, the pairing was not.
       - **Honesty wiring that must not be removed:** the prototype-data-source and
         no-automated-control banner; the untuned-placeholder warning whenever
         `weather != clear`; the `n=` sample count per delay cell and the sum-of-means
@@ -1137,9 +1273,13 @@ range, sums reconciling three ways, and ETA 615.7 → 697.7 (**+82.0**).
         every curvature figure; and the `curve +` column renaming itself to `curve+wx +`
         under non-clear weather, because `vertex_curve_penalty_min` has the weather factor
         folded in and is **not** curvature-only there.
+        **Deleting the page did not retire this list** — every item was carried into
+        `public/admin.js` and re-verified in the browser on 2026-09-13 (§5f).
       - Phases 5/6/7 appear in Build Status as `NEXT`/`TODO` only. Never render conflict
-        alerts or hazard pins as if they work.
-      - Still to do here: WebSocket auto-refresh, live speed badge.
+        alerts or hazard pins as if they work. *(Stale as written: 5 and 6 are now done.)*
+      - Still to do here: WebSocket auto-refresh, live speed badge. **WebSocket is not
+        merely unbuilt — it is unreachable:** `run_server.py:70` passes `ws="none"` to
+        uvicorn, so `/ws/eta/{train}` cannot be connected to at all. Both UIs poll.
 - [x] **Phase 5 (done 2026-09-05):** Crossing / overtake conflict prediction with
       loop-hold minutes as an ETA layer. The old blocker — "needs a second train's
       live data" — was a **false premise** and is retracted (VERIFIED #15): meets

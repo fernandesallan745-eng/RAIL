@@ -28,7 +28,12 @@ if (config.nodeEnv !== 'test') {
 }
 
 // Static Developer Dashboard UI
-app.use(express.static(path.join(__dirname, '../public')));
+// extensions:['html'] lets /admin resolve to public/admin.html without a redirect, so the
+// admin console and the user map are one origin. That matters beyond tidiness: the model
+// service binds 127.0.0.1 by default, so a page served from THERE is unreachable from the
+// phone — serving it here is what makes the admin surface work on the iOS demo.
+const publicDir = path.join(__dirname, '../public');
+app.use(express.static(publicDir, { extensions: ['html'] }));
 
 // Rate Limiter applied to API routes
 app.use('/api', apiLimiter);
@@ -50,6 +55,7 @@ const startServer = (portToTry) => {
   ➜ \x1b[32mAPI Base:\x1b[0m         http://localhost:${portToTry}/api
   ➜ \x1b[32mHealth Check:\x1b[0m     http://localhost:${portToTry}/api/health
   ➜ \x1b[32mEnvironment:\x1b[0m      ${config.nodeEnv}
+  ➜ \x1b[32mServing UI from:\x1b[0m  ${publicDir}
   ➜ \x1b[32mRailRadar Base:\x1b[0m   ${config.railRadar.baseUrl}
   ➜ \x1b[32mAPI Key Loaded:\x1b[0m   ${config.railRadar.apiKey ? '✅ Yes' : '❌ No (set in .env)'}
   --------------------------------------------------

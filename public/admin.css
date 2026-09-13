@@ -1,0 +1,714 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   GATI ADMIN — operator console chrome.
+
+   Layered ON TOP of app.css, never replacing it. Every colour here is an existing
+   token from app.css's :root (--panel-bg, --panel-border, --text-main, --text-muted,
+   --success, --warning, --danger, --primary, --accent, --card-bg) so the admin page
+   and the user map cannot drift into two palettes.
+
+   CONTRAST: body text uses --text-muted (#94a3b8), never --text-dim (#64748b).
+   #64748b on the panel background measures ~2.98:1, which fails WCAG AA for text;
+   --text-muted measures ~6.2:1 and passes. --text-dim is used only for rules,
+   separators and icons that carry no information on their own.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── ADMIN badge on the logo ─────────────────────────────────────────────────── */
+/* Distinct accent so this page is never mistaken for the user map in a screenshot. */
+.admin-badge {
+  margin-left: 7px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgba(6, 182, 212, 0.18);
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  color: var(--accent);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* A hairline of the admin accent along the very top of the viewport — visible even
+   when every panel is collapsed, so the page identity never depends on a panel. */
+body.gati-admin::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--primary));
+  z-index: 2000;
+  pointer-events: none;
+}
+
+/* ── Link back to the user map (mirrors #auditLink's placement on that page) ──── */
+#userMapLink {
+  position: absolute;
+  top: 88px;
+  right: 20px;
+  z-index: 1000;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(12, 16, 24, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #9ecbff;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.15s, color 0.15s;
+}
+#userMapLink:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #cfe6ff;
+}
+
+/* ── The two rails ───────────────────────────────────────────────────────────── */
+/*
+   The rail itself is click-through (pointer-events: none) so the gaps between
+   panels stay draggable map. Only the panels take pointer events back.
+
+   Vertical bounds are chosen to clear the controls app.css already places:
+     left  — above .fleet-status-pill (bottom: 30px)
+     right — left of .map-controls-group (right: 20px, 44px wide) → right: 80px
+*/
+.admin-rail {
+  position: absolute;
+  z-index: 1010;          /* above the map (1) and its controls (1000), below the
+                             drawer (1050) — the drawer must win when both are open */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+.admin-rail > * {
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+.admin-rail::-webkit-scrollbar { width: 6px; }
+.admin-rail::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 3px;
+}
+
+.admin-rail-left {
+  top: 88px;
+  left: 20px;
+  bottom: 84px;           /* clear of the fleet status pill */
+  width: 326px;
+  /* The drawer owns the left edge (left: 20px, width: 440px) and slides over exactly
+     this space. Shift out of its way instead of stacking — see admin.js, which
+     mirrors #trainDrawer.open onto <body> with a MutationObserver rather than
+     relying on :has(), so the behaviour does not depend on selector support. */
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+body.admin-drawer-open .admin-rail-left {
+  transform: translateX(460px);
+}
+
+.admin-rail-right {
+  top: 132px;             /* below #userMapLink */
+  right: 80px;            /* clear of .map-controls-group */
+  bottom: 30px;
+  width: 344px;
+}
+
+/* On a narrow viewport the two rails would collide with each other and with the
+   drawer. Drop to a single scrollable column rather than overlapping panels. */
+@media (max-width: 1180px) {
+  .admin-rail-right {
+    right: 80px;
+    width: 300px;
+  }
+  .admin-rail-left { width: 290px; }
+}
+@media (max-width: 860px) {
+  .admin-rail-left { display: none; }     /* drawer + right rail only */
+  .admin-rail-right {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    top: 150px;
+  }
+}
+
+/* ── Provenance banner ───────────────────────────────────────────────────────── */
+/* CLAUDE.md §6 Phase 8: this wiring "must not be removed". It moved here from the
+   deleted dashboard.html — deleting the page that showed it did not retire it. */
+.admin-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.34);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.admin-banner strong { color: #fcd34d; font-weight: 700; }
+.admin-banner em { color: var(--text-main); font-style: normal; font-weight: 600; }
+.admin-banner-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: var(--warning);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+}
+
+/* ── Panels ──────────────────────────────────────────────────────────────────── */
+.admin-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.admin-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 13px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  outline: none;
+}
+.admin-panel-head::-webkit-details-marker { display: none; }
+.admin-panel-head:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--primary);
+  border-radius: 14px;
+}
+.admin-panel-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+.admin-panel-meta {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+/* Disclosure chevron, rotated by the open state. */
+.admin-panel-title::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--text-dim);
+  transition: transform 0.15s;
+}
+.admin-panel[open] > .admin-panel-head .admin-panel-title::before {
+  transform: rotate(90deg);
+}
+.admin-panel-body {
+  padding: 0 13px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 10px;
+}
+
+.admin-subhead {
+  margin: 14px 0 7px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.admin-empty {
+  padding: 10px 2px;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.admin-note {
+  margin-top: 9px;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.admin-note strong { color: #cbd5e1; }
+
+/* ── Rows (map layers, quota) ────────────────────────────────────────────────── */
+.admin-rows { display: flex; flex-direction: column; gap: 2px; }
+
+.admin-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 6px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  color: var(--text-main);
+}
+.admin-row:hover { background: var(--card-bg); }
+
+.admin-row input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  accent-color: var(--primary);
+  cursor: pointer;
+  margin: 0;
+}
+.admin-row-label {
+  flex: 1 1 auto;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-row-count {
+  flex: 0 0 auto;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: rgba(148, 163, 184, 0.12);
+}
+.admin-row-count.is-zero { color: var(--text-muted); opacity: 0.75; }
+.admin-row.is-missing .admin-row-label { color: var(--text-muted); }
+
+/* Quota rows: key label, usage bar, count. Never a key VALUE — getDiagnostics()
+   returns counts and indices only, and nothing here may add one. */
+.admin-kv {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 6px;
+  font-size: 11.5px;
+  border-radius: 6px;
+}
+.admin-kv:nth-child(odd) { background: rgba(255, 255, 255, 0.025); }
+.admin-kv-key { color: var(--text-muted); white-space: nowrap; }
+.admin-kv-val {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  color: var(--text-main);
+  text-align: right;
+}
+.admin-kv-val.is-good { color: var(--success); }
+.admin-kv-val.is-warn { color: var(--warning); }
+.admin-kv-val.is-bad  { color: var(--danger); }
+
+.admin-quota-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+  margin: 2px 6px 6px;
+}
+.admin-quota-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--success);
+  transition: width 0.3s;
+}
+.admin-quota-fill.is-warn { background: var(--warning); }
+.admin-quota-fill.is-bad  { background: var(--danger); }
+
+/* ── Controls ────────────────────────────────────────────────────────────────── */
+.admin-field-grid {
+  display: grid;
+  grid-template-columns: 68px 1fr;
+  align-items: center;
+  gap: 6px 8px;
+  margin-bottom: 9px;
+}
+.admin-field-grid label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.admin-input {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 7px;
+  border: 1px solid var(--panel-border);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 11.5px;
+  outline: none;
+}
+.admin-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+select.admin-input { cursor: pointer; }
+/* The native date/time picker indicator is near-black on this dark field. */
+.admin-input::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+
+.admin-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 100%;
+  padding: 7px 10px;
+  margin-top: 4px;
+  border-radius: 9px;
+  border: 1px solid var(--panel-border);
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.admin-btn:hover:not(:disabled) {
+  background: var(--card-hover);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.admin-btn:disabled { opacity: 0.55; cursor: progress; }
+.admin-btn-sub {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+}
+.admin-btn-sub code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+}
+.admin-btn-primary {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+.admin-btn-primary:hover:not(:disabled) { background: rgba(59, 130, 246, 0.28); }
+/* Amber, because this is the one control on the page that spends upstream quota. */
+.admin-btn-warn {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.42);
+}
+.admin-btn-warn:hover:not(:disabled) { background: rgba(245, 158, 11, 0.22); }
+.admin-btn-warn .admin-btn-sub { color: #fcd34d; }
+
+.admin-ops { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+
+.admin-op-result {
+  margin-top: 8px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.admin-op-result.is-ok   { border-color: rgba(16, 185, 129, 0.4); color: #a7f3d0; }
+.admin-op-result.is-bad  { border-color: rgba(239, 68, 68, 0.45); color: #fecaca; }
+
+/* Weather placeholder warning — shown only when weather != clear. */
+.admin-warn {
+  margin-top: 9px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.34);
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.admin-warn strong { color: #fcd34d; }
+.admin-warn code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  color: #cbd5e1;
+}
+
+/* ── ETA layer ladder ────────────────────────────────────────────────────────── */
+.admin-ladder { display: flex; flex-direction: column; gap: 1px; }
+
+.ladder-row {
+  display: grid;
+  grid-template-columns: 1fr 62px 54px;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 5px;
+  border-radius: 6px;
+  font-size: 11.5px;
+}
+.ladder-row:hover { background: var(--card-bg); }
+.ladder-label { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ladder-value {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  text-align: right;
+  color: var(--text-main);
+}
+/* Diverging, two hues about a neutral: amber ADDS minutes, green SAVES them.
+   Not a status palette — it encodes the sign of a contribution, nothing else. */
+.ladder-value.adds  { color: #fbbf24; }
+.ladder-value.saves { color: #34d399; }
+.ladder-value.nil   { color: var(--text-muted); }
+
+.ladder-bar {
+  position: relative;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(148, 163, 184, 0.13);
+  overflow: hidden;
+}
+.ladder-bar span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+  min-width: 2px;             /* a 0.0013 min layer still renders a sliver, on purpose:
+                                 "too small to see" is the finding, not an omission */
+}
+.ladder-bar span.adds  { left: 50%; background: var(--warning); }
+.ladder-bar span.saves { right: 50%; background: var(--success); }
+
+/* Baseline (the thing being added to) and the total (the thing arrived at). */
+.ladder-row.is-base {
+  border-bottom: 1px dashed rgba(148, 163, 184, 0.25);
+  padding-bottom: 6px;
+  margin-bottom: 3px;
+}
+.ladder-row.is-base .ladder-label { color: var(--text-main); font-weight: 600; }
+
+.ladder-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 7px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  background: rgba(59, 130, 246, 0.13);
+  border: 1px solid rgba(59, 130, 246, 0.34);
+}
+.ladder-total-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #bfdbfe;
+}
+.ladder-total-value {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.ladder-total-unit { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+
+/* Observed band — the measured spread of real runs about the prediction. */
+.band-wrap {
+  margin-top: 8px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.band-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text-main);
+  font-weight: 600;
+}
+.band-pm {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);   /* NOT --text-dim: that fails contrast at this size */
+}
+.band-track {
+  position: relative;
+  height: 6px;
+  margin: 7px 0 5px;
+  border-radius: 3px;
+  background: rgba(148, 163, 184, 0.15);
+}
+.band-span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: rgba(59, 130, 246, 0.45);
+}
+.band-centre {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--text-main);
+  border-radius: 1px;
+}
+.band-note {
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--text-muted);   /* NOT --text-dim */
+}
+
+/* ── Caveat blocks (curvature resolvability, delay coverage artifact, …) ─────── */
+.admin-caveat {
+  margin-top: 8px;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.admin-caveat summary {
+  cursor: pointer;
+  user-select: none;
+  color: #8fa6bd;
+  font-style: italic;
+  outline: none;
+  font-size: 10px;
+}
+.admin-caveat summary:focus-visible { text-decoration: underline; }
+.admin-caveat-body {
+  margin-top: 4px;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+.admin-caveat-body code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  color: #cbd5e1;
+}
+.admin-caveat-body strong { color: #cbd5e1; }
+
+/* Per-date delay samples: one row per observed run, with its n= sample count. */
+.delay-grid { display: flex; flex-direction: column; gap: 2px; margin-top: 5px; }
+.delay-row {
+  display: grid;
+  grid-template-columns: 74px 1fr 46px;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+}
+.delay-date {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text-muted);
+}
+.delay-bar {
+  position: relative;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(148, 163, 184, 0.13);
+}
+.delay-bar span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+  min-width: 2px;
+}
+.delay-bar span.late  { left: 50%; background: var(--warning); }
+.delay-bar span.early { right: 50%; background: var(--success); }
+.delay-val {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  text-align: right;
+}
+.delay-val.late  { color: #fbbf24; }
+.delay-val.early { color: #34d399; }
+
+/* Curvature blindness proportion — resolvable vs curvature-blind km. */
+.blind-track {
+  position: relative;
+  display: flex;
+  height: 7px;
+  margin: 6px 0 5px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(148, 163, 184, 0.15);
+}
+.blind-resolvable { background: var(--accent); }
+.blind-dark {
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(148, 163, 184, 0.42) 0 3px,
+    rgba(148, 163, 184, 0.14) 3px 6px
+  );
+}
+.blind-legend {
+  display: flex;
+  gap: 12px;
+  font-size: 9.5px;
+  color: var(--text-muted);
+}
+.blind-key {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+.blind-key.resolvable { background: var(--accent); }
+.blind-key.dark {
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(148, 163, 184, 0.6) 0 2px,
+    rgba(148, 163, 184, 0.2) 2px 4px
+  );
+}
+
+/* Provenance chips: geometry_basis, curvature mode, delay basis, … */
+.admin-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.admin-chip {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  color: var(--text-muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.admin-chip strong {
+  color: #cbd5e1;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+}
+.admin-chip.is-caution {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.34);
+}
+.admin-chip.is-caution strong { color: #fcd34d; }
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-rail-left,
+  .admin-quota-fill,
+  .admin-panel-title::before { transition: none; }
+}

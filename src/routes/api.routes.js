@@ -13,6 +13,12 @@ import {
   proxyPass,
 } from '../controllers/train.controller.js';
 import { cacheMiddleware } from '../middleware/cache.js';
+import {
+  getModelEta,
+  getModelHealth,
+  getModelGeometry,
+  flushGatewayCache,
+} from '../controllers/admin.controller.js';
 import { config } from '../config/env.js';
 
 const router = Router();
@@ -58,6 +64,20 @@ router.get('/trains/:trainNumber', cacheMiddleware(config.cache.staticTtl), getT
 
 // STATIC — lookups
 router.get('/lookup/categories', cacheMiddleware(86400), getTrainCategories);
+
+// ─── Model API passthroughs (admin UI) ───────────────────────────────────────────────────────
+// The Python model service on :8000 has no CORS middleware, so a browser page served from
+// this origin cannot call it directly — these routes are the only path. All three are
+// cache-only on the model side and cost ZERO upstream RailRadar requests, so the TTLs here
+// exist to spare recomputation, not quota.
+router.get('/model/health', cacheMiddleware(60), getModelHealth);
+router.get('/model/eta/:trainNumber', cacheMiddleware(300), getModelEta);
+router.get('/model/geometry/:trainNumber', cacheMiddleware(config.cache.staticTtl), getModelGeometry);
+
+// ─── Operator actions ────────────────────────────────────────────────────────────────────────
+// POST-only, and deliberately the only mutating route in this API. It clears this process's
+// in-memory cache and nothing else — never the .cache/ corpus on disk (see the controller).
+router.post('/admin/cache/flush', flushGatewayCache);
 
 // Transparent proxy for any RailRadar endpoint
 router.all('/proxy/*', proxyPass);

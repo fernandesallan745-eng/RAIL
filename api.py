@@ -23,12 +23,10 @@ import os
 import re
 
 from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse
 
 import curvature
 import eta_model
-
-HERE = os.path.dirname(os.path.abspath(__file__))
 
 app = FastAPI(
     title="Curvature & Delay-Aware ETA — Indian Railways",
@@ -81,36 +79,15 @@ def root():
             "implemented; a live weather feed (OpenWeatherMap/IMD) is the next integration."
         ),
         "endpoints": ["/health", "/eta/{train_number}", "/eta/{train_number}/curvature",
-                      "/conflicts/{train_number}",
-                      "/dashboard", "/admin", "/geometry/{train_number}"],
+                      "/conflicts/{train_number}", "/corridor/conflicts",
+                      "/geometry/{train_number}"],
+        # This service is JSON only. The operator/audit UI is the map-centric admin
+        # page served by the Node gateway on :5050 (/admin), which proxies the
+        # endpoints above — it is the same origin as the user map, so it is also
+        # reachable from the phone, which a page served from here is not
+        # (run_server.py binds 127.0.0.1 unless GATI_MODEL_HOST says otherwise).
+        "ui": "served by the Node gateway: http://localhost:5050/admin",
     }
-
-
-@app.get("/dashboard")
-def dashboard():
-    """Serve the operator dashboard (Phase 8). Static file, no templating."""
-    path = os.path.join(HERE, "dashboard.html")
-    if not os.path.exists(path):
-        raise HTTPException(404, detail="dashboard.html not found next to api.py")
-    # no-store, not just an ETag: without an explicit Cache-Control a browser is free to
-    # apply heuristic freshness (~10% of the age since Last-Modified) and serve the page
-    # from cache WITHOUT revalidating, so an edited dashboard looks like it never changed.
-    return FileResponse(path, media_type="text/html",
-                        headers={"Cache-Control": "no-store, must-revalidate"})
-
-
-@app.get("/admin")
-def admin():
-    """Serve the layer-by-layer model audit console (judge-facing).
-
-    Same static-file contract as /dashboard: no templating, no build step, and every
-    number on the page is fetched from the endpoints below rather than baked in.
-    """
-    path = os.path.join(HERE, "admin.html")
-    if not os.path.exists(path):
-        raise HTTPException(404, detail="admin.html not found next to api.py")
-    return FileResponse(path, media_type="text/html",
-                        headers={"Cache-Control": "no-store, must-revalidate"})
 
 
 def _cache_fingerprint():
@@ -350,6 +327,13 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
 
     res["curvature_mode"] = mode
 
+    # The band is built inside compute_eta around the BLOCK-mode total, but vertex
+    # mode recomputes predicted_eta_min above (615.7 → 612.8 on 22229).  Re-centre it
+    # on whichever total actually ships, or the band would be drawn around a number
+    # the payload no longer reports — VERIFIED #21's hazard class: a derived value
+    # that stays plausible after the input behind it moves.
+    res["observed_band"] = eta_model.observed_band(train_number, t["predicted_eta_min"])
+
     # predicted arrival clock time, anchored on the origin's scheduled departure
     #
     # load_schedule() deliberately falls back to ANY cached run when the requested
@@ -382,6 +366,14 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
         arr_dt = dep_dt + timedelta(minutes=t["predicted_eta_min"])
         res["origin_departure"] = dep_dt.isoformat()
         res["predicted_arrival"] = arr_dt.isoformat()
+        # Same band, expressed on the clock. A judge reads "18:32–19:16" faster than
+        # "612.8 −23.4/+20.6", and it is the identical measured spread either way.
+        _band = res.get("observed_band") or {}
+        if _band.get("available") and _band.get("band_low_min") is not None:
+            res["predicted_arrival_earliest"] = (
+                dep_dt + timedelta(minutes=_band["band_low_min"])).isoformat()
+            res["predicted_arrival_latest"] = (
+                dep_dt + timedelta(minutes=_band["band_high_min"])).isoformat()
         sched_arr = halts[-1].get("scheduledArrival")
         if sched_arr:
             sched_arr_dt = datetime.fromisoformat(sched_arr) + shift

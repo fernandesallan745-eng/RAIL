@@ -518,6 +518,87 @@ def end_to_end_delay_samples(train=DEFAULT_TRAIN):
     return out, (sum(out.values()) / len(out) if out else None)
 
 
+def observed_band(train=DEFAULT_TRAIN, predicted_eta_min=None):
+    """
+    The spread of ACTUALLY OBSERVED journey durations, carried onto the prediction.
+
+    VERIFIED #10 is explicit that a single accuracy number off a 5-sample mean with a
+    44 min spread oversells the model, so the spread must reach the UI rather than
+    being computed and discarded.  What is returned here is deliberately NOT a
+    confidence interval: n is 5, and a 95% CI off 5 samples is statistics theatre.
+    It is the observed range, labelled as such.
+
+    Construction, and why it is not simply min/max of the observations:
+      - an observed run's duration is scheduled_duration + its end-to-end delay;
+      - the band's WIDTH is the observed dispersion about the observed mean, which
+        is measured;
+      - the band's CENTRE is the model's own prediction, which may sit away from the
+        observed mean (612.8 vs 615.4 on 22229).
+    Pasting the raw observed min/max around the prediction would silently re-centre
+    the evidence on the model and inflate any apparent agreement.  Carrying the
+    deviations keeps width measured and centre honest, so the band is asymmetric
+    whenever the samples are (−23.4/+20.6 here) instead of being forced symmetric.
+
+    Returns a dict that ALWAYS states its own basis, and reports
+    `unavailable_reason` rather than a silent null when there is nothing to measure
+    — only 22229 has dated runs cached, so 209 of 210 trains take that path.
+    """
+    samples, _ = end_to_end_delay_samples(train)
+    info, _, _ = load_schedule(train)
+    sched = info.get("duration")
+
+    if not samples or sched is None:
+        return {
+            "available": False,
+            "sample_count": len(samples),
+            "unavailable_reason": (
+                "no-dated-runs-cached" if not samples else "no-scheduled-duration"),
+            "note": (
+                "No observed runs are cached for this train, so its spread is unknown "
+                "— not zero. Only the reference train has dated historical runs; "
+                "fetch_dates.py adds more."),
+        }
+    if len(samples) < 2:
+        return {
+            "available": False,
+            "sample_count": len(samples),
+            "unavailable_reason": "insufficient-samples",
+            "note": "A single observed run has no spread to measure.",
+        }
+
+    durations = {d: sched + v for d, v in samples.items()}
+    vals = sorted(durations.values())
+    obs_mean = sum(vals) / len(vals)
+    devs = [v - obs_mean for v in vals]
+    low_dev, high_dev = min(devs), max(devs)
+
+    out = {
+        "available": True,
+        "sample_count": len(vals),
+        "basis": "observed-range",
+        "observed_durations_min": durations,
+        "observed_mean_min": round(obs_mean, 1),
+        "observed_min_min": vals[0],
+        "observed_max_min": vals[-1],
+        "observed_spread_min": round(vals[-1] - vals[0], 1),
+        "minus_min": round(-low_dev, 1),
+        "plus_min": round(high_dev, 1),
+        "scheduled_duration_min": sched,
+        "note": (
+            f"Range of {len(vals)} observed runs, not a confidence interval — n is too "
+            f"small for a meaningful sigma. Width is the measured spread about the "
+            f"observed mean ({round(obs_mean, 1)} min); the centre is the model's own "
+            f"prediction, so the band does not re-centre the evidence on the model."
+        ),
+    }
+    if predicted_eta_min is not None:
+        out["band_low_min"] = round(predicted_eta_min + low_dev, 1)
+        out["band_high_min"] = round(predicted_eta_min + high_dev, 1)
+        out["centre_min"] = round(predicted_eta_min, 1)
+        out["error_vs_observed_mean_min"] = round(predicted_eta_min - obs_mean, 1)
+    return out
+
+
 def geometry_resolution(coords, blind_threshold_km=1.0):
     """
     How much of the route the curvature layer can actually SEE.
@@ -806,6 +887,10 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
         "curvature_layer_covers_km": round(sum(
             s["distance_km"] for s, b in zip(segments, block_geom)
             if b is not None), 1),
+        # The spread of observed runs, carried onto the prediction.  VERIFIED #10:
+        # a point estimate off a 5-sample mean with a 44 min spread oversells the
+        # model, so the band ships with the number rather than beside it in a doc.
+        "observed_band": observed_band(train, round(total_eta, 1)),
         "historical_delay_audit": {
             "basis": "incremental (delayArrival differenced along the halt chain)",
             "segment_increments_sum_min": round(total_delay, 1),

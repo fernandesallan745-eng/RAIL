@@ -5,41 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>GATI — Live Train Tracker &amp; ETA</title>
-  
+  <title>GATI ADMIN — Operator &amp; Model Audit Console</title>
+
+  <!--
+    THE STRUCTURE BELOW IS DELIBERATELY IDENTICAL TO index.html.
+
+    app.js is a classic script with no module boundary: it calls startApp() on load and
+    dereferences #layerToggleBtn, #zoomInBtn, #zoomOutBtn, #recenterBtn, #fullscreenBtn,
+    #drawerCloseBtn, #searchInput and #serverSetupForm with NO null checks. A page that
+    drops any of those IDs throws a TypeError before the map is ever built. So sharing the
+    markup is a REQUIREMENT, not copy-paste convenience — and it is also what makes this
+    page look like the user UI, which is what was asked for.
+
+    Admin-only additions are the two rails at the end of <body> plus admin.css/admin.js,
+    which run AFTER app.js and read its globals rather than re-implementing anything.
+  -->
+
   <!-- Fonts (network). All app.css font stacks end in system fallbacks
        (sans-serif / monospace), so a blocked Google Fonts degrades cleanly. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 
-  <!-- Leaflet CSS — local vendored copy first, CDN as fallback.
-       Both are listed; the vendored file wins when present and the CDN link is
-       harmless duplication when it isn't. See README "Offline map pack". -->
+  <!-- Leaflet CSS — local vendored copy first, CDN as fallback. -->
   <link rel="stylesheet" href="./vendor/leaflet/leaflet.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
-  <!-- App Stylesheet -->
+  <!-- App stylesheet first, then admin panel chrome layered on its tokens. -->
   <link rel="stylesheet" href="./app.css?v=20260912-3">
+  <link rel="stylesheet" href="./admin.css?v=20260912-3">
 </head>
-<body>
+<body class="gati-admin">
 
   <!-- Fullscreen Map Canvas -->
   <div id="map"></div>
 
-  <!-- Top Floating Search Bar (GATI UI) -->
+  <!-- Top Floating Search Bar -->
   <div class="top-search-container">
     <div class="search-bar">
       <div class="logo-badge" onclick="map.flyTo([16.8, 73.5], 7)">
         <div class="logo-icon-svg">🚄</div>
         <span class="logo-text">GATI</span>
+        <span class="admin-badge">ADMIN</span>
       </div>
-      <input 
-        type="text" 
-        id="searchInput" 
-        class="search-input" 
-        placeholder="Search Konkan train or station..." 
-        autocomplete="off" 
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Search Konkan train or station..."
+        autocomplete="off"
         spellcheck="false"
       />
       <button class="search-action-btn" title="Search">
@@ -54,24 +68,20 @@
     <div id="searchDropdown" class="search-dropdown"></div>
   </div>
 
-  <!-- Top Right Satellite Switcher Button (Matching Reference Screenshot) -->
+  <!-- Top Right Satellite Switcher Button -->
   <div class="map-layer-switch">
     <div id="layerToggleBtn" class="layer-toggle-btn" title="Toggle Map Layer">
       <span id="layerToggleLabel" class="layer-toggle-label">Satellite</span>
     </div>
   </div>
 
-  <!-- Link to the operator/audit console. Same origin now that it is served by this Node
-       gateway rather than the model service, so there is no port to discover and no
-       runtime lookup to hide the link behind — a plain href that also works from the
-       phone, which a page served by the model service is not (it binds 127.0.0.1). -->
-  <a id="auditLink" href="/admin" rel="noopener"
-     title="Operator console — every ETA and map layer, opened up">
-    Model audit →
+  <!-- Back to the user-facing map. Same origin, so a plain href. -->
+  <a id="userMapLink" href="/" rel="noopener" title="Back to the live tracker">
+    ← Live tracker
   </a>
 
   <!-- Native iOS builds load this UI from the app bundle, so they need the Mac's
-       LAN address once to reach the live Node gateway. Browsers keep same-origin API calls. -->
+       LAN address once to reach the live Node gateway. -->
   <section id="serverSetup" class="server-setup" hidden aria-labelledby="serverSetupTitle">
     <form id="serverSetupForm" class="server-setup-card">
       <p class="server-setup-eyebrow">iPhone test connection</p>
@@ -95,9 +105,6 @@
   <!-- Bottom Right Map Control Action Buttons -->
   <div class="map-controls-group">
     <button id="serverSettingsBtn" class="ctrl-btn native-only" title="Server connection" hidden>⌁</button>
-    <!-- Corridor-wide scheduled crossings. OFF by default: it draws ~2,300 markers
-         from static timetables and must never be mistaken for the live fleet,
-         which is one train. The legend below carries that distinction. -->
     <button id="corridorToggleBtn" class="ctrl-btn" title="Corridor-wide scheduled crossings (all trains)" aria-pressed="false">⇄</button>
     <button id="recenterBtn" class="ctrl-btn" title="Center India">⌖</button>
     <button id="zoomInBtn" class="ctrl-btn" title="Zoom In">+</button>
@@ -105,10 +112,8 @@
     <button id="fullscreenBtn" class="ctrl-btn" title="Toggle Fullscreen">⛶</button>
   </div>
 
-  <!-- Legend for the corridor layer. Shown only while that layer is on, and it
-       states positionBasis explicitly: these are two timetables crossing, not two
-       tracked trains. Drawing scheduled meets so they look live is the failure
-       VERIFIED #12/#21 exist to prevent, so this text is not decorative. -->
+  <!-- Legend for the corridor layer. States positionBasis explicitly: these are two
+       timetables crossing, not two tracked trains. -->
   <div id="corridorLegend" class="corridor-legend" hidden>
     <div class="corridor-legend-title">
       <span id="corridorLegendCount">Corridor crossings</span>
@@ -119,7 +124,7 @@
     <div id="corridorLegendNote" class="corridor-legend-note"></div>
   </div>
 
-  <!-- Slide-Out Train Telemetry Drawer -->
+  <!-- Slide-Out Train Telemetry Drawer (identical to the user UI) -->
   <div id="trainDrawer" class="train-drawer">
     <div class="drawer-header">
       <button id="drawerCloseBtn" class="drawer-close-btn" title="Close Drawer">&times;</button>
@@ -128,8 +133,7 @@
         <span id="drawerTrainType" class="drawer-train-type">Shatabdi Express</span>
       </div>
       <h2 id="drawerTrainName" class="drawer-train-name">Bhopal Shatabdi</h2>
-      
-      <!-- Route Origin & Destination -->
+
       <div class="drawer-route-banner">
         <div class="drawer-station-node">
           <span id="drawerSourceCode" class="station-node-code">NDLS</span>
@@ -143,9 +147,7 @@
       </div>
     </div>
 
-    <!-- Scrollable Drawer Body -->
     <div class="drawer-content-scroll">
-      <!-- Live Status Card -->
       <div class="live-status-card">
         <div class="status-top-row">
           <div id="drawerDelayBadge" class="delay-badge-pill ontime">🟢 On Time</div>
@@ -153,8 +155,7 @@
         </div>
         <div id="drawerCurrentPos" class="current-pos-text">Departed New Delhi</div>
         <div id="drawerNextHalt" class="next-halt-text">Next halt: Mathura Jn</div>
-        
-        <!-- Progress Bar -->
+
         <div class="progress-bar-wrap">
           <div id="drawerProgressFill" class="progress-bar-fill" style="width: 40%;"></div>
         </div>
@@ -164,41 +165,24 @@
         </div>
 
         <!-- Tunnel tracking + GPS blind-spot dead reckoning (USP #2) -->
-        <!-- Shown whenever the tunnel layer projects, not only on signal loss:
-             "which tunnel is next" is useful in normal running too. The header
-             and body are rewritten by renderTunnelPanel() in app.js. -->
         <div id="tunnelPanel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px;">
           <div id="tunnelPanelHeader" style="font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;"></div>
           <div id="tunnelPanelBody" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;"></div>
 
-          <!-- Dead-reckoning sub-block: only populated while the signal is stale -->
           <div id="deadReckoningPanel" style="display: none; font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(148,163,184,0.18);">
             Last signal: <span id="drLastSignal">-</span><br/>
             Reckoned position: <span id="drEstPos" style="color: #f87171; font-weight: 600;">-</span><br/>
             Confidence: <span id="drConfidence" style="color: #fbbf24; font-weight: 600;">-</span>
           </div>
-
         </div>
 
         <!-- Crossing / overtake conflict prediction on single line (USP #3) -->
-        <!-- Three states, driven entirely by renderConflictPanel() in app.js:
-               HELD          — we take the loop, N minutes lost (amber/red)
-               RIGHT OF WAY  — the other train is looped for us (green)
-               NO CROSSINGS  — nothing predicted on this run (dim)
-             Both sides are always shown, per the demo requirement: a crossing we
-             win is as much a prediction as one we lose. -->
         <div id="conflictPanel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px;">
           <div id="conflictPanelHeader" style="font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;"></div>
           <div id="conflictPanelBody" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;"></div>
 
-          <!-- Provenance. Three separate caveats that must not be compressed into
-               "prototype data" — they are about different things, and each one is
-               a question a judge will ask:
-                 1. loop LOCATIONS are assumed (no track-count data exists here)
-                 2. the priority ladder is OUR heuristic, not IR precedence rules
-                 3. the other trains' times are SCHEDULED, only our delay is live -->
           <details id="conflictPanelCaveat" style="font-size: 0.67rem; color: var(--text-dim); margin-top: 8px; line-height: 1.35;">
-            <summary style="cursor: pointer; user-select: none; color: #64748b; font-style: italic; outline: none;">ℹ️ Dispatch & Precedence Assumptions ▾</summary>
+            <summary style="cursor: pointer; user-select: none; color: #64748b; font-style: italic; outline: none;">ℹ️ Dispatch &amp; Precedence Assumptions ▾</summary>
             <div style="margin-top: 4px; padding: 6px 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 4px; color: var(--text-muted);">
               Crossing geometry is computed from the other trains' <strong>scheduled</strong>
               times (static) against this train's <strong>live</strong> delay — we do not
@@ -211,10 +195,6 @@
           </details>
         </div>
 
-        <!-- Shown instead of the panel above when the conflict model could not be
-             reached or has no corridor entry for this train. An empty conflict
-             panel and "no crossings predicted" look identical but mean opposite
-             things, so the absent case is always named. -->
         <div id="conflictUnavailable" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2);">
           <div style="font-weight: 700; color: #94a3b8; font-size: 0.8rem;">
             🔀 Crossing &amp; Overtake Prediction
@@ -224,7 +204,6 @@
         </div>
       </div>
 
-      <!-- Coach Composition Visualizer -->
       <div>
         <div class="section-heading">
           <span>Coach Composition</span>
@@ -232,20 +211,167 @@
         <div id="coachRakeContainer" class="coach-rake-container"></div>
       </div>
 
-      <!-- Journey Halts & Timeline -->
       <div>
         <div class="section-heading">
-          <span>Journey Timeline & Halts</span>
+          <span>Journey Timeline &amp; Halts</span>
         </div>
         <div id="timelineHaltsList" class="timeline-list"></div>
       </div>
     </div>
   </div>
 
-  <!-- Leaflet + app bootstrap.
-       Leaflet loads from the local vendored copy when present, else from the CDN.
-       offline-tiles.js and app.js both need `L` to already exist, so they are
-       chained after it rather than declared as plain <script> tags. -->
+  <!-- ══════════════════════════════════════════════════════════════════════════════
+       ADMIN-ONLY SURFACE. Everything above this line is the user UI verbatim.
+       ══════════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- LEFT RAIL — provenance banner, map-layer switchboard, upstream quota + ops.
+       Slides right when the train drawer opens (see admin.css); the drawer owns the
+       left edge and the two must not stack. -->
+  <div class="admin-rail admin-rail-left" id="adminRailLeft">
+
+    <!-- Phase 8 honesty wiring, carried over from the deleted dashboard/admin pages.
+         Deleting the page that displayed it did not retire the obligation. Both
+         halves are required: the data-source caveat (§3) and the no-automated-control
+         safety framing (§2), which is non-negotiable. -->
+    <div class="admin-banner">
+      <span class="admin-banner-dot"></span>
+      <div>
+        <strong>Prototype data source.</strong> Positions come from RailRadar
+        (crowdsourced GPS) — <em>not</em> RTIS/CRIS official Railways data.
+        <strong>Decision support only:</strong> nothing here dispatches; every alert
+        is for a human Section Controller to confirm.
+      </div>
+    </div>
+
+    <details class="admin-panel" open>
+      <summary class="admin-panel-head">
+        <span class="admin-panel-title">Map layers</span>
+        <span class="admin-panel-meta" id="mapLayersMeta">—</span>
+      </summary>
+      <div class="admin-panel-body">
+        <!-- Rows are built by admin.js against the Leaflet groups app.js already owns,
+             so a layer can never appear here that does not exist on the map. -->
+        <div id="mapLayersBody" class="admin-rows"></div>
+        <p class="admin-note">
+          Counts are live feature counts on each Leaflet group. <strong>0 means the
+          layer is genuinely empty</strong>, not that it failed — an empty layer and a
+          broken one look identical on a map, so both are named.
+        </p>
+      </div>
+    </details>
+
+    <details class="admin-panel" open>
+      <summary class="admin-panel-head">
+        <span class="admin-panel-title">Upstream quota &amp; ops</span>
+        <span class="admin-panel-meta" id="quotaMeta">—</span>
+      </summary>
+      <div class="admin-panel-body">
+        <div id="quotaBody" class="admin-rows"><div class="admin-empty">Loading…</div></div>
+
+        <div class="admin-ops">
+          <button id="opRefreshTrain" class="admin-btn admin-btn-warn" type="button">
+            Force-refresh train
+            <span class="admin-btn-sub">spends 1 upstream request</span>
+          </button>
+          <button id="opFlushCache" class="admin-btn" type="button">
+            Flush gateway cache
+            <span class="admin-btn-sub">memory only — never <code>.cache/</code></span>
+          </button>
+        </div>
+        <div id="opResult" class="admin-op-result" hidden></div>
+      </div>
+    </details>
+  </div>
+
+  <!-- RIGHT RAIL — model query controls and the ETA layer ladder. -->
+  <div class="admin-rail admin-rail-right" id="adminRailRight">
+
+    <details class="admin-panel" open>
+      <summary class="admin-panel-head">
+        <span class="admin-panel-title">Model query</span>
+        <span class="admin-panel-meta" id="queryMeta">—</span>
+      </summary>
+      <div class="admin-panel-body">
+        <div class="admin-field-grid">
+          <label for="qTrain">Train</label>
+          <input id="qTrain" class="admin-input" type="text" inputmode="numeric"
+                 placeholder="22229" autocomplete="off" spellcheck="false" />
+
+          <label for="qDate">Date</label>
+          <input id="qDate" class="admin-input" type="date" />
+
+          <label for="qWeather">Weather</label>
+          <select id="qWeather" class="admin-input">
+            <option value="clear" selected>clear</option>
+            <option value="rain">rain</option>
+            <option value="heavy_rain">heavy_rain</option>
+            <option value="monsoon_flagged_section">monsoon_flagged_section</option>
+            <option value="fog">fog</option>
+          </select>
+
+          <label for="qMode">Curvature</label>
+          <select id="qMode" class="admin-input">
+            <option value="vertex" selected>vertex (default, per-vertex)</option>
+            <option value="block">block (conservative bound)</option>
+          </select>
+        </div>
+        <button id="qRun" class="admin-btn admin-btn-primary" type="button">
+          Run model
+          <span class="admin-btn-sub">cache-only — 0 upstream requests</span>
+        </button>
+
+        <!-- Weather placeholder warning (Phase 8 honesty wiring). Shown only when
+             weather != clear, because WEATHER_SPEED_FACTOR is a set of untuned
+             guesses, not TSR-sourced values. -->
+        <div id="qWeatherWarn" class="admin-warn" hidden>
+          <strong>Untuned placeholders.</strong> The weather multipliers in
+          <code>curvature.WEATHER_SPEED_FACTOR</code> are illustrative guesses, not
+          sourced from TSR data. Weather-capping is implemented; a live weather feed
+          is the next integration.
+        </div>
+
+        <div class="admin-subhead">Corridor sweep</div>
+        <div class="admin-field-grid">
+          <label for="cDate">Date</label>
+          <input id="cDate" class="admin-input" type="text" placeholder="today" autocomplete="off" />
+
+          <label for="cAt">At</label>
+          <input id="cAt" class="admin-input" type="text" placeholder="HH:MM (optional)" autocomplete="off" />
+
+          <label for="cWindow">Window</label>
+          <input id="cWindow" class="admin-input" type="number" min="0" placeholder="min" />
+
+          <label for="cLimit">Limit</label>
+          <input id="cLimit" class="admin-input" type="number" min="1" placeholder="rows" />
+
+          <label for="cDelay">Delay</label>
+          <input id="cDelay" class="admin-input" type="number" placeholder="min" />
+        </div>
+        <button id="cRun" class="admin-btn" type="button">
+          Run corridor sweep
+          <span class="admin-btn-sub">cache-only — 0 upstream requests</span>
+        </button>
+        <div id="cResult" class="admin-op-result" hidden></div>
+      </div>
+    </details>
+
+    <details class="admin-panel admin-panel-eta" open>
+      <summary class="admin-panel-head">
+        <span class="admin-panel-title">ETA layers</span>
+        <span class="admin-panel-meta" id="etaMeta">—</span>
+      </summary>
+      <div class="admin-panel-body">
+        <div id="etaBody"><div class="admin-empty">Select a train, or run the model above.</div></div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Leaflet + app bootstrap, then the admin layer on top.
+       admin.js is chained AFTER app.js so it can read app.js's globals (map,
+       tunnelsLayer, conflictLayer, corridorConflictLayer) by bare name. It must never
+       re-declare them: a second `let map` in the shared global scope is a SyntaxError,
+       not a shadow. It waits for the `gati:ready` event rather than racing, because
+       bootstrapApp() is async and `map` is still null when this file first executes. -->
   <script src="./vendor/leaflet/leaflet.js"></script>
   <script>
     (function () {
@@ -263,7 +389,11 @@
       }
 
       function bootApp() {
-        load('./offline-tiles.js?v=20260912-3', null, function () { load('./app.js?v=20260912-3', null, null); });
+        load('./offline-tiles.js?v=20260912-3', null, function () {
+          load('./app.js?v=20260912-3', null, function () {
+            load('./admin.js?v=20260912-3', null, null);
+          });
+        });
       }
 
       if (typeof L !== 'undefined') {
@@ -271,10 +401,6 @@
         return;
       }
 
-      // Not vendored yet: fall back to the CDN. Injected dynamically rather than
-      // via document.write, which Chrome may block outright on slow connections
-      // (chromestatus 5718547946799104) — precisely the weak-wifi case the
-      // offline pack exists for.
       load(
         'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
         {
