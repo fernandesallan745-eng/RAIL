@@ -2,7 +2,7 @@
   "trainNumber": "12051",
   "trainName": "Mumbai CSMT - Madgaon Shatabdi Express",
   "startDate": "2026-09-13",
-  "lastUpdatedAt": "2026-09-13T15:15:37+05:30",
+  "lastUpdatedAt": "2026-09-13T15:16:14+05:30",
   "status": "running",
   "train": {
     "number": "12051",
@@ -9955,12 +9955,12 @@
     "status": "departed",
     "isHalt": false,
     "coordinates": {
-      "lat": 16.84845,
-      "lng": 73.61353
+      "lat": 16.819256,
+      "lng": 73.6162
     },
-    "distanceFromOriginKm": 385.82,
-    "distanceFromLastStationKm": 8.52,
-    "segmentProgress": 0.55,
+    "distanceFromOriginKm": 389.12,
+    "distanceFromLastStationKm": 11.82,
+    "segmentProgress": 0.76,
     "delayMinutes": 185
   },
   "route": [
@@ -11012,10 +11012,10 @@
       "platform": "1",
       "distance": 457.3,
       "speedToNextStationKmph": 44.7,
-      "actualArrival": "2026-09-13T16:53:00+05:30",
-      "delayArrival": 193,
-      "actualDeparture": "2026-09-13T16:55:00+05:30",
-      "delayDeparture": 193
+      "actualArrival": "2026-09-13T16:55:00+05:30",
+      "delayArrival": 195,
+      "actualDeparture": "2026-09-13T16:57:00+05:30",
+      "delayDeparture": 195
     },
     {
       "sequence": 65,
@@ -11049,10 +11049,10 @@
       "platform": "1",
       "distance": 485.6,
       "speedToNextStationKmph": 62.7,
-      "actualArrival": "2026-09-13T17:33:00+05:30",
-      "delayArrival": 193,
-      "actualDeparture": "2026-09-13T17:35:00+05:30",
-      "delayDeparture": 193
+      "actualArrival": "2026-09-13T17:35:00+05:30",
+      "delayArrival": 195,
+      "actualDeparture": "2026-09-13T17:37:00+05:30",
+      "delayDeparture": 195
     },
     {
       "sequence": 67,
@@ -11086,10 +11086,10 @@
       "platform": "1",
       "distance": 506.5,
       "speedToNextStationKmph": 38.5,
-      "actualArrival": "2026-09-13T17:55:00+05:30",
-      "delayArrival": 193,
-      "actualDeparture": "2026-09-13T17:57:00+05:30",
-      "delayDeparture": 193
+      "actualArrival": "2026-09-13T17:57:00+05:30",
+      "delayArrival": 195,
+      "actualDeparture": "2026-09-13T17:59:00+05:30",
+      "delayDeparture": 195
     },
     {
       "sequence": 69,
@@ -11139,10 +11139,10 @@
       "platform": "1",
       "distance": 536,
       "speedToNextStationKmph": 40.6,
-      "actualArrival": "2026-09-13T18:43:00+05:30",
-      "delayArrival": 193,
-      "actualDeparture": "2026-09-13T18:45:00+05:30",
-      "delayDeparture": 193
+      "actualArrival": "2026-09-13T18:45:00+05:30",
+      "delayArrival": 195,
+      "actualDeparture": "2026-09-13T18:47:00+05:30",
+      "delayDeparture": 195
     },
     {
       "sequence": 72,
@@ -11221,8 +11221,8 @@
       "arrivalDay": 1,
       "platform": "5",
       "distance": 582,
-      "actualArrival": "2026-09-13T19:53:00+05:30",
-      "delayArrival": 193
+      "actualArrival": "2026-09-13T19:55:00+05:30",
+      "delayArrival": 195
     }
   ],
   "tunnels": {
@@ -11249,8 +11249,8 @@
       ],
       "portalOffsetM": 0.1,
       "positionalConfidence": "high",
-      "metresToEntry": 3491,
-      "minutesToEntry": 4.2
+      "metresToEntry": 191,
+      "minutesToEntry": 0.2
     },
     "passedCount": 50,
     "totalCount": 69,
@@ -12856,7 +12856,7 @@
   },
   "deadReckoning": {
     "active": false,
-    "staleSinceMs": 37589,
+    "staleSinceMs": 120601,
     "method": "live_signal"
   },
   "curvatureEta": {
