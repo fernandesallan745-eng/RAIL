@@ -7,6 +7,7 @@ const clientCache = {
   trainRoute: new Map(),
   trainCoaches: new Map(),
   searches: new Map(),
+  runState: new Map(),           // train number → run-state block (model API)
 };
 
 const NATIVE_API_STORAGE_KEY = 'gati.native-api-base';
@@ -397,18 +398,40 @@ function renderFleetMarkers(trains) {
 
     const marker = L.marker([train.lat, train.lng], { icon: customIcon });
 
-    const delayText = train.delayMinutes > 0
+    // Status line. "On Time" is a claim about a train that is MOVING — a train
+    // that has not departed, is not running today, or has finished cannot be on
+    // time, and rendering it green made a static marker look tracked. Run-state
+    // is resolved server-side (train.controller.js attachFleetRunStates) so the
+    // popup, the drawer and /admin cannot disagree.
+    const rsState = train.runState?.state || null;
+    const statusText = {
+      'awaiting-departure': '<span style="color: #38bdf8;">Not yet departed</span>',
+      'not-running-today': '<span style="color: #fbbf24;">Not running today</span>',
+      'scheduled-today': '<span style="color: #38bdf8;">Scheduled, not tracking</span>',
+      completed: '<span style="color: #34d399;">Journey completed</span>',
+      unknown: '<span style="color: #94a3b8;">State unknown</span>',
+    }[rsState] || (train.delayMinutes > 0
       ? `<span style="color: #fbbf24;">+${train.delayMinutes} min</span>`
-      : `<span style="color: #34d399;">On Time</span>`;
+      : '<span style="color: #34d399;">On Time</span>');
+
+    // '—' when the source gave us no speed. The old `|| 60` resurrected exactly
+    // the invented 60 km/h that railradar.js:819 refuses to produce.
+    const speedText = Number.isFinite(Number(train.speed))
+      ? `${Math.round(Number(train.speed))} km/h`
+      : '—';
+    const nextRun = rsState === 'not-running-today' && train.runState?.nextRunDate
+      ? `<div style="font-size: 0.7rem; color: #fbbf24; margin-top: 3px;">Next service: ${train.runState.nextRunDate}</div>`
+      : '';
 
     marker.bindPopup(`
       <div class="train-popup-card">
-        <div class="popup-train-num">#${train.number} &bull; ${train.type}</div>
+        <div class="popup-train-num">#${train.number}${train.type ? ` &bull; ${train.type}` : ''}</div>
         <div class="popup-train-name">${train.name}</div>
         <div class="popup-stats-row">
-          <span title="Schedule-derived block speed (speedToNextStationKmph) — not a live GPS reading">Speed (sched): ${Math.round(train.speed || 60)} km/h</span>
-          <span>Status: ${delayText}</span>
+          <span title="Schedule-derived block speed (speedToNextStationKmph) — not a live GPS reading">Speed (sched): ${speedText}</span>
+          <span>Status: ${statusText}</span>
         </div>
+        ${nextRun}
         <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">
           ${train.source} &rarr; ${train.destination}
         </div>
@@ -492,10 +515,75 @@ async function selectTrain(trainNumber, forceRefresh = false, forceServerRefresh
     }
   } catch (err) {
     console.error('Failed to load train details:', err);
-    document.getElementById('drawerTrainName').innerHTML = `<span style="color: #f87171; font-weight: 700; font-size: 0.85rem;">⚠️ Error: ${err.message}</span>`;
     stopTrainAutoRefresh();
-    alert(`Could not load live details for train #${trainNumber}: ${err.message}`);
+    showDrawerError(trainNumber, err);
   }
+}
+
+// In-drawer error state, replacing a blocking alert().
+//
+// The alert() this replaces was modal — it stole focus, had to be dismissed
+// before the map could be touched again, and fired on the 20 s auto-refresh path
+// too, so a single upstream hiccup could interrupt the demo repeatedly. It also
+// said the same thing for every failure.
+//
+// The three failures are genuinely different and the gateway already classifies
+// them, so they are named rather than flattened — the same discipline as
+// showCorridorUnavailable() and sendModelError().
+function showDrawerError(trainNumber, err) {
+  const msg = String(err && err.message ? err.message : err);
+  const is429 = /429|rate.?limit|quota/i.test(msg);
+  const is404 = /404|not found|no cached|not-cached/i.test(msg);
+  const isDown = /failed to fetch|networkerror|econnrefused|model-unreachable/i.test(msg);
+
+  const { head, body } = is429
+    ? {
+      head: '⏳ Upstream rate limit reached',
+      body: 'RailRadar is throttling us right now. The limit is per minute, so this '
+          + 'usually clears in under a minute — the map keeps showing the last known '
+          + 'positions meanwhile.',
+    }
+    : is404
+      ? {
+        head: '🔍 No live data for this train',
+        body: `RailRadar has no running-status record for #${trainNumber} today. It may not `
+            + 'be a tracked service, or it may not run on this date.',
+      }
+      : isDown
+        ? {
+          head: '🔌 Cannot reach the GATI gateway',
+          body: 'The tracker server is not responding. If you are running it locally, check '
+              + 'that <code>npm run dev</code> is still up.',
+        }
+        : { head: '⚠️ Could not load live details', body: msg };
+
+  const name = document.getElementById('drawerTrainName');
+  if (name) name.innerHTML = `<span style="color: #f87171; font-weight: 700; font-size: 0.85rem;">${head}</span>`;
+
+  // Reuse the run-state panel as the error surface: it sits at the top of the
+  // card and is already the element that explains "why is there nothing here".
+  const panel = document.getElementById('runStatePanel');
+  const header = document.getElementById('runStateHeader');
+  const rsBody = document.getElementById('runStateBody');
+  if (panel && header && rsBody) {
+    panel.style.display = 'block';
+    panel.style.background = 'rgba(248, 113, 113, 0.08)';
+    panel.style.border = '1px solid rgba(248, 113, 113, 0.3)';
+    header.innerHTML = `<span style="color:#f87171;">${head}</span>`;
+    rsBody.innerHTML = `${body}<br/><button type="button" id="drawerRetryBtn" `
+      + 'style="margin-top:8px;padding:5px 12px;border-radius:6px;cursor:pointer;'
+      + 'background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.4);'
+      + 'color:#fca5a5;font-size:0.72rem;font-weight:600;">Retry</button>';
+    const retry = document.getElementById('drawerRetryBtn');
+    if (retry) retry.addEventListener('click', () => selectTrain(trainNumber, false, false));
+  }
+
+  // Nothing below the error is meaningful for a train we failed to load.
+  const hide = (id) => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
+  hide('progressBlock');
+  hide('tunnelPanel');
+  hide('conflictPanel');
+  hide('conflictUnavailable');
 }
 
 // ── Tunnel overlay ──────────────────────────────────────────────────────────
@@ -1374,6 +1462,158 @@ function haversineKm(a, b) {
   return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
 
+// ── Run-state panel ─────────────────────────────────────────────────────────
+// Answers "is this train actually running?" before any number on the card is
+// allowed to imply that it is.
+//
+// This exists because the drawer used to render `distanceFromOriginKm: 0` as
+// "0 km covered (0%)" — with the bar painted at a hardcoded 15% — for trains
+// that had not departed, or were not running that day at all. A zero that was
+// never measured looked identical to a measured zero. That is VERIFIED #9 at
+// the UI layer, the same failure the crossings panel had when it rendered
+// "no crossings predicted" for trains it could not compute.
+//
+// Every branch is driven by the SERVER's `liveData.runState` (resolveRunState in
+// train.controller.js). The client does no calendar arithmetic of its own —
+// identical discipline to the tunnel and conflict layers, so this page, /admin
+// and the model can never disagree about whether a train is running.
+//
+// Returns true when the progress bar should be shown (i.e. there is a real
+// distance to report), false when it must be hidden.
+function renderRunState(liveData) {
+  const panel = document.getElementById('runStatePanel');
+  const header = document.getElementById('runStateHeader');
+  const body = document.getElementById('runStateBody');
+  if (!panel || !header || !body) return true;   // page without the panel
+
+  const rs = liveData.runState;
+  if (!rs || !rs.state) {
+    // No run-state block at all: an older cached payload or a gateway that
+    // predates the layer. Say the state is unverified rather than assuming it
+    // is running — but keep the progress bar, since the position data is real.
+    panel.style.display = 'block';
+    panel.style.background = 'rgba(148, 163, 184, 0.08)';
+    panel.style.border = '1px solid rgba(148, 163, 184, 0.25)';
+    header.innerHTML = '<span style="color:#94a3b8;">◌ Run state unverified</span>';
+    body.innerHTML = 'This response carries no run-state block, so whether the '
+      + 'train is running today could not be confirmed.';
+    return true;
+  }
+
+  const dateStr = (iso) => {
+    if (!iso) return null;
+    const d = new Date(`${iso}T00:00:00`);
+    return Number.isNaN(d.getTime())
+      ? iso
+      : d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+  };
+  // Basis label, always rendered: the same answer means different things
+  // depending on whether it came from a live status, upstream's own start date,
+  // or the cached roster calendar.
+  const basisNote = {
+    'live-status': 'from the live status feed',
+    'live-start-date': "from upstream's own service date",
+    'roster-calendar': 'from the cached roster calendar',
+    'roster-calendar-stale-snapshot': 'from the cached roster calendar (the position snapshot is older than today)',
+    'no-calendar': 'no run calendar is cached for this train',
+    'unresolved': 'neither a live status nor a run calendar was available',
+  }[rs.basis] || rs.basis;
+
+  const set = (bg, border, head, text) => {
+    panel.style.display = 'block';
+    panel.style.background = bg;
+    panel.style.border = `1px solid ${border}`;
+    header.innerHTML = head;
+    body.innerHTML = text;
+  };
+
+  switch (rs.state) {
+    case 'running':
+      // Nothing to warn about: the progress bar is the truthful display here.
+      // Clear the text as well as hiding the box: the drawer is reused for every
+      // train, so a verdict left in a hidden element belongs to whichever train
+      // was open last. Invisible today, wrong the moment anything reveals or
+      // reads it — the same stale-derived-value hazard as VERIFIED #21.
+      panel.style.display = 'none';
+      header.innerHTML = '';
+      body.innerHTML = '';
+      return true;
+
+    case 'awaiting-departure': {
+      const dep = liveData.route && liveData.route[0];
+      const depTime = dep && dep.scheduledDeparture
+        ? new Date(dep.scheduledDeparture).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : null;
+      const from = (dep && dep.stationName) || liveData.train?.source?.name || null;
+      set('rgba(56, 189, 248, 0.08)', 'rgba(56, 189, 248, 0.3)',
+        '<span style="color:#38bdf8;">◷ NOT YET DEPARTED</span>',
+        `Scheduled to run today${depTime ? `, departing <strong>${depTime}</strong>` : ''}`
+        + `${from ? ` from ${from}` : ''}. No distance has been covered yet — `
+        + `<em>${basisNote}</em>.`);
+      return false;   // 0 km is correct but not a measurement; hide the bar
+    }
+
+    case 'not-running-today': {
+      const next = dateStr(rs.nextRunDate);
+      const days = Array.isArray(rs.runDays) && rs.runDays.length
+        ? rs.runDays.map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')
+        : null;
+      // Flag a source disagreement rather than hiding it behind the winner.
+      const disagree = rs.calendarAgrees === false && rs.calendarNextRunDate
+        ? `<br/><span style="color:#fbbf24;">⚠ The roster calendar expects the next run on `
+          + `${dateStr(rs.calendarNextRunDate)}; upstream says ${next}. Showing upstream's date.</span>`
+        : '';
+      set('rgba(251, 191, 36, 0.08)', 'rgba(251, 191, 36, 0.35)',
+        '<span style="color:#fbbf24;">⏸ NOT RUNNING TODAY</span>',
+        `This train does not run on ${dateStr(rs.serviceDate) || 'this date'}.`
+        + `${days ? ` It runs on <strong>${days}</strong>.` : ''}`
+        + `${next ? ` Next service <strong>${next}</strong>.` : ''}`
+        + ` Live tracking will be available once it departs — <em>${basisNote}</em>.${disagree}`);
+      return false;
+    }
+
+    case 'completed': {
+      const last = (liveData.route && liveData.route[liveData.route.length - 1]) || null;
+      const arr = last && (last.actualArrival || last.scheduledArrival)
+        ? new Date(last.actualArrival || last.scheduledArrival)
+          .toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : null;
+      set('rgba(52, 211, 153, 0.08)', 'rgba(52, 211, 153, 0.3)',
+        '<span style="color:#34d399;">✓ JOURNEY COMPLETED</span>',
+        `This run has finished${arr ? `, arriving <strong>${arr}</strong>` : ''}`
+        + `${last && last.stationName ? ` at ${last.stationName}` : ''}. `
+        + `The position shown is its last reported one — <em>${basisNote}</em>.`);
+      return true;   // the full journey distance IS a real measurement
+    }
+
+    case 'scheduled-today':
+      set('rgba(56, 189, 248, 0.08)', 'rgba(56, 189, 248, 0.3)',
+        '<span style="color:#38bdf8;">◷ SCHEDULED TODAY</span>',
+        `Runs today per the roster calendar, but no live status is available for `
+        + `it, so its current position is unknown — <em>${basisNote}</em>.`);
+      return false;
+
+    default: {
+      // 'unknown'. Deliberately NOT rendered as "not running": unknown and
+      // "does not run" are different answers and collapsing them would put a
+      // confident wrong statement on screen.
+      //
+      // The server's own note and the basis label often say the same thing
+      // ("No calendar cached." / "no run calendar is cached for this train"),
+      // so they are joined with an em-dash rather than concatenated into two
+      // sentences where the second starts lowercase.
+      const why = rs.note && rs.note.trim()
+        ? `${rs.note.trim().replace(/[.\s]+$/, '')} — <em>${basisNote}</em>.`
+        : `Whether this train runs today could not be determined — <em>${basisNote}</em>.`;
+      set('rgba(148, 163, 184, 0.08)', 'rgba(148, 163, 184, 0.25)',
+        '<span style="color:#94a3b8;">◌ RUN STATE UNKNOWN</span>',
+        `${why} This is not the same as &ldquo;not running&rdquo; — it means the `
+        + `question could not be answered.`);
+      return true;
+    }
+  }
+}
+
 // Render Train Drawer Details
 function renderTrainDrawer(liveData, coachesData) {
   const drawer = document.getElementById('trainDrawer');
@@ -1384,8 +1624,11 @@ function renderTrainDrawer(liveData, coachesData) {
   const route = liveData.route || [];
 
   document.getElementById('drawerTrainNum').innerText = `#${liveData.trainNumber}`;
-  document.getElementById('drawerTrainType').innerText = trainInfo.type || 'Superfast Express';
-  document.getElementById('drawerTrainName').innerText = liveData.trainName || trainInfo.name || 'Express Train';
+  // No invented train class. 'Superfast Express' used to be the fallback here,
+  // which put a specific, checkable claim on screen for a train whose type we
+  // did not have.
+  document.getElementById('drawerTrainType').innerText = trainInfo.type || '—';
+  document.getElementById('drawerTrainName').innerText = liveData.trainName || trainInfo.name || `Train #${liveData.trainNumber}`;
 
   // Route Source & Destination
   document.getElementById('drawerSourceCode').innerText = trainInfo.source?.code || 'ORIGIN';
@@ -1393,10 +1636,22 @@ function renderTrainDrawer(liveData, coachesData) {
   document.getElementById('drawerDestCode').innerText = trainInfo.destination?.code || 'DEST';
   document.getElementById('drawerDestName').innerText = trainInfo.destination?.name || '';
 
+  // Run state first: it decides whether the numbers below are meaningful.
+  const showProgress = renderRunState(liveData);
+  const isRunning = liveData.runState ? liveData.runState.state === 'running' : true;
+
   // Delay & Status
-  const delayMinutes = liveData.delayMinutes ?? 0;
   const delayBadge = document.getElementById('drawerDelayBadge');
-  if (delayMinutes <= 0) {
+  const delayMinutes = liveData.delayMinutes ?? 0;
+  if (!isRunning && liveData.runState
+      && (liveData.runState.state === 'not-running-today'
+          || liveData.runState.state === 'unknown'
+          || liveData.runState.state === 'scheduled-today')) {
+    // "On Time" is a statement about a train that is moving. A train that is not
+    // running cannot be on time, and the green pill made it look tracked.
+    delayBadge.className = 'delay-badge-pill';
+    delayBadge.innerHTML = '— Not tracking';
+  } else if (delayMinutes <= 0) {
     delayBadge.className = 'delay-badge-pill ontime';
     delayBadge.innerHTML = '🟢 On Time';
   } else if (delayMinutes < 30) {
@@ -1422,65 +1677,189 @@ function renderTrainDrawer(liveData, coachesData) {
   // Next Halt
   if (nextHalt.stationName) {
     document.getElementById('drawerNextHalt').innerText = `Next halt: ${nextHalt.stationName} (Seq ${nextHalt.sequence || ''})`;
+  } else if (trainInfo.destination?.name) {
+    document.getElementById('drawerNextHalt').innerText = `Destination: ${trainInfo.destination.name}`;
   } else {
-    document.getElementById('drawerNextHalt').innerText = `Destination: ${trainInfo.destination?.name || 'End of journey'}`;
+    document.getElementById('drawerNextHalt').innerText = '';
   }
 
-  // Progress Bar calculation
-  const totalDist = trainInfo.distance || 1000;
-  const coveredDist = currentLoc.distanceFromOriginKm || (route.find(s => s.sequence === currentLoc.sequence)?.distance) || 0;
-  const pct = Math.min(100, Math.max(0, Math.round((coveredDist / totalDist) * 100)));
-  
-  document.getElementById('drawerProgressFill').style.width = `${pct || 15}%`;
-  document.getElementById('drawerCoveredKm').innerText = `${coveredDist} km covered (${pct}%)`;
-  document.getElementById('drawerTotalKm').innerText = `${totalDist} km total`;
+  // Progress bar — shown only when there is a real distance to report.
+  // Hidden outright otherwise: a bar at 0% still reads as a measurement, and
+  // the old `pct || 15` painted 15% for a train sitting at its origin, because
+  // `0 || 15 === 15`.
+  const progressBlock = document.getElementById('progressBlock');
+  const totalDist = Number.isFinite(Number(trainInfo.distance)) ? Number(trainInfo.distance) : null;
+  const rawCovered = currentLoc.distanceFromOriginKm
+    ?? route.find((s) => s.sequence === currentLoc.sequence)?.distance
+    ?? null;
+  const coveredDist = Number.isFinite(Number(rawCovered)) ? Number(rawCovered) : null;
 
-  // Render Coach Composition
-  renderCoaches(coachesData || trainInfo.coachPosition);
+  if (progressBlock) {
+    if (!showProgress || totalDist === null || coveredDist === null) {
+      progressBlock.style.display = 'none';
+      // Blank the numbers too, don't just hide them. The drawer is one set of
+      // elements reused for every train, so a covered-km left behind belongs to
+      // the previously-open train — and the untouched static markup in
+      // index.html ("280 km covered (40%)") belongs to no train at all. Either
+      // one becomes a wrong measurement the instant something reveals the block.
+      document.getElementById('drawerProgressFill').style.width = '0%';
+      document.getElementById('drawerCoveredKm').innerText = '—';
+      document.getElementById('drawerTotalKm').innerText = '—';
+    } else {
+      progressBlock.style.display = '';
+      const pct = Math.min(100, Math.max(0, Math.round((coveredDist / totalDist) * 100)));
+      // `${pct}%` with no `||` fallback: 0 must render as 0.
+      document.getElementById('drawerProgressFill').style.width = `${pct}%`;
+      document.getElementById('drawerCoveredKm').innerText = `${coveredDist} km covered (${pct}%)`;
+      document.getElementById('drawerTotalKm').innerText = `${totalDist} km total`;
+    }
+  }
+
+  // Render Coach Composition.
+  // Both sources are passed: the structured payload carries class names and berth
+  // counts, the string is the bare formation. Passing only `a || b` meant a
+  // structured payload that failed to parse could never fall through to the string.
+  renderCoaches(coachesData, trainInfo.coachPosition);
 
   // Render Halts Timeline
-  renderTimeline(route, currentLoc);
+  renderTimeline(route, currentLoc, isRunning || (liveData.runState?.state === 'completed'));
 
   drawer.classList.add('open');
 }
 
 // Render Coach Boxes
-function renderCoaches(coachesData) {
+//
+// Real rake composition or nothing. The previous fallback drew a made-up
+// 8-coach rake — ENG/GEN/S1/S2/B1/B2/A1/SLRD — for any train whose composition
+// we did not have, which is a specific, checkable claim about a physical train.
+//
+// Removing that fabrication immediately exposed a parse bug it had been hiding
+// (VERIFIED #9 again): this function looked for `coachesData.coaches`, a key the
+// upstream payload does not have at the top level. The real formation is at
+// `.rake` (structured, with class names and berth counts) and `.legs[i].coaches`;
+// `.coaches` only exists nested inside a leg. Every shape is handled below, in
+// descending order of information, and the bare `coachPosition` string — carried
+// on both `train` and `route[0]` — is the last resort.
+function renderCoaches(coachesData, formationString) {
   const container = document.getElementById('coachRakeContainer');
   container.innerHTML = '';
 
+  // Ordered richest-first: `rake` has classType + className + totalBerths.
+  const structured =
+    (Array.isArray(coachesData?.rake) && coachesData.rake.length && coachesData.rake)
+    || (Array.isArray(coachesData?.legs?.[0]?.coaches) && coachesData.legs[0].coaches.length
+        && coachesData.legs[0].coaches)
+    || (Array.isArray(coachesData?.coaches) && coachesData.coaches.length && coachesData.coaches)
+    || null;
+
+  // Strings can arrive as the argument itself, on the payload, or on the leg.
+  const asString = [
+    typeof coachesData === 'string' ? coachesData : null,
+    coachesData?.coachPosition,
+    coachesData?.legs?.[0]?.formation,
+    formationString,
+  ].find((v) => typeof v === 'string' && v.trim());
+
   let coachList = [];
-  if (coachesData && coachesData.coaches && Array.isArray(coachesData.coaches)) {
-    coachList = coachesData.coaches.map(c => ({ code: c.code, class: c.classType || c.category }));
-  } else if (typeof coachesData === 'string') {
-    coachList = coachesData.split('-').map(code => ({ code, class: code.slice(0, 2) }));
+  if (structured) {
+    coachList = structured
+      .slice()
+      // `position` is 1-based in the payload; sort on it rather than trusting
+      // array order, and fall back to array order when it is absent.
+      .sort((a, b) => (Number(a.position) || 0) - (Number(b.position) || 0))
+      .map((c) => ({
+        code: String(c.code || '').trim(),
+        classType: c.classType || c.category || null,
+        className: c.className || null,
+        berths: Number.isFinite(Number(c.totalBerths)) ? Number(c.totalBerths) : null,
+      }))
+      .filter((c) => c.code);
+  } else if (asString) {
+    coachList = asString.split('-')
+      .map((code) => code.trim())
+      .filter(Boolean)
+      .map((code) => ({ code, classType: null, className: null, berths: null }));
   }
 
   if (coachList.length === 0) {
-    coachList = ['ENG', 'GEN', 'S1', 'S2', 'B1', 'B2', 'A1', 'SLRD'].map(code => ({ code, class: code }));
+    container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-dim); '
+      + 'padding: 8px 10px; background: rgba(148,163,184,0.06); border-radius: 6px; '
+      + 'border: 1px solid rgba(148,163,184,0.15);">Coach composition not published '
+      + 'for this train in the prototype data source.</div>';
+    return;
   }
 
   coachList.forEach((c) => {
     const box = document.createElement('div');
     const code = c.code.toUpperCase();
-    let cls = 'ac';
-    if (code.includes('ENG') || code.includes('LOCO')) cls = 'eng';
-    else if (code.includes('EC') || code.includes('EA')) cls = 'ec';
-    else if (code.includes('CC') || code.includes('C')) cls = 'cc';
-    else if (code.includes('S') || code.includes('SL')) cls = 'sl';
-    else if (code.includes('GEN') || code.includes('UR') || code.includes('GS')) cls = 'gen';
+
+    // Prefer the payload's own classType. The code-substring chain below is only
+    // for the bare-string path, and it is order-sensitive: `includes('C')` matches
+    // almost any code, so it must be tested after the specific classes, never before.
+    const type = (c.classType || '').toUpperCase();
+    let cls;
+    if (type) {
+      if (type === 'EC' || type === 'EA' || type === 'EV') cls = 'ec';
+      else if (type === 'CC' || type === '2S') cls = 'cc';
+      else if (type === 'SL') cls = 'sl';
+      else if (type === 'GN' || type === 'GS' || type === 'UR') cls = 'gen';
+      else if (type === '1A' || type === '2A' || type === '3A' || type === '3E') cls = 'ac';
+    }
+    if (!cls) {
+      if (code.includes('ENG') || code.includes('LOCO') || code.startsWith('LP')) cls = 'eng';
+      else if (code.startsWith('E')) cls = 'ec';
+      else if (code.includes('GEN') || code.includes('UR') || code.includes('GS')) cls = 'gen';
+      else if (code.startsWith('S') || code.startsWith('D')) cls = 'sl';
+      else if (code.startsWith('C')) cls = 'cc';
+      else cls = 'ac';
+    }
 
     box.className = `coach-box ${cls}`;
     box.innerText = code;
-    box.title = `Coach ${code}`;
+    // Only state what the payload actually carried — no invented class names.
+    box.title = [
+      `Coach ${code}`,
+      c.className || (c.classType ? `Class ${c.classType}` : null),
+      c.berths !== null ? `${c.berths} berths/seats` : null,
+    ].filter(Boolean).join(' · ');
     container.appendChild(box);
   });
+
+  // A train whose formation changes en route has more than one leg. Saying so is
+  // cheaper than silently showing the first leg as if it were the whole journey.
+  const legCount = Array.isArray(coachesData?.legs) ? coachesData.legs.length : 0;
+  const reversals = Array.isArray(coachesData?.stationVariations?.reversals)
+    ? coachesData.stationVariations.reversals.length : 0;
+  const notes = [];
+  if (legCount > 1) {
+    const leg = coachesData.legs[0];
+    notes.push(`Composition changes en route (${legCount} legs) — showing `
+      + `${leg.fromStation || 'origin'}→${leg.toStation || 'destination'}.`);
+  }
+  if (reversals > 0) {
+    notes.push(`Direction reverses at ${reversals} station${reversals > 1 ? 's' : ''}, `
+      + 'so coach order on the platform flips there.');
+  }
+  if (!structured && asString) {
+    notes.push('Formation string only — class and berth details not published for this train.');
+  }
+  if (notes.length) {
+    const note = document.createElement('div');
+    note.style.cssText = 'font-size: 0.67rem; color: var(--text-dim); margin-top: 6px; '
+      + 'line-height: 1.4; flex-basis: 100%;';
+    note.innerText = notes.join(' ');
+    container.appendChild(note);
+  }
 }
 
 // Render Journey Timeline Halts
-function renderTimeline(route, currentLoc) {
+// Render Journey Timeline Halts
+// `isLive` says whether this run is actually happening — it decides whether a
+// zero delay may be rendered as the claim "On Time" or only as "Scheduled".
+function renderTimeline(route, currentLoc, isLive = true) {
   const list = document.getElementById('timelineHaltsList');
   list.innerHTML = '';
+  const timelineIsLive = isLive !== false;
 
   const halts = route.filter(s => s.isHalt);
   const displayList = halts.length > 0 ? halts : route.slice(0, 30);
@@ -1524,15 +1903,30 @@ function renderTimeline(route, currentLoc) {
       ? `<div class="time-scheduled-crossed" style="font-size: 0.72rem; color: var(--text-dim); text-decoration: line-through;">${timeStr}</div>`
       : `<div class="time-scheduled" style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${timeStr}</div>`;
 
-    const delayHtml = delay > 0 
-      ? `<div class="time-delay-tag" style="color: #fbbf24; font-size: 0.7rem; font-weight: 600;">+${delay}m</div>` 
-      : `<div class="time-ontime-tag" style="color: #34d399; font-size: 0.7rem;">On Time</div>`;
+    // Platform is populated for booked halts only in this source (§5e), so it is
+    // omitted when absent rather than defaulted to "Platform 1" — a platform
+    // number is the single most actionable thing on a station row and a wrong one
+    // sends a passenger to the wrong side of the tracks.
+    const platformHtml = (s.platform !== null && s.platform !== undefined && s.platform !== '')
+      ? `Platform ${s.platform} &bull; `
+      : '';
+    const distHtml = Number.isFinite(Number(s.distance)) ? `${Number(s.distance)} km` : '';
+    const metaLine = `${platformHtml}${distHtml}`.replace(/ &bull; $/, '');
+
+    // "On Time" here is an assertion about a run that is happening. Suppressed
+    // for a train that is not running: the timetable echoing a 0 delay is not an
+    // observation (VERIFIED #4, the zero-echo tier).
+    const delayHtml = delay > 0
+      ? `<div class="time-delay-tag" style="color: #fbbf24; font-size: 0.7rem; font-weight: 600;">+${delay}m</div>`
+      : (timelineIsLive
+        ? '<div class="time-ontime-tag" style="color: #34d399; font-size: 0.7rem;">On Time</div>'
+        : '<div class="time-ontime-tag" style="color: #64748b; font-size: 0.7rem;">Scheduled</div>');
 
     item.innerHTML = `
       <div class="timeline-dot"></div>
       <div>
         <div class="station-title">${s.stationName || s.stationCode}</div>
-        <div class="station-meta-sub">Platform ${s.platform || '1'} &bull; ${s.distance || 0} km</div>
+        <div class="station-meta-sub">${metaLine || '&nbsp;'}</div>
       </div>
       <div class="station-time-col" style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
         ${scheduledDisplayHtml}
@@ -1651,15 +2045,17 @@ function renderSearchResults(trains) {
   trains.slice(0, 8).forEach((t) => {
     const item = document.createElement('div');
     item.className = 'search-item';
+    item.dataset.trainNumber = String(t.number);
     item.innerHTML = `
       <div class="search-item-left">
         <div class="train-pill">${t.number}</div>
         <div class="search-item-info">
           <span class="search-item-title">${t.name}</span>
           <span class="search-item-route">${t.sourceName || t.source || ''} &rarr; ${t.destName || t.dest || ''}</span>
+          <span class="search-item-runstate" style="font-size: 0.68rem; color: #64748b;">checking run day…</span>
         </div>
       </div>
-      <div class="search-type-badge">${t.type || 'Express'}</div>
+      <div class="search-type-badge">${t.type || '—'}</div>
     `;
 
     item.addEventListener('click', () => {
@@ -1672,6 +2068,62 @@ function renderSearchResults(trains) {
   });
 
   dropdown.classList.add('active');
+  // Badges fill in after the list is on screen: the dropdown must not wait on 8
+  // lookups, and a slow/absent model must leave a usable list rather than none.
+  annotateSearchRunStates(trains.slice(0, 8), dropdown);
+}
+
+// ── Search result labelling ─────────────────────────────────────────────────
+// Search stays UPSTREAM and ALL-INDIA — the searchable set and its quota cost are
+// unchanged. What is added is honesty about what the result supports: whether the
+// train runs today, and whether it is on the Konkan corridor at all. A Delhi
+// train is findable here, but it has no tunnel layer and no crossing prediction,
+// and saying so up front beats an empty panel after the click.
+//
+// Costs zero upstream RailRadar requests: /api/model/run-state is cache-only
+// (roster calendar), cached 300 s at the gateway and for the session here.
+async function annotateSearchRunStates(trains, dropdown) {
+  await Promise.all(trains.map(async (t) => {
+    const num = String(t.number);
+    let rs = clientCache.runState.get(num);
+    if (rs === undefined) {
+      try {
+        const res = await fetch(apiUrl(`/api/model/run-state/${encodeURIComponent(num)}`));
+        const json = await res.json();
+        rs = (json && json.success && json.data) ? json.data : null;
+      } catch {
+        rs = null;
+      }
+      clientCache.runState.set(num, rs);
+    }
+
+    const el = dropdown.querySelector(`.search-item[data-train-number="${num}"] .search-item-runstate`);
+    if (!el) return;   // dropdown moved on while we were fetching
+
+    if (!rs) {
+      // Unknown is not "does not run" (VERIFIED #9) — say which one this is.
+      el.style.color = '#64748b';
+      el.textContent = 'run day unknown';
+      return;
+    }
+    if (rs.isCorridorTrain === false) {
+      el.style.color = '#94a3b8';
+      el.textContent = '⚠ outside Konkan corridor · limited features';
+      return;
+    }
+    if (rs.runsToday === true) {
+      el.style.color = '#34d399';
+      el.textContent = '● runs today';
+    } else if (rs.runsToday === false) {
+      el.style.color = '#fbbf24';
+      el.textContent = rs.nextRunDate
+        ? `⏸ not running today · next ${rs.nextRunDate}`
+        : '⏸ not running today';
+    } else {
+      el.style.color = '#64748b';
+      el.textContent = 'run day unknown (no calendar)';
+    }
+  }));
 }
 
 // Setup Event Listeners

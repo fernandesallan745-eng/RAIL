@@ -457,6 +457,66 @@ implies automated train control.
     mode on top (running 617.9, ETA 612.8, −22.2). §4b's headline is the vertex row.
     620.8 − 617.9 = 615.7 − 612.8 = **+2.9**, exactly. Both modes reproduce §4b
     unchanged. Compare like with like before opening a defect.
+28. **"0 km completed" was not a display bug — it was the absence of a run-state
+    layer, and the fix is in the data, not the view** (verified 2026-09-13). The
+    drawer painted a progress bar for trains that were not running today, because
+    nothing in the pipeline ever asked *"is this train running at all?"* A train
+    that does not run today has no position, so the bar sat at its origin and read
+    **0 km** — the same rendering a genuinely-just-departed train produces. Two
+    different facts collapsed into one display. Per VERIFIED #9, a truthful-looking
+    zero was hiding a missing layer.
+    - **The disambiguator is `startDate`, not `status`.** Upstream's
+      `status: "not-started"` has **three** meanings: (a) it has not left yet today,
+      (b) it does not run today and this is the *next* service's placeholder,
+      (c) it is a stale cached snapshot. Only `startDate` vs the requested service
+      date separates them: `> date` → **not running today** (`basis:
+      live-start-date`); `== date` or absent → **awaiting departure**; `< date` →
+      stale snapshot, defer to the roster calendar (`basis:
+      roster-calendar-stale-snapshot`).
+    - **`runsToday` is strictly tri-state.** `null` ("no calendar cached, unknown")
+      is a different answer from `false` ("scheduled not to run"), and collapsing
+      them would fabricate a "no" where the truth is "we don't know". On the
+      210-train roster, **4 trains carry `null` on every date** — they are the ones
+      with no roster calendar, surfaced as *"Run state unverified"*, never as
+      "not running".
+    - **Measured over 7 consecutive dates** (`scripts/audit_run_state.py`): Sun
+      85/121/4, Mon 93/113, Tue 97/109, Wed 95/111, Thu 98/108, Fri 98/108, Sat
+      94/112 (runs / not-running / unknown of 210). A **single date is not a
+      sufficient test** — 88 trains run exactly **one day a week**, so one date
+      exercises one weekday slice and misses the rest.
+    - The progress bar and the run-state panel are **mutually exclusive**: a
+      not-running/undeparted/unknown train hides the bar, a running one hides the
+      panel. The bar is only ever a measurement.
+29. **`runState` is a DERIVED value and must never be persisted to the disk
+    fallback** (verified 2026-09-13). Same hazard class as VERIFIED #21, and the
+    same fix: it is computed from a *service date*, so a cached copy carries a
+    verdict about a day that is no longer today. `train.controller.js` strips
+    `runState` alongside `conflicts` before persisting and recomputes it on read
+    from the file's own `delayMinutes` / service date. Audited all 20
+    `.cache/*fallback*.json` files in both parsed and raw-text form (including
+    12051 and 22229 fetched live) — **zero occurrences**. When a third derived
+    block appears, add it to the same strip list rather than inventing a new path.
+30. **Removing a fabrication can expose the bug the fabrication was hiding**
+    (verified 2026-09-13) — this is VERIFIED #9 the other way round, and it is the
+    third time the pattern has fired in this project. `renderCoaches` read
+    `coachesData.coaches`, **a key that does not exist**. The real formation is at
+    `.rake` (or `.legs[0].coaches`). Because the call site passed
+    `coachesData || trainInfo.coachPosition`, the truthy object short-circuited
+    and the working *string* path was never reached either — so the panel rendered
+    **"Coach composition not published" for 22229, which has real rake data**.
+    - It had been invisible for the entire life of the code because an earlier
+      block **fabricated** a plausible 8-coach rake whenever the parse failed. The
+      invented fallback and the parse bug produced the same output, so neither
+      looked wrong. Deleting the fabrication immediately surfaced the defect.
+    - Fix: pass **both** sources (`renderCoaches(coachesData, trainInfo.coachPosition)`)
+      so a structured payload that fails to parse can still fall through to the
+      string, and accept every real shape — `.rake` → `.legs[0].coaches` →
+      `.coaches` → bare string / `.coachPosition` / `.legs[0].formation`.
+    - Verified live on 22229: 8 real boxes (C7, C6, E1, C5, C4, C3, C2, C1),
+      E1 → `ec` (Executive Chair Car · 56 berths/seats), C1–C7 → `cc`. Not 8
+      invented ones.
+    - **Lesson to keep:** when a fallback and a parser produce the same output,
+      deleting the fallback is a *test*, not a cosmetic cleanup. Do it and re-run.
 
 ---
 
@@ -564,6 +624,53 @@ carrying information the timetable does not already contain.
   curvature km coverage and the corridor-sweep dedup tallies. This is the script
   that found the 71 silent zeros and the 1-of-210 curvature coverage — run it
   rather than estimating.
+- **`scripts/audit_run_state.py [start-date] [days]`** — the roster-wide **run-state**
+  harness (offline, cache-only, zero API calls), modelled on `audit_coverage.py`.
+  Defaults to 7 consecutive dates, because **one date is not enough**: 88 trains run
+  exactly one day a week, so a single date exercises one weekday slice. Per
+  train-date it asserts mandatory keys, `basis` in an explicit `KNOWN_BASES`
+  allow-list (so a new basis fails the audit until `app.js`'s `basisNote` map learns
+  it), strictly tri-state `runsToday`, **no `False` without `runDays`** (a fabricated
+  "no" where the answer is "unknown"), `nextRunDate` ≥ service date and its weekday
+  actually present in `runDays`, plus an independent cross-check against
+  `conflict._runs_on`. Also runs an off-corridor control (22487) and a determinism
+  check. Measured 2026-09-13: **1470 train-date answers, ALL CHECKS PASSED**, and
+  the Sun split 85 runs / 121 not-running / 4 unknown matches the plan's independent
+  figure.
+
+### Run-state layer (VERIFIED #28–#30, added 2026-09-13)
+
+The drawer's answer to *"is this train running today?"* — the fix for the reported
+**"0 km completed" on a train that is not running**.
+
+- **Backend:** `conflict.py:run_state(number, service_date)` → `{state, basis,
+  runsToday, runDays, nextRunDate, note}`; `null` only when genuinely unresolvable.
+  Bases: `live-status`, `live-start-date`, `roster-calendar`,
+  `roster-calendar-stale-snapshot`, `no-calendar`, `unresolved`.
+- **Fleet attachment:** `railradar.js`/`train.controller.js` attach `runState` to the
+  live payload so the search list can badge every row before it is opened.
+- **UI:** `renderRunState()` owns one panel with 8 branches — `running`
+  (panel hidden), `awaiting-departure`, `not-running-today`, `unknown`, plus the
+  no-block fallback. The progress bar and this panel are **never both visible**; the
+  bar is a measurement and is suppressed for anything that is not a measurement.
+- **Stale-DOM rule (learned the hard way, 2026-09-13):** hiding an element is **not**
+  enough when the drawer's elements are reused across trains. `renderRunState`'s
+  `running` branch clears `runStateHeader`/`runStateBody`, and the hidden progress
+  branch blanks `drawerCoveredKm`/`drawerTotalKm`/`drawerProgressFill`. A synthetic
+  4-case stress test (roster train with no route → running-at-origin → real progress
+  → **all-null hostile payload**) showed the *previous* train's `412.5 km covered
+  (41%)` surviving into the null case and the untouched static markup's
+  `280 km covered (40%)` showing for a train with no route. Invisible only because
+  both were `display:none` — VERIFIED #21's hazard, one layer up in the view.
+  Re-run after the fix: every case shows `—` / `0%`, and case 2 (running, genuinely
+  at its origin) correctly still shows `0 km covered (0%)`. **A real zero must keep
+  rendering as a zero** — the fix blanks unmeasured values only.
+- **Fabrication removals that shipped with this layer** (all audited — 3 raw-grep
+  hits remain and all 3 are in comments describing the removal): the invented
+  8-coach rake, `signalDropProbability`, the `|| 40` / `|| 50` speed defaults,
+  `remainingKm = 20`, the zone-match confidence boost, and the `pct || 15` bar
+  fallback. Each now returns `null` / an explicit reason instead of a plausible
+  number. Two were **actively masking bugs** — see VERIFIED #30.
 
 ### Verified model numbers for 22229 — SUPERSEDED, see §4b
 This table predates the delay fix (VERIFIED #9) and is kept only to show what the
@@ -1101,6 +1208,18 @@ range, sums reconciling three ways, and ETA 615.7 → 697.7 (**+82.0**).
   now renders the model's **own note plus the reason code**, and the header changes
   to *"Crossing prediction unavailable"*. Do not restate the eligibility rule
   client-side — a second copy would drift from `conflict.py`.
+- **A run-state badge is not a prediction and must not look like one.** Search rows
+  mark a train `● runs today` / `⏸ not running today · next <date>` /
+  `◌ run state unknown`, and every off-corridor result is labelled **"outside Konkan
+  corridor · limited features"**. The searchable set stays **upstream and all-India**
+  and the **quota cost is unchanged** — this is labelling, not filtering. Verified
+  live: `vande` → 8 all-India results, all marked off-corridor; `madgaon` → a mix of
+  today / next-date badges.
+- **Unknown is never rendered as "not running"** (VERIFIED #28). The 4 no-calendar
+  trains read *"Run state unverified"*, with the body stating explicitly that this is
+  **not the same as "not running"** — it means the question could not be answered.
+  Suppressing the progress bar is correct for all three of not-running, undeparted
+  and unknown, but only *not-running* may claim the train will not move.
 
 ---
 
