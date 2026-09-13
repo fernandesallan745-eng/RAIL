@@ -43,12 +43,10 @@ try {
 // Support cloud environment variables (e.g. Render, Railway, Docker)
 const envKeySources = [
   process.env.RAILRADAR_API_KEYS,
-  process.env.RAILRADAR_API_KEY,
-  process.env.RAILRADAR_API_KEY_1,
-  process.env.RAILRADAR_API_KEY_2,
-  process.env.RAILRADAR_API_KEY_3,
-  process.env.RAILRADAR_API_KEY_4,
-  process.env.RAILRADAR_API_KEY_5,
+  ...Object.keys(process.env)
+    .filter(k => k === 'RAILRADAR_API_KEY' || k.startsWith('RAILRADAR_API_KEY_'))
+    .sort()
+    .map(k => process.env[k]),
 ];
 
 for (const src of envKeySources) {
