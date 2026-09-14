@@ -660,7 +660,8 @@ def _shared_geometry_resolution(block_geom):
 
 
 def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_SPEED_KMH,
-                conflicts=False, conflict_delay_min=0.0, conflict_service_date=None):
+                conflicts=False, conflict_delay_min=0.0, conflict_service_date=None,
+                hazards=False, hazard_store_path=None):
     """
     Build the per-segment breakdown and total predicted ETA.
     Returns a JSON-serialisable dict (used by both the CLI report and the API).
@@ -670,6 +671,13 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
     train passes.  Off by default so every layer number recorded in CLAUDE.md
     §4b stays reproducible, and so a missing corridor cache can never change an
     existing result.
+
+    `hazards=True` adds the crowdsourced-hazard speed-restriction layer
+    (hazard_layer.py), on exactly the same contract and for the same reason.  Only
+    **human-confirmed** reports apply (CLAUDE.md §2), and the restriction is
+    charged over the hazard's own km sub-span rather than block-wide — applying a
+    sub-kilometre restriction across a 175 km block is VERIFIED #6's ~2,200×
+    overstatement in a different coat.
     """
     train_info, stations, sched_src = load_schedule(train, date)
 
@@ -756,6 +764,24 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             # zero-valued layer hides its own bugs (VERIFIED #9).
             conflict_error = f"{type(e).__name__}: {e}"
 
+    # --- Crowdsourced-hazard speed-restriction layer (opt-in) ----------------
+    # Confirmed hazard reports become km spans with a capped speed on this
+    # train's own timetable axis.  The penalty is charged on the OVERLAP between
+    # each span and each block, so a 1 km landslide costs 1 km of restriction
+    # even inside the 175 km PNVL→KHED block.  See hazard_layer's header for why
+    # this is an additive overlap term rather than a fold into the per-vertex
+    # curvature loop.
+    # Lazily imported for the same reason as `conflict`: the store is a separate
+    # artifact and its absence must degrade one layer, not the whole model.
+    hazard_result, hazard_error = None, None
+    if hazards:
+        try:
+            import hazard_layer as hazard_mod
+            hazard_result = hazard_mod.build(train, stations, path=hazard_store_path)
+        except Exception as e:                      # noqa: BLE001
+            hazard_error = f"{type(e).__name__}: {e}"
+    hazard_spans = (hazard_result or {}).get("spans", [])
+
     for k, (a, b) in enumerate(zip(halts[:-1], halts[1:])):
         d0, d1 = a["distance"], b["distance"]
         dist_km = d1 - d0
@@ -804,7 +830,17 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
         block_holds = holds_by_block.get(k, [])
         hold_min = sum(c["ourHoldMin"] for c in block_holds)
 
-        seg_eta = running_min + hd_mean + dwell_min + hold_min
+        # hazard restrictions overlapping this block (0.0 unless hazards=True).
+        # Charged against `effective` — the speed this block would otherwise run
+        # at — so the layer reports only the EXTRA minutes the restriction costs,
+        # and a cap looser than the block's own speed correctly contributes 0.0.
+        hazard_min, hazard_detail = (0.0, [])
+        if hazard_spans:
+            import hazard_layer as hazard_mod
+            hazard_min, hazard_detail = hazard_mod.block_penalty_min(
+                hazard_spans, d0, d1, effective)
+
+        seg_eta = running_min + hd_mean + dwell_min + hold_min + hazard_min
         segments.append({
             "from": a["stationCode"], "to": b["stationCode"],
             "from_km": d0, "to_km": d1, "distance_km": round(dist_km, 1),
@@ -838,6 +874,13 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
                  "hold_station": c["holdStation"], "hold_min": c["ourHoldMin"]}
                 for c in block_holds
             ],
+            # Extra minutes from confirmed crowdsourced hazards overlapping this
+            # block, and the per-span arithmetic behind them.  `hazard_basis`
+            # names the contributing report IDs so the number is auditable back
+            # to the humans who reported and confirmed it (§8).
+            "hazard_penalty_min": round(hazard_min, 3),
+            "hazard_restrictions": hazard_detail,
+            "hazard_basis": sorted({rid for h in hazard_detail for rid in h["report_ids"]}) or None,
             "segment_eta_min": round(seg_eta, 2),
         })
         if seg_geom and min_r < sharpest["radius_m"]:
@@ -850,6 +893,7 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
     total_dwell = sum(s["dwell_min"] for s in segments)
     total_delay = sum(s["hist_delay_min"] for s in segments)
     total_hold = sum(s["conflict_hold_min"] for s in segments)
+    total_hazard = sum(s["hazard_penalty_min"] for s in segments)
     total_slack = sum(s["schedule_slack_min"] for s in segments)
     total_eta = sum(s["segment_eta_min"] for s in segments)
     naive_min = total_km / max_speed * 60.0
@@ -871,6 +915,7 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             "historical_delay_min": round(total_delay, 1),
             "dwell_min": round(total_dwell, 1),
             "conflict_hold_min": round(total_hold, 1),
+            "hazard_penalty_min": round(total_hazard, 2),
             "schedule_slack_min": round(total_slack, 1),
             "predicted_eta_min": round(total_eta, 1),
             "scheduled_duration_min": sched_duration,
@@ -960,6 +1005,47 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
                     "priorityIsOfficial", "reaccelMin", "delayModel",
                     "otherTrainsAreScheduled", "decisionSupportOnly",
                     "singleLineSectionKm", "singleLineBasis",
+                )
+            },
+        },
+        # Crowdsourced-hazard layer.  Always present, for the same reason as
+        # conflict_layer: `enabled: false` means "not asked for", `error` means
+        # the store is missing or broken, and 0.0 with enabled=true is a real
+        # result meaning no human has confirmed a hazard on this route.  Those
+        # are three different facts and collapsing them is VERIFIED #9.
+        "hazard_layer": {
+            "enabled": bool(hazards),
+            "error": hazard_error,
+            "available": (hazard_result or {}).get("available", False),
+            "unavailable_reason": (hazard_result or {}).get("unavailableReason"),
+            "total_penalty_min": round(total_hazard, 2),
+            "reports_in_store": (hazard_result or {}).get("totalReports", 0),
+            "confirmed_reports": (hazard_result or {}).get("confirmedReports", 0),
+            "applied_reports": (hazard_result or {}).get("appliedReports", []),
+            "restricted_km": (hazard_result or {}).get("restrictedKm", 0.0),
+            # The merged km spans on THIS train's own timetable axis.  Published
+            # for two reasons: api.py re-charges them against the vertex-mode
+            # speed (charging a block-mode penalty into a vertex total is the
+            # mode-mixing VERIFIED #27 had to untangle), and the UI can draw the
+            # restricted stretch on the route line without re-deriving the axis.
+            "spans": (hazard_result or {}).get("spans", []),
+            "span_half_width_km": (hazard_result or {}).get("spanHalfWidthKm"),
+            "caps_kmph": (hazard_result or {}).get("capsKmph"),
+            "skipped": (hazard_result or {}).get("skipped", []),
+            "unplaceable": (hazard_result or {}).get("unplaceable", []),
+            "off_route": (hazard_result or {}).get("offRoute", []),
+            "note": (
+                "Minutes lost to temporary speed restrictions derived from "
+                "HUMAN-CONFIRMED crowdsourced hazard reports. Machine-scored "
+                "reports (logged/candidate/corroborated) never reach this layer. "
+                "0.0 with available=true means nobody has confirmed a hazard on "
+                "this route — a real zero, not a wiring failure."
+            ),
+            "assumptions": None if not hazard_result else {
+                k: hazard_result.get(k) for k in (
+                    "capsAreHeuristic", "capsBasis", "requiresHumanConfirmation",
+                    "appliedStatuses", "machineStatusesIgnored",
+                    "decisionSupportOnly", "upstreamRequestCost",
                 )
             },
         },

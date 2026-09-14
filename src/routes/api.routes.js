@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import express from 'express';
+import rateLimit from 'express-rate-limit';
 import {
   getHealth,
   getTrainSchedule,
@@ -20,6 +22,12 @@ import {
   getModelRunState,
   flushGatewayCache,
 } from '../controllers/admin.controller.js';
+import {
+  postHazard,
+  getHazards,
+  getHazardPhoto,
+  postHazardDecision,
+} from '../controllers/hazard.controller.js';
 import { config } from '../config/env.js';
 
 const router = Router();
@@ -84,6 +92,68 @@ router.get('/model/run-state/:trainNumber', cacheMiddleware(300), getModelRunSta
 // POST-only, and deliberately the only mutating route in this API. It clears this process's
 // in-memory cache and nothing else — never the .cache/ corpus on disk (see the controller).
 router.post('/admin/cache/flush', flushGatewayCache);
+
+// ─── Phase 7: crowdsourced hazard reporting ──────────────────────────────────────────────────
+// NEVER CACHED, none of the three. A submit or an approval changes every nearby report's
+// confidence — corroboration is peer-relative — so even a 30 s TTL would hand the operator a
+// queue that has already moved. This is the same reason live positions are uncached: a stale
+// answer presented as current is an honesty bug, not a performance win.
+//
+// Costs ZERO upstream RailRadar requests. Hazards are our own data and the corroboration
+// signals read cached timetables.
+
+// Public write endpoint, so it gets its OWN strict limiter rather than the 2000/15min
+// apiLimiter — that ceiling exists for a polling dashboard and is meaningless for a POST.
+// It is per-IP, and several phones behind one demo Wi-Fi share a NAT address, hence the
+// configurable default of 10 (see src/config/env.js).
+const hazardSubmitLimiter = rateLimit({
+  windowMs: config.hazards.submitWindowMin * 60 * 1000,
+  max: config.hazards.submitPerWindow,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    reason: 'hazard-submit-rate-limited',
+    detail: `Too many hazard reports from this address (limit ${config.hazards.submitPerWindow} `
+          + `per ${config.hazards.submitWindowMin} min). If several people are reporting from `
+          + `one network, raise HAZARD_SUBMIT_PER_WINDOW.`,
+    statusCode: 429,
+  },
+});
+
+// Slows token guessing on the decision route. Not a real auth system — see §5g.
+const hazardDecisionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: config.hazards.decisionPerWindow,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    reason: 'hazard-decision-rate-limited',
+    detail: 'Too many decision attempts from this address.',
+    statusCode: 429,
+  },
+});
+
+// The raised body limit applies to THIS ROUTE ONLY; the global express.json() in
+// src/server.js stays at its 100 KB default everywhere else. Note that global parser runs
+// FIRST and would 413 a photo before this route was ever reached — src/server.js therefore
+// mounts a path-scoped parser for /api/hazards ahead of it, and body-parser skips a body it
+// has already parsed. Both halves are required; neither works alone.
+router.post(
+  '/hazards',
+  hazardSubmitLimiter,
+  express.json({ limit: config.hazards.maxBodyBytes }),
+  postHazard
+);
+router.get('/hazards', getHazards);
+// Served by route, not express.static: `cap sync` copies public/ verbatim into the iOS
+// bundle (§5d), so user-uploaded bytes must not live there. The filename comes from the
+// store, never from the URL.
+router.get('/hazards/:id/photo', getHazardPhoto);
+// The human confirmation — the one action that can move a report to confirmed/rejected.
+// POST-only for the same reason as the cache flush: a prefetch or crawler must not fire it.
+router.post('/admin/hazards/:id/decision', hazardDecisionLimiter, postHazardDecision);
 
 // Transparent proxy for any RailRadar endpoint
 router.all('/proxy/*', proxyPass);

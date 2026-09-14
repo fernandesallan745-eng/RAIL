@@ -99,6 +99,14 @@
          from static timetables and must never be mistaken for the live fleet,
          which is one train. The legend below carries that distinction. -->
     <button id="corridorToggleBtn" class="ctrl-btn" title="Corridor-wide scheduled crossings (all trains)" aria-pressed="false">⇄</button>
+    <!-- Crowdsourced hazard markers. OFF by default and drawn in hues deliberately
+         distinct from the live-fleet and crossing layers: a passenger report is
+         neither a tracked train nor a timetable prediction, and letting it read as
+         either would be the same failure the corridor legend guards against. -->
+    <button id="hazardToggleBtn" class="ctrl-btn" title="Crowdsourced hazard reports" aria-pressed="false">⚠</button>
+    <!-- Report an incident. Always available: reporting is a user action, independent
+         of whether the hazard overlay happens to be on. -->
+    <button id="hazardReportBtn" class="ctrl-btn" title="Report a hazard / incident">＋</button>
     <button id="recenterBtn" class="ctrl-btn" title="Center India">⌖</button>
     <button id="zoomInBtn" class="ctrl-btn" title="Zoom In">+</button>
     <button id="zoomOutBtn" class="ctrl-btn" title="Zoom Out">&minus;</button>
@@ -117,6 +125,86 @@
     <div class="corridor-legend-row"><span class="corridor-dot corridor-dot-opposing"></span> Head-on crossing</div>
     <div class="corridor-legend-row"><span class="corridor-dot corridor-dot-overtake"></span> Overtake</div>
     <div id="corridorLegendNote" class="corridor-legend-note"></div>
+  </div>
+
+  <!-- Legend for the crowdsourced hazard layer. Like the corridor legend, this is
+       load-bearing rather than decorative: it carries the two facts that decide
+       whether a marker may be acted on at all — how far a report has been verified,
+       and that reaching the ETA takes a human, not a score. -->
+  <div id="hazardLegend" class="corridor-legend" hidden>
+    <div class="corridor-legend-title">
+      <span id="hazardLegendCount">Hazard reports</span>
+      <button id="hazardLegendClose" class="corridor-legend-close" title="Hide layer">&times;</button>
+    </div>
+    <div class="corridor-legend-row"><span class="hazard-dot hazard-dot-confirmed"></span> Confirmed — human-approved</div>
+    <div class="corridor-legend-row"><span class="hazard-dot hazard-dot-corroborated"></span> Corroborated — multi-source</div>
+    <div class="corridor-legend-row"><span class="hazard-dot hazard-dot-candidate"></span> Candidate — partial signal</div>
+    <div class="corridor-legend-row"><span class="hazard-dot hazard-dot-logged"></span> Logged — unverified</div>
+    <div id="hazardLegendNote" class="corridor-legend-note"></div>
+  </div>
+
+  <!-- Crowdsourced hazard report modal. Outside the drawer on purpose: reporting
+       must work whether or not a train is selected, and it can be opened from the
+       map (default) or with geolocation.
+
+       The category list is fixed and every value carries its own machine-visible
+       meaning — 'engine-failure' and 'signal-failure' are exactly the failure
+       classes the PS names as undetectable in software, and they are also the two
+       the ETA layer REFUSES to turn into a speed cap, because a failed locomotive
+       is not a track restriction. That asymmetry is deliberate and stated in the
+       form, so a reporter is never left guessing why their report did not move an
+       ETA. -->
+  <div id="hazardModal" class="hazard-modal" hidden>
+    <div class="hazard-modal-card" role="dialog" aria-modal="true" aria-labelledby="hazardModalTitle">
+      <div class="hazard-modal-head">
+        <span id="hazardModalTitle">Report a hazard or incident</span>
+        <button id="hazardModalClose" class="hazard-modal-close" title="Close">&times;</button>
+      </div>
+
+      <div class="hazard-modal-body">
+        <label class="hazard-field-label" for="hazardCategory">What is it?</label>
+        <select id="hazardCategory" class="hazard-input">
+          <option value="landslide">Landslide / rockfall</option>
+          <option value="flooding">Flooding / waterlogging</option>
+          <option value="track-damage">Visible track damage</option>
+          <option value="obstruction">Track obstruction (tree, animal, debris)</option>
+          <option value="fire">Fire / smoke</option>
+          <option value="signal-failure">Signal failure</option>
+          <option value="engine-failure">Engine / loco failure</option>
+          <option value="medical">Medical emergency</option>
+          <option value="overcrowding">Severe overcrowding</option>
+          <option value="unusual-stop">Unexplained prolonged halt</option>
+          <option value="other">Something else</option>
+        </select>
+
+        <label class="hazard-field-label" for="hazardDescription">Describe it</label>
+        <textarea id="hazardDescription" class="hazard-input" rows="3"
+                  maxlength="600"
+                  placeholder="e.g. Boulder on the up line just past the cutting, track partly blocked."></textarea>
+
+        <!-- Location is required and must be EXPLICIT about its source. A report
+             whose coordinates silently came from a stale or coarse fix is exactly
+             the kind of unlabelled number the rest of this project refuses to show,
+             so the source and accuracy are captured and displayed, never implied. -->
+        <label class="hazard-field-label">Where?</label>
+        <div class="hazard-loc-row">
+          <button id="hazardUseGpsBtn" class="hazard-btn hazard-btn-ghost" type="button">📍 Use my location</button>
+          <button id="hazardPickMapBtn" class="hazard-btn hazard-btn-ghost" type="button">🗺 Pick on map</button>
+        </div>
+        <div id="hazardLocStatus" class="hazard-loc-status">No location set yet.</div>
+
+        <label class="hazard-field-label" for="hazardPhoto">Photo <span class="hazard-optional">(optional, downscaled on your device)</span></label>
+        <input id="hazardPhoto" class="hazard-input" type="file" accept="image/*" capture="environment">
+        <div id="hazardPhotoStatus" class="hazard-loc-status"></div>
+
+        <div id="hazardSubmitNote" class="hazard-loc-status"></div>
+      </div>
+
+      <div class="hazard-modal-foot">
+        <button id="hazardCancelBtn" class="hazard-btn hazard-btn-ghost" type="button">Cancel</button>
+        <button id="hazardSubmitBtn" class="hazard-btn hazard-btn-primary" type="button">Submit report</button>
+      </div>
+    </div>
   </div>
 
   <!-- Slide-Out Train Telemetry Drawer -->
@@ -235,6 +323,46 @@
             🔀 Crossing &amp; Overtake Prediction
           </div>
           <div id="conflictUnavailableText" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
+          </div>
+        </div>
+
+        <!-- Crowdsourced hazards affecting THIS train's route (USP #5). Driven by
+             renderHazardPanel() in app.js. Three states, mirroring the conflict
+             panel's idiom: an active restriction with minutes at stake, reports
+             logged but not confirmed (the honest "we know, we are not acting on
+             it" case), and unavailable-with-a-reason. -->
+        <div id="hazardPanel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px;">
+          <div id="hazardPanelHeader" style="font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;"></div>
+          <div id="hazardPanelBody" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;"></div>
+
+          <!-- The single most important caveat in this layer: the confidence score
+               is a weighted heuristic with no ground truth behind it, and it can
+               never promote a report past "corroborated" on its own. -->
+          <details id="hazardPanelCaveat" style="font-size: 0.67rem; color: var(--text-dim); margin-top: 8px; line-height: 1.35;">
+            <summary style="cursor: pointer; user-select: none; color: #64748b; font-style: italic; outline: none;">ℹ️ How a report is scored ▾</summary>
+            <div style="margin-top: 4px; padding: 6px 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 4px; color: var(--text-muted);">
+              Confidence is a <strong>weighted heuristic over five signals</strong> —
+              how near the pin is to the alignment, whether a photo or description
+              was supplied, how many <strong>independent devices</strong> reported the
+              same thing nearby in time, the reporter's own history, and whether a
+              train was due through. It is <strong>not a trained or validated model</strong>:
+              there is no ground-truth hazard set to calibrate against. It can raise a
+              report to <em>corroborated</em> at most. Only a <strong>human
+              controller</strong> confirms a report, and only a confirmed report is
+              allowed to affect an ETA. Speed caps are our <strong>heuristic</strong>,
+              not sourced TSR values.
+            </div>
+          </details>
+        </div>
+
+        <!-- Shown instead of the panel above when the hazard store is unreadable or
+             the model is unreachable. An empty panel and "no hazards on this route"
+             look identical but mean opposite things. -->
+        <div id="hazardUnavailable" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2);">
+          <div style="font-weight: 700; color: #94a3b8; font-size: 0.8rem;">
+            ⚠️ Crowdsourced Hazards
+          </div>
+          <div id="hazardUnavailableText" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
           </div>
         </div>
       </div>

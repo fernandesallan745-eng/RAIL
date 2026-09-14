@@ -466,7 +466,13 @@ async function selectTrain(trainNumber, forceRefresh = false, forceServerRefresh
       // forceRefresh bypasses only the client cache; ?refresh=true (server-cache
       // bypass → live RailRadar upstream hit) is gated behind forceServerRefresh so
       // the 20s auto-refresh reads the server's 300s cache instead of the live API.
-      const url = apiUrl(`/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson${forceServerRefresh ? '&refresh=true' : ''}`);
+      // `hazards=true` asks the model to fold CONFIRMED crowdsourced hazards into
+      // the ETA. Sent on every drawer fetch, not only on open: if it were sent on
+      // open and dropped by the 20 s poll, the hazard panel would appear and then
+      // silently vanish 20 s later, which reads as a failure rather than as a
+      // policy. Costs no upstream RailRadar request — the model is cache-only —
+      // and the default `/eta` path is unchanged for everyone who does not ask.
+      const url = apiUrl(`/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson&hazards=true${forceServerRefresh ? '&refresh=true' : ''}`);
       const res = await fetch(url);
       const json = await res.json();
       if (!res.ok || json.success === false) {
@@ -1668,6 +1674,9 @@ function renderTrainDrawer(liveData, coachesData) {
   // 🔀 Crossing / overtake loop-hold prediction
   renderConflictPanel(liveData);
 
+  // ⚠️ Crowdsourced hazard reports affecting this route
+  renderHazardPanel(liveData);
+
   // Current Position
   const posText = currentLoc.stationName
     ? `${currentLoc.status === 'departed' ? 'Departed from' : 'Approaching'} ${currentLoc.stationName}`
@@ -2262,3 +2271,603 @@ function flashElement(el) {
   el.classList.add('data-flash');
   setTimeout(() => el.classList.remove('data-flash'), 800);
 }
+
+// ================================================================
+//  PHASE 7 — CROWDSOURCED HAZARD REPORTING  (USP #5)
+// ================================================================
+// Everything else this app draws is INFERRED: curvature from geometry, delay from
+// timetables, crossings from two schedules. None of it can see a failed locomotive
+// or a boulder on the line. This layer is the only genuinely live, genuinely ours
+// data source in the system — and the only one a passenger writes to.
+//
+// Two rules govern the whole module and are not negotiable:
+//   1. A machine score can raise a report to `corroborated` at MOST. Only a human
+//      controller confirms one, and only a confirmed report may touch an ETA.
+//   2. Every number shown carries its basis. The confidence value is a weighted
+//      heuristic with no ground truth behind it, and it is labelled as such
+//      everywhere it appears — the same discipline as `axisBasis`, `delayBasis`
+//      and `loopBasis` elsewhere in this file.
+//
+// The client does NO scoring arithmetic of its own. Confidence, status and the
+// five components all arrive from the gateway, exactly as the tunnel and conflict
+// layers already work, so the two can never drift apart.
+
+let hazardLayer = null;
+let hazardData = null;          // last /api/hazards payload (session cache)
+let hazardLayerOn = false;
+let hazardPickMode = false;     // map-click is arming a report location
+let hazardDraft = { lat: null, lng: null, accuracyM: null, source: null, photo: null };
+
+/** Fill colour by status. Saturation tracks verification — see app.css. */
+function hazardColour(status) {
+  return {
+    confirmed: '#ec4899',
+    corroborated: '#f472b6',
+    candidate: '#f9a8d4',
+    logged: '#9d7186',
+    rejected: '#475569',
+  }[status] || '#9d7186';
+}
+
+// Mirrors `HAZARD_CATEGORIES` in src/services/hazardStore.js. Kept as a literal
+// rather than fetched because the popup must render with no network — but the
+// FALLBACK below is what matters: a category the client does not know prints its
+// raw code, never `undefined`. A report filed from a newer store would otherwise
+// render as "undefined" in the very popup an operator decides on.
+const HAZARD_CATEGORY_LABEL = {
+  'landslide': 'Landslide / rockfall',
+  'flooding': 'Flooding / waterlogging',
+  'track-damage': 'Visible track damage',
+  'obstruction': 'Track obstruction',
+  'fire': 'Fire / smoke',
+  'signal-failure': 'Signal failure',
+  'engine-failure': 'Engine / loco failure',
+  'medical': 'Medical emergency',
+  'overcrowding': 'Severe overcrowding',
+  'unusual-stop': 'Unexplained prolonged halt',
+  'other': 'Something else',
+};
+const hazardCategoryLabel = (c) => HAZARD_CATEGORY_LABEL[c] || String(c);
+
+// ── Layer toggle ────────────────────────────────────────────────────────────
+async function toggleHazardLayer() {
+  const btn = document.getElementById('hazardToggleBtn');
+  const legend = document.getElementById('hazardLegend');
+  if (!hazardLayer || !map) return;
+
+  if (hazardLayerOn) {
+    map.removeLayer(hazardLayer);
+    hazardLayerOn = false;
+    if (btn) btn.setAttribute('aria-pressed', 'false');
+    if (legend) legend.hidden = true;
+    return;
+  }
+
+  // Always refetch: unlike the corridor sweep (date-stable timetables), the hazard
+  // store is mutated by users submitting and by an admin approving. A session cache
+  // could show a report as unconfirmed seconds after a controller confirmed it.
+  if (btn) btn.classList.add('is-busy');
+  try {
+    const res = await fetch(apiUrl('/api/hazards'));
+    const json = await res.json();
+    if (!json.success || !json.data) {
+      showHazardLayerUnavailable(json.reason, json.detail || json.hint);
+      return;
+    }
+    hazardData = json.data;
+    renderHazardMarkers(hazardData);
+  } catch (err) {
+    console.error('Hazard fetch failed:', err);
+    showHazardLayerUnavailable('gateway-unreachable',
+      'the hazard store is served by the Node gateway on :5050');
+    return;
+  } finally {
+    if (btn) btn.classList.remove('is-busy');
+  }
+
+  hazardLayer.addTo(map);
+  hazardLayerOn = true;
+  if (btn) btn.setAttribute('aria-pressed', 'true');
+  if (legend) legend.hidden = false;
+}
+
+function showHazardLayerUnavailable(reason, hint) {
+  const legend = document.getElementById('hazardLegend');
+  const count = document.getElementById('hazardLegendCount');
+  const note = document.getElementById('hazardLegendNote');
+  const btn = document.getElementById('hazardToggleBtn');
+  if (!legend) return;
+  legend.hidden = false;
+  if (btn) btn.setAttribute('aria-pressed', 'false');
+  if (count) count.textContent = 'Hazard reports unavailable';
+  if (note) {
+    note.textContent =
+      `Hazard reports could not be loaded (${reason || 'unknown reason'}). ` +
+      `${hint || ''} This is a gap, not an all-clear — do not read an empty map as "no hazards".`.trim();
+  }
+}
+
+// ── Markers ─────────────────────────────────────────────────────────────────
+// Radius encodes confidence, fill encodes status. Two channels because colour
+// alone is not readable for every user, and because the two facts are genuinely
+// independent: a low-confidence report can be human-confirmed, and a
+// high-confidence one can still be waiting for a controller.
+function renderHazardMarkers(data) {
+  if (!hazardLayer) return;
+  hazardLayer.clearLayers();
+
+  const reports = Array.isArray(data.reports) ? data.reports : [];
+  let drawn = 0, confirmed = 0;
+
+  for (const r of reports) {
+    if (r.lat == null || r.lng == null) continue;
+    if (r.status === 'rejected') continue;   // decided against by a human; not a live hazard
+
+    const conf = (r.scoring && r.scoring.confidence) || 0;
+    const colour = hazardColour(r.status);
+    const radius = 5 + Math.round(conf * 6);          // 5–11 px
+    const isConfirmed = r.status === 'confirmed';
+    if (isConfirmed) confirmed++;
+
+    // A confirmed hazard gets a halo: it is the only class that can change an ETA,
+    // so it must be findable at a glance rather than by reading every marker.
+    if (isConfirmed) {
+      hazardLayer.addLayer(L.circleMarker([r.lat, r.lng], {
+        radius: radius + 5, color: colour, weight: 2,
+        fillColor: colour, fillOpacity: 0.12,
+      }));
+    }
+
+    const marker = L.circleMarker([r.lat, r.lng], {
+      radius,
+      color: 'rgba(15,23,42,0.9)',
+      weight: 1.5,
+      fillColor: colour,
+      fillOpacity: 0.9,
+    });
+
+    marker.bindPopup(hazardPopupHtml(r), { maxWidth: 320 });
+    hazardLayer.addLayer(marker);
+    drawn++;
+  }
+
+  const count = document.getElementById('hazardLegendCount');
+  const note = document.getElementById('hazardLegendNote');
+  if (count) count.textContent = `${drawn} hazard report${drawn === 1 ? '' : 's'}`;
+  if (note) {
+    const undrawable = reports.filter(r => r.lat == null || r.lng == null).length;
+    const synthetic = reports.filter(r => r.isSynthetic).length;
+    note.innerHTML =
+      `Marker size = confidence, colour = how far it has been verified. ` +
+      `<strong>${confirmed}</strong> human-confirmed (the only kind that can affect an ETA).` +
+      (synthetic ? ` ${synthetic} seeded demo report${synthetic === 1 ? '' : 's'}, labelled DEMO.` : '') +
+      (undrawable ? ` ${undrawable} without coordinates, not drawn.` : '') +
+      ` Confidence is an untuned heuristic, not a validated model.`;
+  }
+}
+
+function hazardPopupHtml(r) {
+  const s = r.scoring || {};
+  const comps = s.components || {};
+  const conf = s.confidence != null ? s.confidence : null;
+  const colour = hazardColour(r.status);
+
+  // Every component is listed separately WITH its basis. A single 0.75 would be
+  // the opaque-number failure VERIFIED #9 warns about — the operator has to be
+  // able to see that a report scored well because three independent devices
+  // reported it, not because one person wrote a long description.
+  const componentRows = Object.entries(comps).map(([name, c]) => {
+    const pct = Math.round((c.score || 0) * 100);
+    const label = name.replace(/([A-Z])/g, ' $1').replace(/^./, m => m.toUpperCase());
+    return `<div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+              <span style="flex:0 0 108px;font-size:0.66rem;color:#475569">${escapeHtml(label)}</span>
+              <span style="flex:1;height:5px;background:rgba(148,163,184,0.2);border-radius:3px;overflow:hidden">
+                <span style="display:block;height:100%;width:${pct}%;background:${colour}"></span>
+              </span>
+              <span style="flex:0 0 30px;text-align:right;font-size:0.64rem;color:#475569">${pct}%</span>
+            </div>`;
+  }).join('');
+
+  const demo = r.isSynthetic ? `<span class="hazard-demo-badge">DEMO</span>` : '';
+  const photo = r.hasPhoto
+    ? `<div style="margin-top:6px"><img src="${apiUrl(`/api/hazards/${encodeURIComponent(r.id)}/photo`)}"
+         alt="Reported hazard" style="max-width:100%;border-radius:6px;display:block"></div>`
+    : '';
+
+  const km = comps.corridorPlausibility && comps.corridorPlausibility.corridorKm;
+  const offset = comps.corridorPlausibility && comps.corridorPlausibility.offsetM;
+
+  return `<div style="font-family:system-ui,sans-serif;min-width:250px">
+    <div style="font-weight:700;font-size:0.9rem;color:${colour}">
+      ${escapeHtml(hazardCategoryLabel(r.category))}${demo}
+    </div>
+    <div style="color:#64748b;font-size:0.7rem;margin-bottom:5px">
+      ${escapeHtml(r.status)}${r.statusSource === 'human-decision'
+        ? ' · confirmed by a controller'
+        : ' · machine-scored, awaiting human review'}
+      ${km != null ? ` · corridor km ${Number(km).toFixed(1)}` : ''}
+    </div>
+    ${r.description ? `<div style="font-size:0.76rem;color:#1e293b;margin-bottom:5px">${escapeHtml(r.description)}</div>` : ''}
+    ${photo}
+    <div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(148,163,184,0.25)">
+      <div style="display:flex;justify-content:space-between;font-size:0.7rem;font-weight:700;color:#334155">
+        <span>Confidence</span><span>${conf != null ? (conf * 100).toFixed(0) + '%' : 'n/a'}</span>
+      </div>
+      ${componentRows}
+    </div>
+    ${offset != null ? `<div style="font-size:0.64rem;color:#94a3b8;margin-top:5px">${offset} m from the reference alignment</div>` : ''}
+    <div style="font-size:0.64rem;color:#94a3b8;margin-top:6px;font-style:italic">
+      Confidence is an untuned weighted heuristic, not a validated model. A score
+      alone can never confirm a report — only a controller can. Decision support only.
+    </div>
+  </div>`;
+}
+
+// ── Drawer panel: hazards on THIS train's route ─────────────────────────────
+function renderHazardPanel(liveData) {
+  const panel = document.getElementById('hazardPanel');
+  const header = document.getElementById('hazardPanelHeader');
+  const body = document.getElementById('hazardPanelBody');
+  const gapBlock = document.getElementById('hazardUnavailable');
+  const gapText = document.getElementById('hazardUnavailableText');
+  if (!panel || !header || !body) return;
+
+  const eta = liveData && liveData.curvatureEta;
+  const hz = eta && eta.hazard_layer;
+
+  // No ETA at all, or the layer was never asked for: say nothing rather than
+  // implying an all-clear. An absent layer is not the same as zero hazards.
+  //
+  // Both elements are BLANKED, not merely hidden. The drawer reuses one set of
+  // nodes across trains, so a hidden node still holds the last train's text and
+  // any future branch that unhides without writing would show it — the exact
+  // stale-DOM carry-over the run-state panel was caught by (§5e). Verified with a
+  // 6-case synthetic sequence that deliberately runs each case over the previous
+  // one's DOM.
+  if (!hz) {
+    panel.style.display = 'none';
+    header.innerHTML = '';
+    body.innerHTML = '';
+    if (gapBlock) gapBlock.style.display = 'none';
+    if (gapText) gapText.innerHTML = '';
+    return;
+  }
+
+  // The store itself could not be read. This is the one case that must never
+  // render as "no hazards" — it is an outage, and the operator has to know the
+  // difference between "nothing reported" and "we cannot tell you".
+  if (hz.available === false && hz.unavailable_reason) {
+    panel.style.display = 'none';
+    header.innerHTML = '';
+    body.innerHTML = '';
+    if (gapBlock && gapText) {
+      gapBlock.style.display = 'block';
+      gapText.innerHTML =
+        `The hazard store could not be read, so crowdsourced reports are not being ` +
+        `applied to this ETA. <strong>This is not an all-clear</strong> — it means the ` +
+        `question could not be answered.` +
+        `<div style="color:var(--text-dim);font-size:0.67rem;margin-top:4px">` +
+        `Reason code: <code>${escapeHtml(hz.unavailable_reason)}</code></div>`;
+    }
+    return;
+  }
+
+  if (gapBlock) gapBlock.style.display = 'none';
+  if (gapText) gapText.innerHTML = '';   // same stale-DOM rule as the two hidden branches
+  panel.style.display = 'block';
+
+  const applied = hz.applied_reports || [];
+  const penalty = hz.total_penalty_min || 0;
+  const inStore = hz.reports_in_store || 0;
+  const confirmedCount = hz.confirmed_reports || 0;
+  // Reports the model read and deliberately did not apply, with its own reason.
+  const skipped = hz.skipped || [];
+  const notConfirmed = skipped.filter(s => s.reason === 'not-human-confirmed').length;
+
+  const active = applied.length > 0 && penalty > 0;
+  const accent = active ? '#ec4899' : inStore ? '#f472b6' : '#94a3b8';
+
+  panel.style.background = active
+    ? 'rgba(236, 72, 153, 0.09)'
+    : inStore ? 'rgba(244, 114, 182, 0.06)' : 'rgba(148, 163, 184, 0.06)';
+  panel.style.border = `1px solid ${accent}33`;
+  header.style.color = accent;
+
+  header.innerHTML = active
+    ? `<div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+         <span>⚠️ Hazard Restriction Active</span>
+         <span style="background:rgba(236,72,153,0.22);color:#f9a8d4;font-size:0.72rem;padding:2px 8px;border-radius:12px;font-weight:700">
+           +${penalty.toFixed(1)} min</span>
+       </div>`
+    : '⚠️ Crowdsourced Hazards';
+
+  if (active) {
+    // The restriction is real and costing minutes. Show WHICH span, at what cap,
+    // against what normal speed — the same auditability the curvature and conflict
+    // layers give, so the number can be checked rather than believed.
+    const segs = (eta.segments || []).filter(s => (s.hazard_penalty_min || 0) > 0);
+    const rows = segs.map(s => {
+      const rs = s.hazard_restrictions || [];
+      const detail = rs.map(x =>
+        `<div style="font-size:0.7rem;color:var(--text-dim);margin-left:10px">` +
+        `${escapeHtml((x.categories || []).map(hazardCategoryLabel).join(', '))} · ` +
+        `${x.overlap_km} km capped to ${x.cap_kmph} km/h (normally ${x.normal_speed_kmh} km/h)` +
+        `${x.is_synthetic ? ' <span class="hazard-demo-badge">DEMO</span>' : ''}</div>`
+      ).join('');
+      return `<div style="margin-top:5px">
+                <strong style="color:var(--text-main)">${escapeHtml(s.from)}→${escapeHtml(s.to)}</strong>
+                <span style="color:#f9a8d4;font-weight:700"> +${s.hazard_penalty_min.toFixed(2)} min</span>
+                ${detail}
+              </div>`;
+    }).join('');
+
+    body.innerHTML =
+      `<strong style="color:var(--text-main)">${applied.length}</strong> confirmed hazard` +
+      `${applied.length === 1 ? '' : 's'} on this route add` +
+      `${applied.length === 1 ? 's' : ''} <strong style="color:#f9a8d4">${penalty.toFixed(1)} min</strong> ` +
+      `to the predicted ETA.` +
+      rows +
+      `<div style="font-size:0.68rem;color:var(--text-dim);margin-top:7px">` +
+        `Restrictions apply only to the reported <strong>sub-span</strong>, not the whole ` +
+        `block — charging a block-wide cap here would overstate the cost by orders of ` +
+        `magnitude. Speed caps are our heuristic, not sourced TSR values.</div>`;
+  } else if (inStore > 0) {
+    // The honest middle state, and the one most likely to be misread: reports
+    // exist, the model read them, and it is deliberately not acting on them.
+    body.innerHTML =
+      `<strong style="color:var(--text-main)">${inStore}</strong> report` +
+      `${inStore === 1 ? '' : 's'} in the store · ` +
+      `<strong style="color:var(--text-main)">${confirmedCount}</strong> human-confirmed · ` +
+      `<strong style="color:#f9a8d4">0 min</strong> applied to this ETA.` +
+      (notConfirmed
+        ? `<div style="margin-top:5px">${notConfirmed} report${notConfirmed === 1 ? ' is' : 's are'} ` +
+          `scored but <strong>not yet confirmed by a controller</strong>, so ${notConfirmed === 1 ? 'it does' : 'they do'} ` +
+          `not affect the ETA. That is the intended behaviour, not a gap.</div>`
+        : '') +
+      (confirmedCount > 0 && applied.length === 0
+        ? `<div style="margin-top:5px;color:var(--text-dim)">Confirmed reports exist but none fall on ` +
+          `this train's route, or their category implies no speed restriction ` +
+          `(an engine failure is not a track restriction).</div>`
+        : '') +
+      `<div style="font-size:0.68rem;color:var(--text-dim);margin-top:7px">` +
+        `A zero here is a <em>measurement</em>: the model read every report and ` +
+        `applied none.</div>`;
+  } else {
+    body.innerHTML =
+      `No hazard reports have been submitted for this corridor. ` +
+      `<div style="font-size:0.68rem;color:var(--text-dim);margin-top:5px">` +
+      `Use <strong>＋</strong> on the map to report an incident — engine failure, ` +
+      `landslide, flooding or obstruction — that no sensor or timetable can detect.</div>`;
+  }
+}
+
+// ── Report flow ─────────────────────────────────────────────────────────────
+function openHazardModal() {
+  const modal = document.getElementById('hazardModal');
+  if (!modal) return;
+  hazardDraft = { lat: null, lng: null, accuracyM: null, source: null, photo: null };
+  const desc = document.getElementById('hazardDescription');
+  const photo = document.getElementById('hazardPhoto');
+  const note = document.getElementById('hazardSubmitNote');
+  const photoStatus = document.getElementById('hazardPhotoStatus');
+  if (desc) desc.value = '';
+  if (photo) photo.value = '';
+  if (note) note.textContent = '';
+  if (photoStatus) photoStatus.textContent = '';
+  setHazardLocStatus('No location set yet.');
+  modal.hidden = false;
+}
+
+function closeHazardModal() {
+  const modal = document.getElementById('hazardModal');
+  if (modal) modal.hidden = true;
+  setHazardPickMode(false);
+}
+
+function setHazardLocStatus(text) {
+  const el = document.getElementById('hazardLocStatus');
+  if (el) el.innerHTML = text;
+}
+
+function setHazardPickMode(on) {
+  hazardPickMode = on;
+  document.body.classList.toggle('hazard-picking', on);
+  const btn = document.getElementById('hazardPickMapBtn');
+  if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  const modal = document.getElementById('hazardModal');
+  // Hide (not close) the dialog while picking, so the map is usable and the
+  // half-filled form is still there when the pin lands.
+  if (modal && !modal.hidden && on) modal.style.visibility = 'hidden';
+  if (modal && !on) modal.style.visibility = '';
+}
+
+function hazardUseGps() {
+  if (!navigator.geolocation) {
+    setHazardLocStatus('This device does not expose a location API. Use “Pick on map” instead.');
+    return;
+  }
+  setHazardLocStatus('Locating…');
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      hazardDraft.lat = pos.coords.latitude;
+      hazardDraft.lng = pos.coords.longitude;
+      hazardDraft.accuracyM = Math.round(pos.coords.accuracy);
+      hazardDraft.source = 'gps';
+      // Accuracy is shown, never hidden: a ±2 km fix and a ±8 m fix are different
+      // evidence, and the confidence engine treats them differently too.
+      setHazardLocStatus(
+        `📍 ${hazardDraft.lat.toFixed(5)}, ${hazardDraft.lng.toFixed(5)} ` +
+        `<span style="color:var(--text-dim)">(GPS, ±${hazardDraft.accuracyM} m)</span>`
+      );
+    },
+    (err) => {
+      setHazardLocStatus(
+        `Could not get your location (${escapeHtml(err.message)}). Use “Pick on map” instead.`
+      );
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+function hazardOnMapClick(e) {
+  if (!hazardPickMode) return;
+  hazardDraft.lat = e.latlng.lat;
+  hazardDraft.lng = e.latlng.lng;
+  hazardDraft.accuracyM = null;
+  hazardDraft.source = 'map-pick';
+  setHazardPickMode(false);
+  setHazardLocStatus(
+    `🗺 ${hazardDraft.lat.toFixed(5)}, ${hazardDraft.lng.toFixed(5)} ` +
+    `<span style="color:var(--text-dim)">(picked on map)</span>`
+  );
+}
+
+// Downscale in the browser so the upload stays small and no image dependency is
+// needed server-side. ~1280 px longest edge, JPEG q0.75 → typically ~150 KB.
+function hazardDownscalePhoto(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 1280;
+      let { width: w, height: h } = img;
+      if (w > MAX || h > MAX) {
+        const scale = MAX / Math.max(w, h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve({ dataUrl: canvas.toDataURL('image/jpeg', 0.75), w, h });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('unreadable image')); };
+    img.src = url;
+  });
+}
+
+async function hazardOnPhotoChange(ev) {
+  const status = document.getElementById('hazardPhotoStatus');
+  const file = ev.target.files && ev.target.files[0];
+  hazardDraft.photo = null;
+  if (!file) { if (status) status.textContent = ''; return; }
+  if (status) status.textContent = 'Processing photo…';
+  try {
+    const { dataUrl, w, h } = await hazardDownscalePhoto(file);
+    hazardDraft.photo = dataUrl;
+    const kb = Math.round((dataUrl.length * 0.75) / 1024);
+    if (status) {
+      status.textContent =
+        `Photo ready — resized to ${w}×${h}, about ${kb} KB. ` +
+        `Resized on your device; the original is never uploaded.`;
+    }
+  } catch (err) {
+    if (status) status.textContent = `Could not read that image (${err.message}). You can submit without a photo.`;
+  }
+}
+
+async function submitHazardReport() {
+  const btn = document.getElementById('hazardSubmitBtn');
+  const note = document.getElementById('hazardSubmitNote');
+  const category = document.getElementById('hazardCategory').value;
+  const description = document.getElementById('hazardDescription').value.trim();
+
+  if (hazardDraft.lat == null || hazardDraft.lng == null) {
+    if (note) note.innerHTML = `<span style="color:#f87171">Set a location first — a report ` +
+      `without coordinates cannot be corroborated or placed on the corridor.</span>`;
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+  if (note) note.textContent = '';
+
+  try {
+    const res = await fetch(apiUrl('/api/hazards'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        category, description,
+        lat: hazardDraft.lat, lng: hazardDraft.lng,
+        accuracyM: hazardDraft.accuracyM,
+        locationSource: hazardDraft.source,
+        photo: hazardDraft.photo || undefined,
+        trainNumber: selectedTrainNumber || undefined,
+        clientReportedAt: new Date().toISOString(),
+      }),
+    });
+    const json = await res.json();
+
+    if (!res.ok || !json.success) {
+      if (note) {
+        note.innerHTML = `<span style="color:#f87171">Could not submit: ` +
+          `${escapeHtml(json.detail || json.reason || 'unknown error')}</span>`;
+      }
+      return;
+    }
+
+    // Report back what the SCORE actually was and what happens next. Telling a
+    // reporter "thanks, submitted" and nothing else hides the single most
+    // important fact: a score does not confirm anything, a controller does.
+    const rep = json.data && (json.data.report || json.data);
+    const conf = rep && rep.scoring && rep.scoring.confidence;
+    const status = rep && rep.status;
+    if (note) {
+      note.innerHTML =
+        `<span style="color:#34d399;font-weight:600">Report logged.</span> ` +
+        (conf != null
+          ? `Initial confidence <strong>${(conf * 100).toFixed(0)}%</strong> → status ` +
+            `<strong>${escapeHtml(status)}</strong>. `
+          : '') +
+        `It will not affect any ETA until a controller confirms it.`;
+    }
+
+    // Refresh the overlay so the new pin appears immediately if the layer is on.
+    if (hazardLayerOn) {
+      const r2 = await fetch(apiUrl('/api/hazards'));
+      const j2 = await r2.json();
+      if (j2.success && j2.data) { hazardData = j2.data; renderHazardMarkers(hazardData); }
+    }
+    setTimeout(closeHazardModal, 2600);
+  } catch (err) {
+    if (note) note.innerHTML = `<span style="color:#f87171">Network error: ${escapeHtml(err.message)}</span>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Submit report'; }
+  }
+}
+
+// ── Wiring ──────────────────────────────────────────────────────────────────
+// Waits for gati:ready rather than DOMContentLoaded: bootstrapApp() is async, so
+// `map` and the layer groups do not exist yet when this file finishes parsing.
+// Same contract admin.js uses.
+document.addEventListener('gati:ready', () => {
+  if (!map) return;
+  hazardLayer = L.layerGroup();               // opt-in, like the corridor layer
+
+  const on = (id, ev, fn) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(ev, fn);
+  };
+
+  on('hazardToggleBtn', 'click', toggleHazardLayer);
+  on('hazardReportBtn', 'click', openHazardModal);
+  on('hazardModalClose', 'click', closeHazardModal);
+  on('hazardCancelBtn', 'click', closeHazardModal);
+  on('hazardSubmitBtn', 'click', submitHazardReport);
+  on('hazardUseGpsBtn', 'click', hazardUseGps);
+  on('hazardPickMapBtn', 'click', () => setHazardPickMode(!hazardPickMode));
+  on('hazardPhoto', 'change', hazardOnPhotoChange);
+  on('hazardLegendClose', 'click', () => { if (hazardLayerOn) toggleHazardLayer(); });
+
+  map.on('click', hazardOnMapClick);
+
+  // Dismiss on backdrop click, but not on a click inside the card.
+  const modal = document.getElementById('hazardModal');
+  if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeHazardModal(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (hazardPickMode) { setHazardPickMode(false); return; }
+    const m = document.getElementById('hazardModal');
+    if (m && !m.hidden) closeHazardModal();
+  });
+});

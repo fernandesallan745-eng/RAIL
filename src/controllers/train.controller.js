@@ -5,6 +5,7 @@ import { railRadarService } from '../services/railradar.js';
 import { config } from '../config/env.js';
 import { cache } from '../middleware/cache.js';
 import { enhanceLiveData, getTunnelZones } from '../services/deadReckoning.js';
+import { hazardHealth } from './hazard.controller.js';
 
 const FALLBACK_DIR = path.join(process.cwd(), '.cache');
 const FALLBACK_FILE = path.join(FALLBACK_DIR, 'fleet_fallback.json');
@@ -181,6 +182,23 @@ export const resolveRunState = async (trainNumber, liveData, serviceDate) => {
 };
 
 /**
+ * The `hazards` query parameter for a model /eta call, from the caller's request.
+ *
+ * ONE helper for BOTH call sites deliberately. The live path and the cached-fallback
+ * path are two separate `axios.get(fastApiUrl)` calls, and VERIFIED #13 records
+ * exactly this shape of bug: `includeCoordinates` was fixed in the service and the
+ * drawer stayed broken because nobody noticed the second call site. A hazard flag
+ * that reached one path and not the other would make the layer appear and vanish
+ * depending on whether upstream happened to be up.
+ *
+ * Off unless explicitly asked for, so the default ETA reproduces §4b exactly — the
+ * same contract `conflicts=False` has in eta_model.compute_eta.
+ */
+const hazardParam = (req) => (
+  req?.query?.hazards === 'true' ? { hazards: 'true' } : {}
+);
+
+/**
  * Attach `runState` to every entry of a fleet array, in place.
  *
  * The map draws a non-running train at its ORIGIN STATION (railradar.js falls
@@ -258,6 +276,17 @@ export const getHealth = (req, res) => {  // Upstream posture (quota burned, 429
     modelApi: {
       baseUrl: config.modelApi.baseUrl,
     },
+    // Phase 7 hazard layer. Guarded for the same reason `upstream` is: /health is the
+    // endpoint an operator hits when things are broken, so an unreadable hazard store must
+    // not be the thing that takes it down. `adminTokenConfigured` is a boolean — the token
+    // value itself never reaches the browser, same rule as the RailRadar keys.
+    hazards: (() => {
+      try {
+        return hazardHealth();
+      } catch (e) {
+        return { unavailable: true, reason: 'hazard-store-unreadable', detail: e.message };
+      }
+    })(),
   });
 };
 
@@ -328,7 +357,7 @@ export const getTrainLiveStatus = async (req, res, next) => {
       const fastApiUrl = `${config.modelApi.baseUrl}/eta/${trainNumber}`;
       try {
         const fastApiRes = await axios.get(fastApiUrl, {
-          params: { date: startDate, weather: req.query.weather || 'clear' },
+          params: { date: startDate, weather: req.query.weather || 'clear', ...hazardParam(req) },
           timeout: 1500,
         });
         if (fastApiRes.data) {
@@ -459,6 +488,43 @@ export const getTrainLiveStatus = async (req, res, next) => {
         // moment the file outlives the day it was written — and "not running
         // today" is the one answer a user would act on. Recomputed on read below.
         const { conflicts, conflictsUnavailable, runState, ...persistable } = enhancedData;
+
+        // FOURTH derived block (VERIFIED #29: "when a third derived block appears,
+        // add it to the same strip list"). The hazard layer is computed from the
+        // hazard STORE, which a human mutates by approving or rejecting a report, so
+        // a persisted copy could re-serve a speed restriction that has since been
+        // rejected. Worse than the conflict case: that one merely goes stale, this
+        // one can contradict an operator's explicit decision.
+        //
+        // The hazard minutes do not sit in one strippable field — they fan out into
+        // `totals.predicted_eta_min`, `gap_vs_schedule_min`, `predicted_arrival`,
+        // `comparison` and every `segment_eta_min`. Unpicking those individually is
+        // exactly the kind of arithmetic that goes quietly wrong, and a half-stripped
+        // payload would persist an ETA that still contains hazard minutes with
+        // nothing left in the file naming them. So the WHOLE `curvatureEta` block
+        // goes, unconditionally, with no arithmetic at all.
+        //
+        // Dropping it costs almost nothing, and this is the part worth checking
+        // rather than assuming: the fallback READ path (below, ~line 649) already
+        // re-requests `/eta/{train}` from the model and overwrites `curvatureEta`
+        // outright. The persisted copy was only ever a remnant that a *failed*
+        // recompute could leave standing — which is precisely the case that must
+        // not serve hazard minutes. When the model is down the reader now gets an
+        // explicit `curvatureEtaUnavailable`, which is the honest answer.
+        //
+        // Not "skip the write": that would freeze position, delay, stations and
+        // tunnels too, so one opt-in request would stale the entire offline
+        // fallback. Losing a recomputable ETA is strictly cheaper.
+        if (persistable.curvatureEta?.hazard_layer?.enabled) {
+          delete persistable.curvatureEta;
+          persistable.curvatureEtaUnavailable = {
+            reason: 'stripped-hazard-derived',
+            detail: 'The ETA on this request included the crowdsourced hazard layer, '
+                  + 'which is derived from a store a controller can change. It is '
+                  + 'recomputed on read rather than persisted (VERIFIED #21/#29).',
+            modelReachable: true,
+          };
+        }
         fs.writeFileSync(trainFile, JSON.stringify(persistable, null, 2), 'utf-8');
       } catch (writeErr) {
         console.error(`[Controller] Failed to write disk fallback for train #${trainNumber}:`, writeErr.message);
@@ -583,10 +649,18 @@ export const getTrainLiveStatus = async (req, res, next) => {
 
       // Attach curvature ETA model if available
       const startDate = liveData.startDate || new Date().toISOString().split('T')[0];
+      // Drop whatever the file carried BEFORE recomputing, for the same reason the
+      // conflict block below does it: `enhanceLiveData` spreads the fallback object
+      // through, so a persisted `curvatureEta` — or the `stripped-hazard-derived`
+      // notice the persist block writes in its place — would survive a *failed*
+      // recompute and be rendered as if it were this run's answer. A stale ETA that
+      // looks current is the VERIFIED #21 hazard; an explicit "unavailable" is not.
+      delete enhancedData.curvatureEta;
+      delete enhancedData.curvatureEtaUnavailable;
       try {
         const fastApiUrl = `${config.modelApi.baseUrl}/eta/${trainNumber}`;
         const fastApiRes = await axios.get(fastApiUrl, {
-          params: { date: startDate, weather: req.query.weather || 'clear' },
+          params: { date: startDate, weather: req.query.weather || 'clear', ...hazardParam(req) },
           timeout: 1500,
         });
         if (fastApiRes.data) {

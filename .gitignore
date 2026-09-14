@@ -10,6 +10,14 @@ node_modules/
 .cache/rr_quota.json
 .cache/fleet_fallback.json
 
+# Crowdsourced hazard reports (Phase 7) — runtime user-generated data, not source.
+# Deliberately NOT in .cache/: that directory is the offline upstream corpus the
+# whole model reads and costs ~1,000 RailRadar requests to rebuild. These are our
+# own new data. Both regenerate empty on first run; seed demo rows with
+# `node scripts/seed_hazards.js`.
+src/data/hazards.json
+src/data/hazard-photos/
+
 # Offline map pack — binary assets built locally by fetch_tiles.py, and Leaflet
 # vendored from npm. Tens of MB; rebuild on the demo machine instead of
 # committing. Commit them only if you need a single self-contained clone.

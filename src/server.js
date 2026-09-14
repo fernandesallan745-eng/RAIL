@@ -19,6 +19,17 @@ const app = express();
 
 // Security & Parsing Middlewares
 app.use(cors());
+
+// The hazard submit route carries a downscaled photo as a base64 data URL, which the
+// global 100 KB express.json() below would reject with a 413 BEFORE the route's own
+// raised-limit parser ever ran. Mounting a path-scoped parser here, ahead of it, is what
+// makes the per-route limit in api.routes.js effective: body-parser marks the request as
+// parsed and the global instance then passes it through untouched.
+//
+// Scoped to this one path on purpose. Raising the limit globally would let every endpoint
+// in the API accept a 1 MB body, which is a larger change than the feature needs.
+app.use('/api/hazards', express.json({ limit: config.hazards.maxBodyBytes }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -27,6 +27,7 @@ from fastapi.responses import JSONResponse
 
 import curvature
 import eta_model
+import hazard_layer
 
 app = FastAPI(
     title="Curvature & Delay-Aware ETA — Indian Railways",
@@ -54,10 +55,14 @@ def root():
             "6. conflict holds: minutes standing in a loop while a higher-precedence "
             "train crosses or overtakes on single line (Roha-Madgaon). Computed from "
             "cached static timetables — no upstream request for any other train.",
+            "7. hazard restrictions (OPT-IN, ?hazards=true): minutes lost to speed "
+            "caps over the km sub-span of a HUMAN-CONFIRMED crowdsourced hazard "
+            "report. Off by default; machine-scored reports never reach it. Caps "
+            "are our heuristic, not sourced TSR values.",
         ],
         "formula": (
             "segment_eta = distance / min(baseline, curve_cap, weather_cap) "
-            "+ hist_avg_delay + dwell + conflict_hold"
+            "+ hist_avg_delay + dwell + conflict_hold [+ hazard_penalty]"
         ),
         "curvature_modes": {
             "vertex": "DEFAULT. Each sub-segment (median ~195 m) capped by its own radius, then "
@@ -258,6 +263,36 @@ def health(train: str = eta_model.DEFAULT_TRAIN):
     except Exception as e:  # cache-only layer; /health must survive its absence
         run_state = {"unavailable": True, "reason": str(e)[:200]}
 
+    # Hazard layer. An operator hitting /health wants to know whether the store is
+    # readable and how many reports have cleared HUMAN confirmation — the
+    # confirmed count is the only one that can move an ETA, so it is the one that
+    # matters here. Reported as its own block so "store absent" stays a different
+    # answer from "store present, nobody confirmed anything" (VERIFIED #9).
+    hazard_health = None
+    try:
+        reports, hz_meta, hz_unavailable = hazard_layer.load_store()
+        by_status = {}
+        for r in reports:
+            by_status[r.get("status") or "unknown"] = by_status.get(r.get("status") or "unknown", 0) + 1
+        hazard_health = {
+            "available": hz_unavailable is None,
+            "unavailable_reason": hz_unavailable,
+            "store_path": hazard_layer.STORE_PATH,
+            "reports_in_store": len(reports),
+            "by_status": by_status,
+            "confirmed_reports": by_status.get("confirmed", 0),
+            "synthetic_reports": sum(1 for r in reports if r.get("isSynthetic")),
+            "eta_layer_opt_in": "GET /eta/{train}?hazards=true",
+            "caps_are_heuristic": True,
+            "note": (
+                "Only status='confirmed' reaches the ETA, and only a human can set "
+                "it. Machine scoring stops at 'corroborated'. Speed caps are our "
+                "heuristic, not sourced TSR values."
+            ),
+        }
+    except Exception as e:  # same posture as run_state: /health must not 500
+        hazard_health = {"available": False, "unavailable_reason": str(e)[:200]}
+
     return {
         "status": "ok",
         "cache_dir": eta_model.CACHE,
@@ -267,6 +302,7 @@ def health(train: str = eta_model.DEFAULT_TRAIN):
         "conflict_layer_available": train in corridor_trains,
         "run_state": run_state,
         "run_state_roster_split": roster_split,
+        "hazard_layer": hazard_health,
         "run_state_note": (
             "Only 59 of the 206 roster trains run daily and 88 run on exactly one "
             "weekday, so on any given date most of the roster is NOT running. "
@@ -297,7 +333,7 @@ def health(train: str = eta_model.DEFAULT_TRAIN):
     }
 
 
-def _eta_payload(train_number, date, weather, mode, max_speed=None):
+def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=False):
     """
     Build the full ETA payload.  Shared by GET /eta and the WebSocket push so the two
     can never drift apart — a dashboard that renders one shape over REST and a different
@@ -309,7 +345,8 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
         max_speed = eta_model.MAX_SPEED_KMH
     res = eta_model.compute_eta(train_number, date=date, weather=weather,
                                 max_speed=max_speed,
-                                conflicts=True, conflict_delay_min=0.0)
+                                conflicts=True, conflict_delay_min=0.0,
+                                hazards=hazards)
     t = res["totals"]
 
     # 'vertex' mode swaps the physics layer for per-vertex integration.
@@ -323,15 +360,21 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
     # curvature on the blocks that do resolve.
     has_geometry = res.get("curvature_available", False)
     if mode == "vertex" and has_geometry:
+        # Hazard restrictions were charged against the BLOCK-mode speed inside
+        # compute_eta.  Vertex mode runs each block slightly faster (only the
+        # sub-segments that actually curve are capped), and a train that is going
+        # faster loses MORE minutes to a speed restriction, not fewer.  So the
+        # penalty is re-charged here against the speed this mode actually reports.
+        # Under clear weather the two differ by ~0.001 min; under heavy_rain the
+        # modes diverge by 13 min (§6 table) and the difference is real.  Mixing a
+        # block-derived penalty into a vertex total is exactly the like-for-like
+        # error VERIFIED #27 had to untangle.
+        hz_spans = (res.get("hazard_layer") or {}).get("spans") or []
         for s in res["segments"]:
             applied = s["vertex_curve_running_min"]
             if applied is None:
                 applied = s["running_min"]
             s["running_min_applied"] = applied
-            s["segment_eta_min"] = round(
-                applied + s["hist_delay_min"]
-                + s["dwell_min"] + s["conflict_hold_min"], 2
-            )
             # `effective_speed_kmh` is the BLOCK-mode speed: the block's sharpest
             # radius applied to its whole length.  In vertex mode only the sub-segments
             # that actually curve are capped, so the block's mean speed is higher.
@@ -340,8 +383,24 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None):
             s["effective_speed_applied_kmh"] = (
                 round(s["distance_km"] / (applied / 60.0), 1) if applied > 0 else None
             )
+            if hz_spans:
+                hz_min, hz_detail = hazard_layer.block_penalty_min(
+                    hz_spans, s["from_km"], s["to_km"],
+                    s["effective_speed_applied_kmh"])
+                s["hazard_penalty_min"] = round(hz_min, 3)
+                s["hazard_restrictions"] = hz_detail
+                s["hazard_basis"] = sorted(
+                    {r for h in hz_detail for r in h["report_ids"]}) or None
+            s["segment_eta_min"] = round(
+                applied + s["hist_delay_min"] + s["dwell_min"]
+                + s["conflict_hold_min"] + s["hazard_penalty_min"], 2
+            )
+        vhaz = sum(s["hazard_penalty_min"] for s in res["segments"])
+        t["hazard_penalty_min"] = round(vhaz, 2)
+        res["hazard_layer"]["total_penalty_min"] = round(vhaz, 2)
         vrun = sum(s["running_min_applied"] for s in res["segments"])
-        total = vrun + t["historical_delay_min"] + t["dwell_min"] + t["conflict_hold_min"]
+        total = (vrun + t["historical_delay_min"] + t["dwell_min"]
+                 + t["conflict_hold_min"] + vhaz)
         t["running_min"] = round(vrun, 1)
         t["predicted_eta_min"] = round(total, 1)
         t["gap_vs_schedule_min"] = (
@@ -429,6 +488,7 @@ def get_eta(
     weather: str = Query("clear", description=f"one of {list(curvature.WEATHER_SPEED_FACTOR)}"),
     mode: str = Query("vertex", description="curvature application: 'vertex' (physically precise, default) or 'block' (conservative upper bound)"),
     max_speed: float = Query(eta_model.MAX_SPEED_KMH, description="max operating speed km/h"),
+    hazards: bool = Query(False, description="apply speed restrictions from HUMAN-CONFIRMED crowdsourced hazard reports (off by default; false reproduces the documented §4b numbers exactly)"),
 ):
     """Per-segment breakdown and total predicted ETA."""
     if date:
@@ -445,7 +505,7 @@ def get_eta(
         raise HTTPException(422, detail="mode must be 'block' or 'vertex'")
 
     try:
-        res = _eta_payload(train_number, date, weather, mode, max_speed)
+        res = _eta_payload(train_number, date, weather, mode, max_speed, hazards)
     except FileNotFoundError as e:
         raise HTTPException(
             404,

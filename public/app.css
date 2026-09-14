@@ -1292,3 +1292,174 @@ body, html {
   }
 }
 
+
+/* ── Phase 7: crowdsourced hazard reporting ──────────────────────────────────
+   Hue choice is a correctness constraint, not decoration. Taken already:
+     live crossings   red #f87171 / green #34d399
+     corridor sweep   amber #f59e0b / violet #a78bfa
+     tunnels          cyan
+   Hazards therefore use the pink/magenta family, which reads as "alert" while
+   staying unmistakable against all of the above — a passenger report must never
+   be mistaken for a tracked train or a timetable prediction.
+
+   Within the family, SATURATION tracks how far a report has been verified, so a
+   dim marker is visibly less trustworthy than a bright one without needing the
+   legend. Only `confirmed` is fully saturated, because only `confirmed` can
+   affect an ETA. */
+.hazard-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 7px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.hazard-dot-confirmed    { background: #ec4899; }
+.hazard-dot-corroborated { background: #f472b6; }
+.hazard-dot-candidate    { background: #f9a8d4; }
+.hazard-dot-logged       { background: #9d7186; }
+
+/* Report modal ------------------------------------------------------------- */
+.hazard-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 7, 18, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 20px;
+}
+.hazard-modal[hidden] { display: none; }
+
+.hazard-modal-card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.hazard-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-main);
+}
+.hazard-modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.hazard-modal-close:hover { color: var(--text-main); }
+
+.hazard-modal-body {
+  padding: 14px 16px;
+  overflow-y: auto;
+}
+.hazard-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hazard-field-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 12px 0 5px;
+}
+.hazard-modal-body > .hazard-field-label:first-child { margin-top: 0; }
+.hazard-optional { font-weight: 400; color: var(--text-dim); }
+
+.hazard-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.8rem;
+  padding: 8px 10px;
+  outline: none;
+}
+.hazard-input:focus { border-color: #ec4899; }
+textarea.hazard-input { resize: vertical; }
+
+.hazard-loc-row { display: flex; gap: 8px; }
+.hazard-loc-status {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
+.hazard-btn {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: filter 0.15s ease, background 0.15s ease;
+}
+.hazard-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.hazard-btn-primary { background: #ec4899; color: #fff; }
+.hazard-btn-primary:hover:not(:disabled) { filter: brightness(1.12); }
+.hazard-btn-ghost {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--text-muted);
+}
+.hazard-btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+}
+.hazard-btn-ghost[aria-pressed="true"] {
+  background: rgba(236, 72, 153, 0.18);
+  border-color: #ec4899;
+  color: #f9a8d4;
+}
+
+/* Map-pick mode: the cursor is the affordance, so it has to change. */
+.hazard-picking .leaflet-container { cursor: crosshair !important; }
+
+/* DEMO badge for synthetic seed rows. Seeded reports are labelled everywhere
+   they appear — an unlabelled synthetic row in a confidence map would be
+   indistinguishable from a real one, which is the whole failure this project
+   keeps guarding against. */
+.hazard-demo-badge {
+  display: inline-block;
+  background: rgba(251, 191, 36, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+}

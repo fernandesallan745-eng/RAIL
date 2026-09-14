@@ -189,6 +189,59 @@ export const config = {
     monthlyPerKey: intEnv('RAILRADAR_MONTHLY_QUOTA_PER_KEY', 1000),
     guardEnabled: (process.env.RAILRADAR_QUOTA_GUARD || 'true') !== 'false',
   },
+  // ─── Phase 7: crowdsourced hazard reporting ────────────────────────────────────────────
+  // Costs ZERO upstream RailRadar requests — hazards are our own data and the corroboration
+  // signals read cached timetables. Nothing here can spend the 1,000 req/month tier.
+  hazards: {
+    // Shared operator token. DEGRADES LOUDLY, never silently: unset means the approve/reject
+    // action still works — a demo must not be able to lock itself out of its own admin
+    // console — but every decision is recorded `tokenState: 'unverified'` and the console
+    // renders a persistent warning banner. Same discipline as axisBasis (VERIFIED #12) and
+    // delayBasis (VERIFIED #21): the capability stays, the caveat travels with it.
+    //
+    // The VALUE is never logged, echoed in a response, or sent to the browser — only
+    // `adminTokenConfigured` below. Same rule as the RailRadar keys (§8).
+    adminToken: (process.env.GATI_ADMIN_TOKEN || '').trim(),
+
+    // Public write endpoints, so they get their own strict limiter rather than the 2000/15min
+    // apiLimiter (which exists for a polling dashboard and is far too loose for a POST).
+    //
+    // Default 10, not 5: several phones behind one demo Wi-Fi share a single NAT address, so a
+    // per-IP limit counts the whole room as one reporter. 10 leaves room for a live
+    // corroboration demo (3 devices reporting the same hazard) without opening a spam hole.
+    // Raise HAZARD_SUBMIT_PER_WINDOW at demo time if the room is bigger.
+    submitPerWindow: intEnv('HAZARD_SUBMIT_PER_WINDOW', 10, 1),
+    submitWindowMin: intEnv('HAZARD_SUBMIT_WINDOW_MIN', 15, 1),
+    // Slows token guessing on the decision route. Not a substitute for a real auth system —
+    // see `adminToken` above and CLAUDE.md §5g.
+    decisionPerWindow: intEnv('HAZARD_DECISION_PER_WINDOW', 60, 1),
+
+    // Body limit for the ONE route that carries a photo. The browser canvas-downscales to
+    // ~1280 px JPEG (~150 KB), which base64 inflates by ~33% to ~200 KB; 1 MB is headroom,
+    // not an invitation. Applied to /api/hazards only — the global express.json() stays at
+    // its 100 KB default everywhere else (see src/server.js).
+    maxBodyBytes: intEnv('HAZARD_MAX_BODY_BYTES', 1024 * 1024, 1024),
+    // Cap on the DECODED image, which is the number that actually lands on disk. Catches a
+    // full-resolution phone original that skipped the client-side downscale.
+    maxPhotoBytes: intEnv('HAZARD_MAX_PHOTO_BYTES', 600 * 1024, 1024),
+    maxDescriptionChars: intEnv('HAZARD_MAX_DESCRIPTION_CHARS', 500, 1),
+
+    // COARSE validity gate, not the plausibility score. Its only job is to reject a
+    // physically impossible submission — most importantly 0,0 (null island), which is what a
+    // failed browser geolocation call produces, and which would otherwise be stored as a real
+    // report sitting in the Gulf of Guinea.
+    //
+    // Distance-from-track is a SCORED signal, not a gate: scoreCorridorPlausibility() measures
+    // the perpendicular offset from the alignment and lets a human see a 4 km-off report
+    // ranked low. Rejecting on distance here would throw away the report instead, and the
+    // canonical axis reaches Thokur at km 737 (VERIFIED #22) — well south of the cached
+    // polyline — so a gate tight enough to be meaningful would also reject legitimate
+    // southern reports. Hence: wide box here, real measurement there.
+    bbox: {
+      minLat: 12.0, maxLat: 19.6,
+      minLng: 72.3, maxLng: 75.6,
+    },
+  },
 };
 
 export const validateConfig = () => {
@@ -217,5 +270,27 @@ export const validateConfig = () => {
   // means the map can show a position up to that many seconds old while presenting it as live.
   if (config.cache.liveTtl !== 0) {
     console.warn(`\x1b[33m⚠️  [Posture] CACHE_TTL_LIVE=${config.cache.liveTtl} — live responses may be served from cache and are NOT guaranteed fresh. Set CACHE_TTL_LIVE=0 for true live mode.\x1b[0m`);
+  }
+
+  // Hazard posture. Prints whether the admin token is SET — never the token itself, the same
+  // rule the RailRadar keys follow.
+  const hz = config.hazards;
+  console.log(
+    `\x1b[36mℹ [Hazards]\x1b[0m admin token ${hz.adminToken ? 'SET' : 'NOT SET'} · `
+    + `submit ≤${hz.submitPerWindow}/${hz.submitWindowMin}min per IP · `
+    + `photo ≤${Math.round(hz.maxPhotoBytes / 1024)} KB decoded · zero upstream cost`
+  );
+
+  // Not a warning about a missing feature — a warning that a WRITE action is unauthenticated.
+  // The action deliberately still works (see config.hazards.adminToken), so the only thing
+  // standing between "anyone on this LAN can confirm a hazard" and an operator noticing is
+  // this line and the banner in the admin console.
+  if (!hz.adminToken) {
+    console.warn(
+      '\x1b[33m⚠️  [Hazards] GATI_ADMIN_TOKEN is not set — hazard approve/reject is '
+      + 'UNAUTHENTICATED and anyone on this network can confirm or reject a report. '
+      + 'Decisions will be recorded as approvedBy:"unverified". Set GATI_ADMIN_TOKEN in .env '
+      + 'to attribute them.\x1b[0m'
+    );
   }
 };

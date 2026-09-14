@@ -459,6 +459,100 @@ def point_at_corridor_km(corridor_km):
     return best[1] if best else None
 
 
+def _nearest_on_polyline(coords, cum, lat, lng):
+    """(along_track_km, offset_m) of the nearest POINT on a polyline — full scan.
+
+    Distinct from `_projected_km`, which refines a position that is already snapped
+    to a known vertex and so only has to search a ±6-vertex window.  A hazard
+    report arrives as a bare lat/lng with no vertex hint, so the search has to be
+    global.  1,184 vertices is a few milliseconds and this runs once per report,
+    not once per vertex.
+
+    Still a perpendicular projection with a clamped `t`, not a nearest-vertex
+    snap — VERIFIED #11/#24 for the fourth surface in this project.
+    """
+    best_km, best_d = None, math.inf
+    for j in range(len(coords) - 1):
+        (x0, y0), (x1, y1) = coords[j], coords[j + 1]
+        ax, ay = curvature._to_local_xy(y0, x0, lat, lng)
+        bx, by = curvature._to_local_xy(y1, x1, lat, lng)
+        dx, dy = bx - ax, by - ay
+        l2 = dx * dx + dy * dy
+        t = 0.0 if l2 == 0 else max(0.0, min(1.0, -(ax * dx + ay * dy) / l2))
+        d = math.hypot(ax + t * dx, ay + t * dy)
+        if d < best_d:
+            best_d = d
+            best_km = cum[j] + t * (cum[j + 1] - cum[j])
+    return best_km, best_d
+
+
+def corridor_km_at_point(lat, lng, max_offset_m=2000.0):
+    """Canonical corridor km for a lat/lng — the inverse of `point_at_corridor_km`.
+
+    Obeys the same two rules as everything else that crosses between axes here:
+    project PERPENDICULARLY onto the line rather than snapping to a vertex
+    (VERIFIED #11/#24 — vertex spans reach 11.9 km on this route, so a point
+    sitting 20 m from the alignment quantises up to ~3 km *along* it), and convert
+    along-track km to canonical km ANCHORED between the two nearest station codes
+    rather than by one global scale factor (VERIFIED #12, measured median 655 m /
+    max 1576 m on 22229 — more than a typical Konkan tunnel).
+
+    Returns `{corridorKm, offsetM, alongKm, referenceTrain, anchorGapKm}`, or None
+    if the point is off every cached polyline or beyond its anchor span.
+    `offsetM` travels with the km deliberately: a caller must never be able to
+    treat a point 4 km from any track as though it were on the track.
+
+    Refuses to extrapolate past the anchor span, for the same reason as
+    `point_at_corridor_km` — a point south of Madgaon has no cached polyline, and
+    pinning it to the last anchor would report a confident wrong km (VERIFIED #9).
+    """
+    if lat is None or lng is None:
+        return None
+    best = None
+    for r in references():
+        if r["unusable"] or not r.get("codeKm"):
+            continue
+        tbl = _anchor_table(r)
+        if len(tbl) < 2:
+            continue
+        along, off = _nearest_on_polyline(r["coords"], r["cumKm"], lat, lng)
+        if along is None or off > max_offset_m:
+            continue
+
+        # Invert the anchor table: along-track km → canonical km.  Sorted and
+        # deduped on the *along* column this time, because that is the one being
+        # interpolated on and a repeated value would divide by zero.
+        inv = []
+        for a, c in sorted((a, c) for c, a in tbl):
+            if inv and abs(a - inv[-1][0]) < 1e-9:
+                continue
+            inv.append((a, c))
+        if len(inv) < 2 or not (inv[0][0] <= along <= inv[-1][0]):
+            continue
+
+        lo = max(i for i in range(len(inv)) if inv[i][0] <= along)
+        hi = min(len(inv) - 1, lo + 1)
+        if hi == lo:
+            lo = hi - 1
+        (a0, c0), (a1, c1) = inv[lo], inv[hi]
+        f = 0.0 if a1 == a0 else (along - a0) / (a1 - a0)
+        gap = abs(a1 - a0)
+
+        # Closest alignment first, then the tighter anchor bracket.  Offset leads
+        # because a point 20 m from one polyline and 3 km from another is
+        # unambiguously on the first, whatever the anchor spacing says.
+        key = (round(off, 1), gap)
+        if best is None or key < best[0]:
+            best = (key, {
+                "corridorKm": c0 + f * (c1 - c0),
+                "offsetM": off,
+                "alongKm": along,
+                "referenceTrain": r["train"],
+                "anchorGapKm": round(gap, 1),
+            })
+    return best[1] if best else None
+
+
 def audit():
     """Summarise every discovered reference. Used by the CLI and diagnostics."""
     def _stats(vals):

@@ -88,11 +88,17 @@ export const getModelRunState = async (req, res) => {
  *
  * Pure passthrough: the gateway does no ETA arithmetic of its own, the same discipline
  * the tunnel and conflict layers follow, so the two can never disagree about a number.
+ *
+ * `hazards` is on the allowlist because `pickParams` DROPS anything absent from it,
+ * silently — a request with `?hazards=true` came back `enabled: false` and looked like
+ * a broken model rather than a swallowed parameter. That is the THIRD call site into
+ * the model's /eta (drawer live, drawer cached-fallback, here), which is VERIFIED #13's
+ * lesson for the third time: fixing one path leaves the others quietly wrong.
  */
 export const getModelEta = async (req, res) => {
   try {
     const { trainNumber } = req.params;
-    const params = pickParams(req.query, ['date', 'weather', 'mode', 'max_speed']);
+    const params = pickParams(req.query, ['date', 'weather', 'mode', 'max_speed', 'hazards']);
     const upstream = await axios.get(
       `${config.modelApi.baseUrl}/eta/${trainNumber}`,
       { params, timeout: 20000 }   // curvature integration over ~1,200 vertices

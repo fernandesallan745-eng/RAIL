@@ -2,7 +2,7 @@
   "trainNumber": "22229",
   "trainName": "Mumbai CSMT - Madgaon Vande Bharat Express",
   "startDate": "2026-09-14",
-  "lastUpdatedAt": "2026-09-13T15:06:50+05:30",
+  "lastUpdatedAt": "2026-09-13T21:52:38+05:30",
   "status": "not-started",
   "train": {
     "number": "22229",
@@ -12839,7 +12839,7 @@
   },
   "deadReckoning": {
     "active": false,
-    "staleSinceMs": 2254,
+    "staleSinceMs": 2009,
     "method": "live_signal"
   },
   "curvatureEta": {
