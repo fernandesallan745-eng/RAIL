@@ -201,6 +201,54 @@ export function recordDecision(id, { decision, actor, tokenState, note, previous
   return { report, previousStatus: recordedPrevious };
 }
 
+/**
+ * Remove a report and its photo. OPERATOR TOOL ONLY — deliberately not routed.
+ *
+ * There is no HTTP path to this and there must not be one. `rejected` is how a
+ * report stops mattering: it keeps the row, keeps the audit trail, and keeps the
+ * reporter's credibility history, so a wrong report still teaches the model
+ * something. Deletion destroys all three, which is why the admin console can only
+ * reject — a public or even token-guarded delete endpoint would let one request
+ * erase the evidence that a decision was ever made.
+ *
+ * What it is for: removing a report created while TESTING, so invented incidents
+ * do not sit in the store the map and the queue render. A test report is worse than
+ * synthetic seed data because it carries `isSynthetic: false` and therefore renders
+ * with NO demo badge — it is indistinguishable from a real sighting.
+ *
+ * Deletes the photo in the same call on purpose. Removing the row alone orphans the
+ * file in hazard-photos/, and an orphan is unreachable but still on disk — the kind
+ * of residue nobody finds until the directory is inexplicably large.
+ */
+export function removeReport(id) {
+  const s = loadStore();
+  const idx = s.reports.findIndex((r) => r.id === id);
+  if (idx === -1) return { removed: false, reason: 'not-found' };
+
+  const [report] = s.reports.splice(idx, 1);
+
+  // Report the photo outcome separately from the row outcome. A failed unlink must
+  // not read as a failed removal, and a silent catch would hide a permissions
+  // problem that leaves the file behind.
+  let photo = { path: null, deleted: false, reason: 'no-photo' };
+  if (report.photoPath) {
+    const abs = path.join(PHOTO_DIR, path.basename(report.photoPath));
+    try {
+      if (fs.existsSync(abs)) {
+        fs.unlinkSync(abs);
+        photo = { path: abs, deleted: true, reason: null };
+      } else {
+        photo = { path: abs, deleted: false, reason: 'already-absent' };
+      }
+    } catch (e) {
+      photo = { path: abs, deleted: false, reason: e.message };
+    }
+  }
+
+  const saved = saveStore();
+  return { removed: true, saved, report, photo, remaining: s.reports.length };
+}
+
 /** Test seam: drop the in-memory copy so the next read re-reads disk. */
 export function _resetStoreCache() {
   store = null;

@@ -358,7 +358,13 @@ export const getHazards = (req, res) => {
         trainPresenceBasis: 'scheduled',
         machineCeiling: 'corroborated',
         humanOnlyStatuses: HUMAN_ONLY,
-        adminAuthenticated: Boolean(config.hazards.adminToken),
+        // NOT named `adminAuthenticated`: this says whether the SERVER requires a token,
+        // not whether the caller supplied one. A UI author reading `adminAuthenticated:
+        // false` would reasonably render "you are not signed in" — the exact opposite of
+        // the truth, which is that no token is configured so ANYONE on this LAN can
+        // approve. The same value is `adminTokenConfigured` in hazardHealth(); one value
+        // must not have two names, and this is the honest one.
+        adminTokenConfigured: Boolean(config.hazards.adminToken),
         decisionSupportOnly: true,
         note: 'Machine status is recomputed on every read, because a report\'s confidence '
             + 'depends on its peers and changes when a new witness submits. Human '

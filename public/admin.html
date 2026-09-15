@@ -292,8 +292,73 @@
     </details>
   </div>
 
-  <!-- RIGHT RAIL — model query controls and the ETA layer ladder. -->
+  <!-- RIGHT RAIL — the hazard queue (the one panel that takes a human decision),
+       then model query controls and the ETA layer ladder. -->
   <div class="admin-rail admin-rail-right" id="adminRailRight">
+
+    <!-- HAZARD QUEUE — Phase 7's human-confirmation step.
+         Placed FIRST because it is the only panel on this page that asks the operator
+         to decide something; everything below it is read-only instrumentation. The
+         machine can raise a report to `corroborated` and no further, so nothing here
+         is a formality — a hazard affects an ETA only after a click in this panel. -->
+    <details class="admin-panel admin-panel-hazards" open>
+      <summary class="admin-panel-head">
+        <span class="admin-panel-title">Hazard queue</span>
+        <span class="admin-panel-meta" id="hazardQueueMeta">—</span>
+      </summary>
+      <div class="admin-panel-body">
+
+        <!-- Rendered by admin.js from `adminTokenConfigured`. When no token is set on
+             the server the decision still works — a demo must not be able to lock
+             itself out — but it says so permanently and every decision is recorded
+             tokenState:"unverified". Degrade loudly, never silently. -->
+        <div id="hazardAuthBanner" class="hazard-auth-banner" hidden></div>
+
+        <div class="hazard-token-row">
+          <label for="hazardToken">Admin token</label>
+          <input id="hazardToken" class="admin-input" type="password"
+                 autocomplete="off" spellcheck="false"
+                 placeholder="GATI_ADMIN_TOKEN" />
+        </div>
+        <p class="admin-note hazard-token-note">
+          Sent as <code>x-admin-token</code> on each decision. Held in this field only —
+          <strong>never stored, never logged</strong>, and gone on reload.
+        </p>
+
+        <div class="hazard-queue-filter">
+          <label for="hazardFilter">Show</label>
+          <select id="hazardFilter" class="admin-input">
+            <option value="pending" selected>Awaiting a human</option>
+            <option value="all">All reports</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <button id="hazardQueueRefresh" class="admin-btn" type="button">Refresh</button>
+        </div>
+
+        <div id="hazardQueueBody" class="hazard-queue"><div class="admin-empty">Loading…</div></div>
+
+        <!--
+          The decision readout sits OUTSIDE #hazardQueueBody deliberately. A decision
+          refetches and re-renders the queue, which replaces every row element — and
+          under the default "awaiting a human" view the decided row leaves the list
+          altogether. A result written into the row would be destroyed a moment after
+          it appeared, leaving the operator with no confirmation of what they had just
+          authorised. The evidence of a human decision must outlive the row.
+        -->
+        <div id="hazardDecisionResult" class="admin-op-result hz-decision-result" hidden></div>
+
+        <p class="admin-note">
+          Confidence is a <strong>weighted heuristic over five signals, not a trained
+          model</strong> — there is no ground-truth hazard set to calibrate it against.
+          Expand a row to see each component's own score and basis; the total is shown
+          with its arithmetic so it can be checked rather than trusted. Train
+          corroboration is matched against <strong>scheduled</strong> timetables, not
+          live positions. Machine status stops at <code>corroborated</code>.
+          <strong>Nothing here is dispatched.</strong>
+        </p>
+      </div>
+    </details>
 
     <details class="admin-panel" open>
       <summary class="admin-panel-head">

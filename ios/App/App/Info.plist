@@ -33,6 +33,13 @@
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>GATI connects to the development server on your local Wi-Fi to display live train data.</string>
+	<!-- Phase 7 hazard reporting. iOS TERMINATES an app that calls a location API with
+	     no usage description — this is not an optional nicety, and its absence would
+	     crash the app the first time the report form auto-requested a fix rather than
+	     merely denying it. "WhenInUse" only: GATI never asks for background location,
+	     because a hazard is reported while the app is open or not at all. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>GATI uses your location only to place a hazard report you choose to submit on the correct stretch of track. Nothing is recorded unless you submit a report, and you can pick the spot on the map instead.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

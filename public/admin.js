@@ -74,6 +74,16 @@
       // instead would let the checkbox, the button and the legend disagree.
       delegate: () => toggleCorridorLayer(),
     },
+    {
+      key: 'hazard',
+      label: 'Hazard reports',
+      get: () => hazardLayer,
+      // Delegated for the same reason as the corridor row — toggleHazardLayer() owns
+      // #hazardToggleBtn's aria-pressed, the legend and the fetch. Unlike the corridor
+      // sweep it REFETCHES every time, because the hazard store is mutated by public
+      // submits and by the Approve/Reject buttons in the panel below.
+      delegate: () => toggleHazardLayer(),
+    },
   ];
 
   const resolveLayer = (spec) => {
@@ -784,6 +794,457 @@
     });
   }
 
+  // ── Hazard queue ────────────────────────────────────────────────────────────
+  //
+  // The only panel on this page that CHANGES anything in the model's inputs, and the
+  // human-confirmation step CLAUDE.md §2 requires: the confidence engine can raise a
+  // report to `corroborated` and no further, so `confirmed` exists only as the result
+  // of a click here.
+  //
+  // Three deliberate choices:
+  //
+  //  1. IT FETCHES UNFILTERED and filters for DISPLAY. `GET /api/hazards?status=` is
+  //     supported, but the payload's `counts`/`total` are computed AFTER the filter —
+  //     so a server-side filter would make the header read "0 confirmed" while two
+  //     confirmed reports sat in the store. The store is small and the call is local;
+  //     one unfiltered fetch keeps the counts whole-store true and makes switching the
+  //     view free.
+  //  2. IT DOES NOT AUTO-REFRESH, unlike the quota panel's 15 s tick. A refresh while
+  //     an operator has a row open and a note half-typed would discard their work.
+  //     Explicit Refresh button, plus one refetch after each decision.
+  //  3. IT RE-USES app.js's RENDERER. After a decision the fresh payload is assigned
+  //     to app.js's own `hazardData` and drawn with renderHazardMarkers(), so the map
+  //     and the queue come from one fetch. A second copy of the marker logic here
+  //     would eventually disagree about colour — the same reason the corridor row
+  //     delegates instead of calling addLayer.
+  let hazardQueueData = null;
+
+  /**
+   * The token, read from the field AT DECISION TIME.
+   *
+   * Never written to localStorage/sessionStorage, never logged, never interpolated
+   * into innerHTML. CLAUDE.md's rule for RAILRADAR_API_KEY — "counts, indices and
+   * config, never a key value" — is the same rule here: the only thing about this
+   * token that may reach the rendered page is whether the SERVER requires one.
+   */
+  const hazardToken = () => ($('hazardToken')?.value || '').trim();
+
+  const HAZARD_COMPONENT_LABEL = {
+    independentReports:   'Independent reports',
+    corridorPlausibility: 'Corridor plausibility',
+    trainPresence:        'Train presence (scheduled)',
+    reporterCredibility:  'Reporter credibility',
+    evidence:             'Evidence attached',
+  };
+
+  /** Status colour, borrowed from app.js so the queue and the map cannot drift. */
+  const hazardStatusColour = (status) => {
+    try {
+      return hazardColour(status);
+    } catch (_) {
+      return '#94a3b8';
+    }
+  };
+
+  const hazardLabelOf = (category) => {
+    try {
+      return hazardCategoryLabel(category);
+    } catch (_) {
+      return String(category || 'unknown');
+    }
+  };
+
+  /**
+   * The five components, each on its own row with its own arithmetic.
+   *
+   * CLAUDE.md §8: "print intermediate numbers, don't just report final results." A
+   * bare 0.72 is unauditable and is exactly the VERIFIED #9 failure — a plausible
+   * number with no way to see what produced it. Each row shows `score × weight =
+   * contribution`, and the total line shows the division by `weightUsed`, so an
+   * operator can check the confidence rather than trust it.
+   */
+  function hazardComponentRows(scoring) {
+    const comps = scoring?.components || {};
+    const weights = scoring?.weights || {};
+    const keys = Object.keys(HAZARD_COMPONENT_LABEL).filter((k) => k in comps);
+    if (!keys.length) return '<div class="admin-empty">No component breakdown in the payload.</div>';
+
+    const rows = keys.map((key) => {
+      const c = comps[key] || {};
+      const w = weights[key];
+      const label = HAZARD_COMPONENT_LABEL[key];
+
+      // score === null means the signal could not be computed. It is excluded from
+      // BOTH sides of the average (see weightUsed below) rather than scored 0 —
+      // scoring a missing signal as zero would penalise a report for our own missing
+      // data, which is the fabrication this project keeps removing.
+      if (c.score == null) {
+        return `
+          <div class="hz-comp is-unavailable">
+            <div class="hz-comp-head">
+              <span class="hz-comp-name">${esc(label)}</span>
+              <span class="hz-comp-math">unavailable · weight ${fmt(w, 2)} excluded</span>
+            </div>
+            <div class="hz-comp-note">${esc(c.note || c.reason || c.basis || 'not computable')}</div>
+          </div>`;
+      }
+
+      const contribution = (typeof w === 'number') ? c.score * w : null;
+      const pct = Math.max(0, Math.min(100, c.score * 100));
+      return `
+        <div class="hz-comp">
+          <div class="hz-comp-head">
+            <span class="hz-comp-name">${esc(label)}</span>
+            <span class="hz-comp-math">${fmt(c.score, 3)} × ${fmt(w, 2)} = <strong>${fmt(contribution, 3)}</strong></span>
+          </div>
+          <div class="hz-comp-bar"><span style="width:${pct.toFixed(1)}%"></span></div>
+          <div class="hz-comp-note">${esc(c.note || '')}</div>
+          <div class="hz-comp-basis">basis: <code>${esc(c.basis || 'unstated')}</code></div>
+        </div>`;
+    });
+
+    const th = scoring.thresholds || {};
+    const used = scoring.weightUsed;
+    const excluded = (scoring.componentsUnavailable || []).length;
+
+    rows.push(`
+      <div class="hz-total">
+        <div class="hz-total-line">
+          Σ contributions ÷ weight used
+          ${typeof used === 'number' && used < 0.999
+            ? ` (${fmt(used, 2)} — ${excluded} component${excluded === 1 ? '' : 's'} excluded, renormalised)`
+            : ` (${fmt(used, 2)})`}
+          = <strong>${fmt(scoring.confidence, 3)}</strong>
+        </div>
+        <div class="hz-total-ladder">
+          thresholds: candidate ≥ ${fmt(th.candidateAt, 2)} · corroborated ≥ ${fmt(th.corroboratedAt, 2)}
+          → machine says <strong>${esc(scoring.machineStatus || '—')}</strong>
+          (its ceiling; only a human goes further)
+        </div>
+      </div>`);
+
+    return rows.join('');
+  }
+
+  /** The two statuses only a human can set — the queue's "already decided" test. */
+  const HUMAN_DECIDED = new Set(['confirmed', 'rejected']);
+
+  /** One report, collapsed to a headline and expandable to its full evidence. */
+  function hazardQueueRow(r) {
+    const sc = r.scoring || {};
+    const colour = hazardStatusColour(r.status);
+    const decided = HUMAN_DECIDED.has(r.status);
+    const when = clockOf(r.reportedAt);
+    const audit = Array.isArray(r.auditTrail) ? r.auditTrail : [];
+
+    const photo = r.hasPhoto && r.photoUrl
+      ? `<a class="hz-photo" href="${esc(apiUrl(r.photoUrl))}" target="_blank" rel="noopener">
+           <img src="${esc(apiUrl(r.photoUrl))}" alt="Reporter photo for ${esc(r.id)}" loading="lazy" />
+         </a>`
+      : '<div class="hz-nophoto">No photo attached — optional by design; the reporter may have had no line of sight.</div>';
+
+    // `statusSource` distinguishes a machine score from a human decision. Rendering
+    // them alike would let a heuristic read as a controller's signature.
+    const source = r.statusSource === 'human-decision'
+      ? `<span class="hz-src is-human">human decision</span>`
+      : `<span class="hz-src">machine · ${esc(r.machineStatus || '—')}</span>`;
+
+    return `
+      <details class="hz-row" data-hz="${esc(r.id)}">
+        <summary class="hz-head">
+          <span class="hz-dot" style="background:${esc(colour)}"></span>
+          <span class="hz-conf">${fmt(sc.confidence, 2)}</span>
+          <span class="hz-cat">${esc(hazardLabelOf(r.category))}</span>
+          <span class="hz-status" style="color:${esc(colour)}">${esc(r.status || '—')}</span>
+          ${r.isSynthetic ? '<span class="hz-demo">DEMO</span>' : ''}
+        </summary>
+        <div class="hz-body">
+          <div class="hz-meta">
+            <span>${esc(r.id)}</span>
+            <span>${when ? `reported ${esc(when)}` : 'time unknown'}</span>
+            <span>${fmt(r.lat, 5)}, ${fmt(r.lng, 5)}</span>
+            <span>reporter <code>${esc(r.reporterRef || '—')}</code></span>
+            ${source}
+          </div>
+
+          ${r.description
+            ? `<blockquote class="hz-desc">${esc(r.description)}</blockquote>`
+            : '<div class="hz-desc is-empty">No description given.</div>'}
+
+          ${photo}
+
+          <div class="hz-comps">${hazardComponentRows(sc)}</div>
+
+          ${audit.length ? `
+            <div class="hz-audit">
+              <div class="hz-audit-head">Audit trail (${audit.length})</div>
+              ${audit.map((a) => `
+                <div class="hz-audit-row">
+                  <strong>${esc(a.decision)}</strong> ${esc(a.previousStatus)} → ${esc(a.decision)}
+                  · ${esc(clockOf(a.at) || a.at || '')}
+                  · actor <code>${esc(a.actor)}</code>
+                  · token <code>${esc(a.tokenState)}</code>
+                  · prev-status basis <code>${esc(a.previousStatusBasis || '—')}</code>
+                  ${a.note ? `<div class="hz-audit-note">${esc(a.note)}</div>` : ''}
+                </div>`).join('')}
+            </div>` : ''}
+
+          ${decided ? `
+            <div class="admin-note hz-decided">
+              Already decided by a human. Deciding again appends another audit entry —
+              the earlier one is never overwritten.
+            </div>` : ''}
+
+          <label class="hz-note-label" for="hzNote-${esc(r.id)}">Decision note (optional, stored in the audit trail)</label>
+          <input class="admin-input" id="hzNote-${esc(r.id)}" type="text" maxlength="280"
+                 placeholder="e.g. confirmed by Ratnagiri section controller by phone" />
+          <div class="hz-actions">
+            <button class="admin-btn admin-btn-primary" type="button"
+                    data-hz-decide="confirmed" data-hz-id="${esc(r.id)}">Confirm
+              <span class="admin-btn-sub">makes it ETA-eligible under ?hazards=true</span>
+            </button>
+            <button class="admin-btn admin-btn-warn" type="button"
+                    data-hz-decide="rejected" data-hz-id="${esc(r.id)}">Reject
+              <span class="admin-btn-sub">keeps the row and the audit trail</span>
+            </button>
+          </div>
+        </div>
+      </details>`;
+  }
+
+  const HAZARD_VIEWS = {
+    pending:   (r) => !HUMAN_DECIDED.has(r.status),
+    all:       () => true,
+    confirmed: (r) => r.status === 'confirmed',
+    rejected:  (r) => r.status === 'rejected',
+  };
+
+  function renderHazardQueue() {
+    const host = $('hazardQueueBody');
+    const meta = $('hazardQueueMeta');
+    if (!host) return;
+
+    if (!hazardQueueData) {
+      host.innerHTML = '<div class="admin-empty">Queue not loaded.</div>';
+      if (meta) meta.textContent = '—';
+      return;
+    }
+
+    const d = hazardQueueData;
+    const rows = Array.isArray(d.reports) ? d.reports : [];
+
+    // The unauthenticated banner lives INSIDE this panel, next to the buttons it
+    // qualifies, not in the page's provenance banner — a warning about who can
+    // approve belongs beside the approve button.
+    const banner = $('hazardAuthBanner');
+    if (banner) {
+      if (d.adminTokenConfigured) {
+        banner.hidden = true;
+        banner.className = 'hazard-auth-banner is-ok';
+        banner.textContent = '';
+      } else {
+        banner.hidden = false;
+        banner.className = 'hazard-auth-banner';
+        banner.textContent =
+          '⚠ UNAUTHENTICATED — GATI_ADMIN_TOKEN is not set on the server, so anyone '
+          + 'who can reach this page on the LAN can confirm or reject a report. '
+          + 'Decisions are still recorded, marked tokenState:"unverified" and '
+          + 'actor:"unverified", so the audit trail says the approver was unidentified.';
+      }
+      // The field would have no effect with no token configured — say so rather than
+      // silently ignoring what the operator types into it.
+      const field = $('hazardToken');
+      if (field) {
+        field.disabled = !d.adminTokenConfigured;
+        field.placeholder = d.adminTokenConfigured
+          ? 'GATI_ADMIN_TOKEN'
+          : 'no token configured — field has no effect';
+      }
+    }
+
+    const view = $('hazardFilter')?.value || 'pending';
+    const keep = HAZARD_VIEWS[view] || HAZARD_VIEWS.pending;
+    // Received order is confidence-desc then recency, decided server-side. Kept as
+    // received; a client-side re-sort would be a second ranking that could disagree.
+    const shown = rows.filter(keep);
+
+    if (meta) {
+      const c = d.counts || {};
+      // Whole-store counts, from the unfiltered fetch — not the filtered subset.
+      const parts = ['logged', 'candidate', 'corroborated', 'confirmed', 'rejected']
+        .filter((k) => c[k])
+        .map((k) => `${c[k]} ${k}`);
+      meta.textContent = `${d.total || 0} report${d.total === 1 ? '' : 's'}`
+        + (parts.length ? ` · ${parts.join(' · ')}` : '');
+    }
+
+    if (!shown.length) {
+      // Two different facts, kept apart (VERIFIED #9 at the UI layer): an empty store
+      // and an empty view of a non-empty store are not the same answer.
+      host.innerHTML = rows.length
+        ? `<div class="admin-empty">No reports match this view — ${rows.length} in the store.</div>`
+        : '<div class="admin-empty">No hazard reports in the store. '
+          + 'Seed labelled demo rows with <code>node scripts/seed_hazards.js</code>.</div>';
+      return;
+    }
+
+    host.innerHTML = shown.map(hazardQueueRow).join('');
+    for (const btn of host.querySelectorAll('[data-hz-decide]')) {
+      btn.addEventListener('click', () => decideHazard(
+        btn.getAttribute('data-hz-id'),
+        btn.getAttribute('data-hz-decide'),
+      ));
+    }
+  }
+
+  /**
+   * Fetch the store and render both surfaces from the one response.
+   *
+   * Zero upstream cost: hazards are our own data (CLAUDE.md §3) and the presence
+   * component reads cached timetables, so nothing here can touch the 1,000 req/month
+   * RailRadar tier.
+   */
+  async function refreshHazardQueue() {
+    const host = $('hazardQueueBody');
+    try {
+      const res = await fetch(apiUrl('/api/hazards'));
+      const json = await res.json();
+      if (!res.ok || json.success === false) {
+        if (host) {
+          host.innerHTML = `<div class="admin-empty">Queue unavailable: `
+            + `${esc(json.reason || `http-${res.status}`)}</div>`;
+        }
+        return;
+      }
+      hazardQueueData = json.data || null;
+      renderHazardQueue();
+
+      // One fetch, both surfaces. app.js owns the marker rendering; assigning its
+      // global and calling its renderer keeps the map in step without a second
+      // request and without a second copy of the colour rules.
+      try {
+        if (typeof hazardLayerOn !== 'undefined' && hazardLayerOn) {
+          hazardData = hazardQueueData;
+          renderHazardMarkers(hazardData);
+        }
+      } catch (_) { /* app.js absent or layer not built — the queue still works */ }
+    } catch (err) {
+      if (host) host.innerHTML = `<div class="admin-empty">Queue fetch failed: ${esc(err.message)}</div>`;
+    }
+  }
+
+  /** Record a human decision, then show what actually changed as evidence. */
+  async function decideHazard(id, decision) {
+    // The readout lives OUTSIDE the row, at panel level, and that placement is
+    // load-bearing rather than cosmetic. A successful decision refetches and
+    // re-renders the queue, which replaces every row element — so a result written
+    // into the row is destroyed a moment after it appears. Worse, under the default
+    // "awaiting a human" view the decided row leaves the list entirely, so the
+    // operator would be left with no confirmation at all of what they had just
+    // authorised. The evidence of a human decision must outlive the row it was made on.
+    const out = $('hazardDecisionResult');
+    const note = $(`hzNote-${id}`)?.value?.trim() || '';
+    if (!out) return;
+
+    // Confirming is the step that lets a report affect an ETA. It is a human
+    // confirmation in the CLAUDE.md §2 sense, so it gets an explicit confirm.
+    if (decision === 'confirmed' && !window.confirm(
+      'Confirm this hazard report?\n\n'
+      + 'This is the human confirmation step: a confirmed report becomes eligible to '
+      + 'cap speed on its km sub-span when the ETA is requested with ?hazards=true. '
+      + 'It is off by default, and nothing is dispatched to signalling or train '
+      + 'control either way.\n\n'
+      + 'The decision is appended to the report\'s audit trail and cannot be erased.')) {
+      return;
+    }
+
+    const buttons = document.querySelectorAll(`[data-hz-id="${id}"]`);
+    for (const b of buttons) b.disabled = true;
+    out.hidden = false;
+    // Panel-level class, and the id goes in the TEXT. Because the readout no longer
+    // sits inside the row it describes, nothing else on screen says which report a
+    // decision applied to — least of all under the "awaiting a human" view, where
+    // the row it refers to has just disappeared from the list.
+    out.className = 'admin-op-result hz-decision-result';
+    out.textContent = `${id} — recording ${decision}…`;
+
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      const token = hazardToken();
+      if (token) headers['x-admin-token'] = token;   // read here, never stored or logged
+
+      const res = await fetch(apiUrl(`/api/admin/hazards/${encodeURIComponent(id)}/decision`), {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ decision, note: note || undefined }),
+      });
+      const json = await res.json();
+
+      if (!res.ok || json.success === false) {
+        out.className = 'admin-op-result hz-decision-result is-bad';
+        // The IMPERATIVE verb, not the target status. Interpolating `decision` here
+        // rendered "rejected REFUSED", which reads as "the report was rejected" —
+        // exactly backwards, since nothing was recorded. An operator who misreads a
+        // refusal as a landed decision stops watching a report that still needs one.
+        const verb = decision === 'confirmed' ? 'CONFIRM' : 'REJECT';
+        // The server's own reason code, not a restatement of the rule client-side.
+        out.textContent = `${id} — ${verb} REFUSED: ${json.reason || `http-${res.status}`}\n`
+          + 'Nothing was recorded. The report still awaits a decision.'
+          + (json.note ? `\n${json.note}` : '');
+        return;
+      }
+
+      // The decision evidence sits on the ENVELOPE, as siblings of `data` — `data`
+      // itself holds the freshly-scored report. This was written `json.data || json`
+      // and every field came back `undefined`: `json.data` exists, so the fallback
+      // never fired, and it read the wrong object in silence. That is CLAUDE.md §5f's
+      // flat-envelope lesson in mirror image — "check the shape before trusting a
+      // path" cuts both ways, and a `||` chain over two plausible shapes will always
+      // pick one without telling you it guessed.
+      const d = json;
+
+      // A missing field must be LOUD. Printing `statusBefore → statusAfter` as
+      // "undefined → undefined" produces something that reads exactly like evidence
+      // of a human decision while carrying none — the VERIFIED #9 failure mode, where
+      // a plausible-looking output hides a broken layer. Name the contract instead.
+      const MUST_HAVE = ['statusBefore', 'statusAfter', 'auditTrailLength', 'tokenState'];
+      const missing = MUST_HAVE.filter((k) => d[k] === undefined);
+      if (missing.length) {
+        out.className = 'admin-op-result hz-decision-result is-bad';
+        out.textContent =
+          `${id} — the decision was ACCEPTED by the server (HTTP ${res.status}), but this `
+          + `console could not read its evidence.\n`
+          + `missing from the response: ${missing.join(', ')}\n`
+          + `Do not treat this as an unrecorded decision — re-read the row, and check the `
+          + `audit trail before deciding again.`;
+        await refreshHazardQueue();
+        return;
+      }
+
+      out.className = 'admin-op-result hz-decision-result is-ok';
+      out.textContent =
+        `${id} — ${d.statusBefore} → ${d.statusAfter}  (prev-status basis: ${d.statusBeforeBasis})\n`
+        + `machine status at decision: ${d.machineStatusAtDecision} · `
+        + `confidence ${fmt(d.confidenceAtDecision, 3)}\n`
+        + `audit entries added: ${d.auditEntriesAdded} · trail length now ${d.auditTrailLength}\n`
+        + `token state: ${d.tokenState} · affects ETA: ${d.appliesToEta ? 'yes, under ?hazards=true' : 'no'}`
+        + (d.authWarning ? `\n⚠ ${d.authWarning}` : '');
+
+      await refreshHazardQueue();
+    } catch (err) {
+      out.className = 'admin-op-result hz-decision-result is-bad';
+      out.textContent = `${id} — decision failed: ${err.message}`;
+    } finally {
+      for (const b of buttons) b.disabled = false;
+    }
+  }
+
+  function wireHazardQueue() {
+    $('hazardQueueRefresh')?.addEventListener('click', refreshHazardQueue);
+    // Filter is a view over rows already fetched — no request, no re-score.
+    $('hazardFilter')?.addEventListener('change', renderHazardQueue);
+  }
+
   // ── Drawer collision ────────────────────────────────────────────────────────
   //
   // The drawer occupies left: 20px, width: 440px — exactly where the left rail sits.
@@ -832,10 +1293,17 @@
     buildMapLayerRows();
     syncMapLayerPanel();
     wireControls();
+    wireHazardQueue();
     watchDrawer();
     watchSelection();
     refreshQuota();
     setInterval(refreshQuota, 15000);   // local call to our own gateway; costs nothing upstream
+
+    // The hazard queue is fetched once here and then only on demand. It is
+    // deliberately NOT on the 15 s tick: a refresh mid-decision would wipe a note the
+    // operator was typing, and the store only changes when a report is submitted or
+    // decided — both of which already trigger their own refresh.
+    refreshHazardQueue();
 
     // Seed the ETA panel with the reference demo train so the page is never empty
     // on first load.

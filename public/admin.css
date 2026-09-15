@@ -707,8 +707,287 @@ select.admin-input { cursor: pointer; }
 }
 .admin-chip.is-caution strong { color: #fcd34d; }
 
+/* ── Hazard queue ───────────────────────────────────────────────────────────────
+   The pink family matches hazardColour() in app.js (confirmed #ec4899 →
+   corroborated #f472b6 → candidate #f9a8d4), chosen there so a hazard can never be
+   mistaken for the live red/green of a crossing or the amber/violet of the corridor
+   sweep. The per-status colours themselves are set INLINE from that function, not
+   duplicated here — a second colour table would drift from the first. */
+
+.hazard-auth-banner {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.42);
+  color: #fca5a5;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.hazard-token-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.hazard-token-row label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.hazard-token-row .admin-input { flex: 1; }
+.hazard-token-row .admin-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.admin-note.hazard-token-note { margin: 0 0 10px; }
+
+.hazard-queue-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.hazard-queue-filter label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.hazard-queue-filter .admin-input { flex: 1; }
+
+.hazard-queue { display: flex; flex-direction: column; gap: 5px; }
+
+.hz-row {
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  overflow: hidden;
+}
+.hz-row[open] { border-color: rgba(244, 114, 182, 0.38); }
+
+.hz-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 11px;
+}
+.hz-head::-webkit-details-marker { display: none; }
+.hz-head:hover { background: var(--card-hover); }
+
+.hz-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+}
+.hz-conf {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 700;
+  color: var(--text-main);
+  min-width: 28px;
+}
+.hz-cat {
+  flex: 1;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hz-status {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+/* Same DEMO badge language as the map legend: a synthetic row must never be
+   mistakable for a real sighting. */
+.hz-demo {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #cbd5e1;
+}
+
+.hz-body {
+  padding: 9px;
+  border-top: 1px solid var(--panel-border);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.hz-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.hz-meta code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  color: #cbd5e1;
+}
+.hz-src {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(148, 163, 184, 0.14);
+}
+.hz-src.is-human {
+  background: rgba(16, 185, 129, 0.14);
+  color: #6ee7b7;
+}
+
+.hz-desc {
+  margin: 0 0 8px;
+  padding: 7px 9px;
+  border-left: 2px solid rgba(244, 114, 182, 0.5);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-main);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.hz-desc.is-empty { color: var(--text-muted); border-left-color: var(--text-dim); font-style: italic; }
+
+.hz-photo { display: block; margin-bottom: 8px; }
+.hz-photo img {
+  width: 100%;
+  max-height: 190px;
+  object-fit: cover;
+  border-radius: 5px;
+  border: 1px solid var(--panel-border);
+  display: block;
+}
+.hz-nophoto {
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  border: 1px dashed var(--panel-border);
+  border-radius: 5px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* The five components. Each row carries its own arithmetic so the total is
+   checkable rather than merely plausible (CLAUDE.md §8). */
+.hz-comps {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 8px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.22);
+  margin-bottom: 9px;
+}
+.hz-comp-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10.5px;
+}
+.hz-comp-name { color: var(--text-main); font-weight: 600; }
+.hz-comp-math {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.hz-comp-math strong { color: #f9a8d4; }
+.hz-comp-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 4px 0 3px;
+  overflow: hidden;
+}
+.hz-comp-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #f9a8d4, #ec4899);
+  transition: width 0.3s ease;
+}
+.hz-comp-note { font-size: 10px; line-height: 1.45; color: var(--text-muted); }
+.hz-comp-basis { font-size: 9.5px; color: var(--text-dim); margin-top: 2px; }
+.hz-comp-basis code { color: var(--text-muted); }
+/* An unavailable component is visibly excluded, never rendered as a zero — scoring a
+   missing signal as 0 would penalise a report for our own missing data. */
+.hz-comp.is-unavailable { opacity: 0.62; }
+.hz-comp.is-unavailable .hz-comp-math { color: var(--warning); }
+
+.hz-total {
+  border-top: 1px solid var(--panel-border);
+  padding-top: 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.hz-total-line {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text-muted);
+}
+.hz-total-line strong { color: #f472b6; font-size: 11.5px; }
+.hz-total-ladder { margin-top: 3px; line-height: 1.45; }
+.hz-total-ladder strong { color: var(--text-main); }
+
+.hz-audit {
+  border: 1px solid var(--panel-border);
+  border-radius: 5px;
+  padding: 7px 8px;
+  margin-bottom: 9px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.hz-audit-head {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.hz-audit-row {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  padding: 3px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.hz-audit-row:first-of-type { border-top: none; }
+.hz-audit-row strong { color: var(--text-main); text-transform: uppercase; font-size: 9px; letter-spacing: 0.05em; }
+.hz-audit-row code { font-family: 'JetBrains Mono', ui-monospace, monospace; color: #cbd5e1; }
+.hz-audit-note { color: var(--text-main); font-style: italic; margin-top: 2px; }
+
+.admin-note.hz-decided { margin: 0 0 8px; }
+
+.hz-note-label {
+  display: block;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+.hz-note-label + .admin-input { width: 100%; margin-bottom: 7px; }
+
+.hz-actions { display: flex; gap: 6px; }
+.hz-actions .admin-btn { flex: 1; }
+
+/* Panel-level, not per-row: a re-render replaces every row, and under the default
+   "awaiting a human" view the decided row leaves the list. See admin.html. */
+.hz-decision-result { margin-top: 9px; }
+
 @media (prefers-reduced-motion: reduce) {
   .admin-rail-left,
   .admin-quota-fill,
+  .hz-comp-bar > span,
   .admin-panel-title::before { transition: none; }
 }

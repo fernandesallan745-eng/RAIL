@@ -193,9 +193,33 @@
         </div>
         <div id="hazardLocStatus" class="hazard-loc-status">No location set yet.</div>
 
-        <label class="hazard-field-label" for="hazardPhoto">Photo <span class="hazard-optional">(optional, downscaled on your device)</span></label>
-        <input id="hazardPhoto" class="hazard-input" type="file" accept="image/*" capture="environment">
-        <div id="hazardPhotoStatus" class="hazard-loc-status"></div>
+        <!-- PHOTO — optional, and it has to LOOK optional and LOOK clickable.
+             A bare <input type="file"> renders as a small native "Choose File" chip
+             that is nearly invisible against this dark card, so the control existed
+             but nobody could find it. The input is still the real control (kept in
+             the DOM, focusable, label-linked, so keyboard and screen-reader users are
+             unaffected) — it is just visually replaced by the tap target below.
+             This matters beyond looks: `evidence` is one of the five confidence
+             components, so an unfindable photo control means that component scores
+             zero for every report ever filed. -->
+        <label class="hazard-field-label" for="hazardPhoto">Photo <span class="hazard-optional">(optional)</span></label>
+        <label class="hazard-photo-drop" for="hazardPhoto" id="hazardPhotoDrop">
+          <input id="hazardPhoto" class="hazard-photo-input" type="file" accept="image/*" capture="environment">
+          <span class="hazard-photo-drop-icon">📷</span>
+          <span class="hazard-photo-drop-text">
+            <strong>Add a photo</strong>
+            <span class="hazard-photo-drop-sub">Tap to take one or choose from your gallery — resized on your
+            device, the original is never uploaded. You can submit without one.</span>
+          </span>
+        </label>
+        <div id="hazardPhotoPreview" class="hazard-photo-preview" hidden>
+          <img id="hazardPhotoThumb" class="hazard-photo-thumb" alt="Attached hazard photo preview">
+          <div class="hazard-photo-preview-meta">
+            <div id="hazardPhotoStatus" class="hazard-loc-status"></div>
+            <button id="hazardPhotoRemoveBtn" class="hazard-btn hazard-btn-ghost hazard-btn-tiny" type="button">Remove photo</button>
+          </div>
+        </div>
+        <div id="hazardPhotoError" class="hazard-loc-status"></div>
 
         <div id="hazardSubmitNote" class="hazard-loc-status"></div>
       </div>

@@ -2297,6 +2297,14 @@ let hazardData = null;          // last /api/hazards payload (session cache)
 let hazardLayerOn = false;
 let hazardPickMode = false;     // map-click is arming a report location
 let hazardDraft = { lat: null, lng: null, accuracyM: null, source: null, photo: null };
+// Bumped on every modal open. A geolocation fix can take the full 10 s timeout, so
+// a callback can outlive the form that asked for it — the reporter may have closed
+// the modal, reopened it, or already picked a spot on the map by the time the fix
+// lands. Comparing the sequence lets a late callback drop itself instead of writing
+// coordinates into a draft that is no longer the one on screen. Without this an
+// auto-fix silently overwrites a deliberate manual pick, which is the worst
+// possible failure for a location: wrong, and invisibly so.
+let hazardDraftSeq = 0;
 
 /** Fill colour by status. Saturation tracks verification — see app.css. */
 function hazardColour(status) {
@@ -2645,17 +2653,55 @@ function renderHazardPanel(liveData) {
 function openHazardModal() {
   const modal = document.getElementById('hazardModal');
   if (!modal) return;
+  hazardDraftSeq += 1;
   hazardDraft = { lat: null, lng: null, accuracyM: null, source: null, photo: null };
   const desc = document.getElementById('hazardDescription');
-  const photo = document.getElementById('hazardPhoto');
   const note = document.getElementById('hazardSubmitNote');
-  const photoStatus = document.getElementById('hazardPhotoStatus');
   if (desc) desc.value = '';
-  if (photo) photo.value = '';
   if (note) note.textContent = '';
-  if (photoStatus) photoStatus.textContent = '';
-  setHazardLocStatus('No location set yet.');
+  hazardClearPhoto();
   modal.hidden = false;
+
+  // The user asked for the location to be taken automatically, so it is: the fix
+  // is requested the moment the form opens, and by the time the reporter has
+  // chosen a category and typed a line the coordinates are already in. "Use my
+  // location" stays as an explicit retry, not as the only way in.
+  //
+  // This is also the only moment at which asking is defensible — a location
+  // request on page load, before the reporter has expressed any intent, is the
+  // pattern that trains people to deny the prompt outright.
+  hazardAutoLocate();
+}
+
+/**
+ * Fire geolocation for a newly-opened form, degrading LOUDLY.
+ *
+ * Never substitutes a plausible-looking default coordinate when the fix fails —
+ * that is the fabrication class VERIFIED #30 was caught by, and a fabricated
+ * hazard location is worse than no hazard at all: it puts a landslide on the
+ * wrong stretch of track and scores it as corroborated evidence.
+ */
+function hazardAutoLocate() {
+  // A phone *browser* pointed at http://192.168.x.y:5050 has no geolocation at
+  // all — the API is restricted to secure contexts, so Chrome hides it and Safari
+  // errors. The Capacitor app's origin is `capacitor://localhost`, which IS a
+  // secure context, so the native build is unaffected. Say which case this is
+  // rather than reporting a generic failure the reporter cannot act on.
+  if (typeof window.isSecureContext === 'boolean' && !window.isSecureContext) {
+    setHazardLocStatus(
+      'Automatic location needs a secure connection (HTTPS or the GATI app), so ' +
+      'this browser will not provide one over plain HTTP. Tap <strong>🗺 Pick on map</strong> ' +
+      'to place the report yourself.'
+    );
+    return;
+  }
+  if (!navigator.geolocation) {
+    setHazardLocStatus(
+      'This device does not expose a location API. Tap <strong>🗺 Pick on map</strong> instead.'
+    );
+    return;
+  }
+  hazardUseGps({ auto: true });
 }
 
 function closeHazardModal() {
@@ -2681,14 +2727,27 @@ function setHazardPickMode(on) {
   if (modal && !on) modal.style.visibility = '';
 }
 
-function hazardUseGps() {
+function hazardUseGps(opts) {
+  const auto = !!(opts && opts.auto);
   if (!navigator.geolocation) {
     setHazardLocStatus('This device does not expose a location API. Use “Pick on map” instead.');
     return;
   }
-  setHazardLocStatus('Locating…');
+  const seq = hazardDraftSeq;
+  setHazardLocStatus(
+    auto
+      ? 'Getting your location automatically… <span style="color:var(--text-muted)">' +
+        '(you can also pick it on the map)</span>'
+      : 'Locating…'
+  );
   navigator.geolocation.getCurrentPosition(
     (pos) => {
+      // Drop a fix that belongs to a form that is no longer on screen.
+      if (seq !== hazardDraftSeq) return;
+      // An automatic fix must never overwrite a location the reporter chose
+      // deliberately. A 10 s fix that lands after a map pick would otherwise move
+      // the pin out from under them — and they would have no way to know.
+      if (auto && hazardDraft.source && hazardDraft.source !== 'gps') return;
       hazardDraft.lat = pos.coords.latitude;
       hazardDraft.lng = pos.coords.longitude;
       hazardDraft.accuracyM = Math.round(pos.coords.accuracy);
@@ -2697,12 +2756,34 @@ function hazardUseGps() {
       // evidence, and the confidence engine treats them differently too.
       setHazardLocStatus(
         `📍 ${hazardDraft.lat.toFixed(5)}, ${hazardDraft.lng.toFixed(5)} ` +
-        `<span style="color:var(--text-dim)">(GPS, ±${hazardDraft.accuracyM} m)</span>`
+        `<span style="color:var(--text-dim)">(GPS, ±${hazardDraft.accuracyM} m` +
+        `${auto ? ', taken automatically' : ''})</span>`
       );
     },
     (err) => {
+      if (seq !== hazardDraftSeq) return;
+      if (auto && hazardDraft.source) return;   // they already placed it by hand
+      // The three failure codes need three different instructions. "Could not get
+      // your location" tells a reporter who tapped Deny nothing they can act on,
+      // and tells one standing in a tunnel to go change a browser setting.
+      const codes = err && typeof err.code === 'number' ? err.code : 0;
+      let why;
+      if (codes === 1) {
+        why = auto
+          ? 'Location permission was declined, so nothing was read.'
+          : 'Location permission is blocked for this site.';
+      } else if (codes === 2) {
+        why = 'Your device could not get a fix right now (no GPS or network positioning available).';
+      } else if (codes === 3) {
+        why = 'The location request timed out.';
+      } else {
+        why = `Location failed (${escapeHtml(String((err && err.message) || 'unknown reason'))}).`;
+      }
       setHazardLocStatus(
-        `Could not get your location (${escapeHtml(err.message)}). Use “Pick on map” instead.`
+        `${why} Tap <strong>🗺 Pick on map</strong> to place the report yourself` +
+        `${codes === 1 ? '' : ', or <strong>📍 Use my location</strong> to try again'}. ` +
+        `<span style="color:var(--text-muted)">Nothing is guessed — a report is only ` +
+        `placed where you put it.</span>`
       );
     },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -2747,23 +2828,68 @@ function hazardDownscalePhoto(file) {
   });
 }
 
-async function hazardOnPhotoChange(ev) {
+/**
+ * Reset the photo to "none attached" — the draft, the real file input, the
+ * thumbnail and both status lines.
+ *
+ * The input's `value` must be cleared explicitly: without it, choosing the same
+ * file again fires no `change` event, so a reporter who removed a photo by
+ * mistake could not re-attach the same one.
+ */
+function hazardClearPhoto() {
+  hazardDraft.photo = null;
+  const input = document.getElementById('hazardPhoto');
+  const preview = document.getElementById('hazardPhotoPreview');
+  const thumb = document.getElementById('hazardPhotoThumb');
   const status = document.getElementById('hazardPhotoStatus');
+  const error = document.getElementById('hazardPhotoError');
+  if (input) input.value = '';
+  if (preview) preview.hidden = true;
+  // Blank the src as well as hiding the block. Hiding alone leaves the previous
+  // report's image in the DOM, and this modal is reused for every report — the
+  // stale-DOM rule the run-state panel already learned the hard way (§5, and
+  // VERIFIED #21 one layer up in the view).
+  if (thumb) thumb.removeAttribute('src');
+  if (status) status.textContent = '';
+  if (error) error.textContent = '';
+}
+
+async function hazardOnPhotoChange(ev) {
+  const preview = document.getElementById('hazardPhotoPreview');
+  const thumb = document.getElementById('hazardPhotoThumb');
+  const status = document.getElementById('hazardPhotoStatus');
+  const error = document.getElementById('hazardPhotoError');
   const file = ev.target.files && ev.target.files[0];
   hazardDraft.photo = null;
-  if (!file) { if (status) status.textContent = ''; return; }
+  if (error) error.textContent = '';
+  if (!file) { hazardClearPhoto(); return; }
+
+  if (preview) preview.hidden = false;
+  if (thumb) thumb.removeAttribute('src');
   if (status) status.textContent = 'Processing photo…';
   try {
     const { dataUrl, w, h } = await hazardDownscalePhoto(file);
     hazardDraft.photo = dataUrl;
     const kb = Math.round((dataUrl.length * 0.75) / 1024);
+    // Show the reporter the image that will actually be sent — the downscaled
+    // one, not the original. If the resize mangled the photo, this is the only
+    // place they can see that before it becomes scored evidence.
+    if (thumb) thumb.src = dataUrl;
     if (status) {
       status.textContent =
         `Photo ready — resized to ${w}×${h}, about ${kb} KB. ` +
         `Resized on your device; the original is never uploaded.`;
     }
   } catch (err) {
-    if (status) status.textContent = `Could not read that image (${err.message}). You can submit without a photo.`;
+    // A failed photo must not block the report: `evidence` is one of five
+    // confidence components, not a gate.
+    if (preview) preview.hidden = true;
+    if (thumb) thumb.removeAttribute('src');
+    if (status) status.textContent = '';
+    if (error) {
+      error.textContent =
+        `Could not read that image (${err.message}). You can submit without a photo.`;
+    }
   }
 }
 
@@ -2857,6 +2983,7 @@ document.addEventListener('gati:ready', () => {
   on('hazardUseGpsBtn', 'click', hazardUseGps);
   on('hazardPickMapBtn', 'click', () => setHazardPickMode(!hazardPickMode));
   on('hazardPhoto', 'change', hazardOnPhotoChange);
+  on('hazardPhotoRemoveBtn', 'click', hazardClearPhoto);
   on('hazardLegendClose', 'click', () => { if (hazardLayerOn) toggleHazardLayer(); });
 
   map.on('click', hazardOnMapClick);

@@ -1415,6 +1415,70 @@ textarea.hazard-input { resize: vertical; }
   line-height: 1.45;
 }
 
+/* ── Photo control ─────────────────────────────────────────────────────────────
+   The native file input is visually replaced, NOT removed: it stays in the DOM
+   inside its own <label>, so clicking anywhere on the drop target opens the
+   picker, and keyboard focus / screen readers still reach the real control.
+   `opacity: 0` rather than `display: none` — a display:none input is skipped by
+   the tab order and by some assistive tech, which would make the photo
+   unreachable for exactly the users who most need the larger target. */
+.hazard-photo-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.hazard-photo-drop {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px dashed rgba(236, 72, 153, 0.42);
+  border-radius: 10px;
+  background: rgba(236, 72, 153, 0.06);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.hazard-photo-drop:hover { border-color: #ec4899; background: rgba(236, 72, 153, 0.11); }
+/* :focus-within so keyboard focus on the hidden input is still visible. */
+.hazard-photo-drop:focus-within { border-color: #ec4899; box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.25); }
+.hazard-photo-drop-icon { font-size: 1.4rem; line-height: 1; }
+.hazard-photo-drop-text { display: flex; flex-direction: column; gap: 3px; }
+.hazard-photo-drop-text strong { font-size: 0.8rem; color: var(--text-main); font-weight: 600; }
+.hazard-photo-drop-sub {
+  font-size: 0.68rem;
+  /* --text-muted, not --text-dim: this line carries the "you can submit without
+     one" promise and the "original never uploaded" claim, so it has to be
+     readable rather than decorative. */
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.hazard-photo-preview {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+}
+.hazard-photo-thumb {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+.hazard-photo-preview-meta { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.hazard-photo-preview-meta .hazard-loc-status { margin-top: 0; color: var(--text-muted); }
+.hazard-btn-tiny { font-size: 0.68rem; padding: 4px 10px; align-self: flex-start; }
+
 .hazard-btn {
   font-family: inherit;
   font-size: 0.78rem;
