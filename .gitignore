@@ -33,6 +33,6 @@ __pycache__/
 *.pyc
 *.pyo
 
-# IDE & Logs
-.claude/
+# Test and verify logs
 .verify-logs/
+
