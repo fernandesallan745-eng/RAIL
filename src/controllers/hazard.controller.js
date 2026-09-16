@@ -54,6 +54,8 @@ import {
 } from '../services/hazardStore.js';
 import { scoreReport, corridorAvailable, TUNING } from '../services/hazardConfidence.js';
 
+import heicConvert from 'heic-convert';
+
 /**
  * Reason-coded failures, mirroring admin.controller.js's sendModelError.
  *
@@ -129,11 +131,11 @@ const finiteNum = (v) => {
  * bytes at all could be written to disk under a .jpg name and later served back. The
  * JPEG SOI marker (FF D8 FF) and the 8-byte PNG signature are the actual evidence.
  */
-const decodePhoto = (dataUrl) => {
+const decodePhoto = async (dataUrl) => {
   if (!dataUrl) return { ok: true, buffer: null, ext: null };
   if (typeof dataUrl !== 'string') return { ok: false, reason: 'photo-not-a-string' };
 
-  const m = /^data:(image\/(?:jpeg|jpg|png|webp));base64,([A-Za-z0-9+/=\s]+)$/.exec(dataUrl);
+  const m = /^data:(image\/(?:jpeg|jpg|png|webp|heic|heif));base64,([A-Za-z0-9+/=\s]+)$/.exec(dataUrl);
   if (!m) return { ok: false, reason: 'photo-not-a-supported-data-url' };
 
   let buffer;
@@ -158,17 +160,52 @@ const decodePhoto = (dataUrl) => {
   const isWebp = buffer.length > 12
     && buffer.subarray(0, 4).toString('ascii') === 'RIFF'
     && buffer.subarray(8, 12).toString('ascii') === 'WEBP';
+  const isHeic = buffer.length >= 12 &&
+    buffer.subarray(4, 8).toString('ascii') === 'heic' &&
+    buffer.subarray(8, 12).toString('ascii') === 'ftyp';
 
-  if (!isJpeg && !isPng && !isWebp) {
+  if (!isJpeg && !isPng && !isWebp && !isHeic) {
     return {
       ok: false,
       reason: 'photo-bytes-are-not-an-image',
       detail: 'The declared MIME type was an image but the payload bytes are not a JPEG, '
-            + 'PNG or WebP. Declared types are not trusted; magic bytes are checked.',
+            + 'PNG, WebP, or HEIC. Declared types are not trusted; magic bytes are checked.',
     };
   }
 
-  return { ok: true, buffer, ext: isJpeg ? 'jpg' : isPng ? 'png' : 'webp' };
+  // Convert HEIC/HEIF to JPEG for storage
+  let outputBuffer = buffer;
+  let outputExt = isJpeg ? 'jpg' : isPng ? 'png' : 'webp';
+
+  if (isHeic) {
+    if (heicConvert) {
+      try {
+        // Convert HEIC to JPEG using heic-convert (Node.js only)
+        outputBuffer = await heicConvert({
+          buffer: buffer,
+          outputType: 'image/jpeg',
+          outputQuality: 0.9,
+        });
+        outputExt = 'jpg';
+      } catch (convertError) {
+        return {
+          ok: false,
+          reason: 'photo-heic-conversion-failed',
+          detail: `Failed to convert HEIC image to JPEG: ${convertError.message}. This may be due to missing native dependencies. Please convert to JPEG before uploading.`,
+        };
+      }
+    } else {
+      // In browser environment, provide helpful guidance for HEIC files
+      return {
+        ok: false,
+        reason: 'photo-heic-not-supported',
+        detail: 'HEIC/HEIF files are not supported in the browser. iPhone photos need to be converted to JPEG before uploading. ' +
+          'You can convert using iPhone\'s Photos app (Share → Convert to JPEG) or change camera format to "Most Compatible".',
+      };
+    }
+  }
+
+  return { ok: true, buffer: outputBuffer, ext: outputExt };
 };
 
 // ── Derived status ──────────────────────────────────────────────────────────────────
@@ -240,7 +277,7 @@ export const postHazard = async (req, res) => {
         { bbox: config.hazards.bbox });
     }
 
-    const photo = decodePhoto(body.photo);
+    const photo = await decodePhoto(body.photo);
     if (!photo.ok) {
       return fail(res, 422, photo.reason, photo.detail || 'Photo could not be accepted.');
     }

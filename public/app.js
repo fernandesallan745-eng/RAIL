@@ -2805,6 +2805,7 @@ function hazardOnMapClick(e) {
 
 // Downscale in the browser so the upload stays small and no image dependency is
 // needed server-side. ~1280 px longest edge, JPEG q0.75 → typically ~150 KB.
+// Support HEIC/HEIF format for iPhone users.
 function hazardDownscalePhoto(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -2826,6 +2827,50 @@ function hazardDownscalePhoto(file) {
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('unreadable image')); };
     img.src = url;
   });
+}
+
+// Convert HEIC/HEIF files to JPEG for iPhone compatibility
+async function convertHeicToJpeg(file) {
+  // Check if the file is HEIC/HEIF
+  const fileExt = file.name.toLowerCase().endsWith('.heic') ||
+                 file.name.toLowerCase().endsWith('.heif') ||
+                 file.type.includes('heic') ||
+                 file.type.includes('heif');
+
+  if (!fileExt) {
+    // Not a HEIC file, process normally
+    return file;
+  }
+
+  try {
+    // Check if heic-convert library is available (in Node environment)
+    // For browser-based HEIC conversion, we'll need a different approach
+    // For now, we'll add a more informative error message for HEIC files
+    throw new Error('HEIC/HEIF files are not supported in the browser. Please convert to JPEG or PNG using your device\'s photo app before uploading.');
+  } catch (error) {
+    throw new Error('Failed to process HEIC file: ' + error.message);
+  }
+}
+
+// Enhanced photo processing that handles HEIC files
+async function processPhotoFile(file) {
+  // Check for HEIC/HEIF files and provide helpful guidance
+  if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+    // For iPhone users, provide specific guidance
+    throw new Error(
+      'iPhone photos are saved as HEIC format. To upload them, please:\n\n' +
+      '1. Open your Photos app\n' +
+      '2. Select the photo you want to upload\n' +
+      '3. Tap "Share" → "Copy Photo" or "Save to Files"\n' +
+      '4. Open any photo viewer app that converts HEIC to JPEG\n' +
+      '5. Save the converted photo to your Camera Roll\n\n' +
+      'Alternatively, change iPhone camera settings:\n' +
+      'Settings → Camera → Formats → "Most Compatible" (instead of "High Efficiency")'
+    );
+  }
+
+  // For other file types, proceed with normal processing
+  return file;
 }
 
 /**
@@ -2863,6 +2908,18 @@ async function hazardOnPhotoChange(ev) {
   hazardDraft.photo = null;
   if (error) error.textContent = '';
   if (!file) { hazardClearPhoto(); return; }
+
+  // Handle HEIC/HEIF files with helpful guidance for iPhone users
+  if (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif') ||
+      file.type.includes('heic') || file.type.includes('heif')) {
+    hazardClearPhoto();
+    if (error) {
+      error.textContent =
+        'iPhone photos are saved as HEIC format. To upload them, please convert to JPEG or PNG using your device\'s Photos app or any photo viewer app. ' +
+        'Alternatively, change iPhone camera settings to "Most Compatible" format.';
+    }
+    return;
+  }
 
   if (preview) preview.hidden = false;
   if (thumb) thumb.removeAttribute('src');

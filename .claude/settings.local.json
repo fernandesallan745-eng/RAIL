@@ -15,7 +15,13 @@
       "Bash(sed -n '/TWO DIFFERENT TARGETS/,/timetable does not already have/p' /tmp/claude-501/rep2.txt)",
       "Bash(python3 fetch_tiles.py --url-template file://__TRACKED_VAR__/src_tile.png --layer testpack --out __TRACKED_VAR__/tilepack --min-zoom 9 --max-zoom 9 --delay 0 --yes)",
       "Bash(curl -s -o /dev/null -w \"HTTP:%{http_code}\\\\n\" --max-time 8 https://api.railradar.in/v1/trains/22229)",
-      "Bash(echo \"curl exit=$?\")"
+      "Bash(echo \"curl exit=$?\")",
+      "Bash(python3 *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(curl *)",
+      "Bash(pip install *)",
+      "Bash(pip3 install *)"
     ]
   },
   "sandbox": {

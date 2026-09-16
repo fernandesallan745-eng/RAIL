@@ -1,13 +1,13 @@
 {
   "trainNumber": "12052",
-  "trainName": "Csmt Janshtabdi Express",
-  "startDate": "2026-08-31",
-  "lastUpdatedAt": "2026-08-31T19:32:52+05:30",
+  "trainName": "Madgaon - Mumbai CSMT Jan Shatabdi Express",
+  "startDate": "2026-09-16",
+  "lastUpdatedAt": "2026-09-16T20:43:08+05:30",
   "status": "running",
   "train": {
     "number": "12052",
-    "name": "Csmt Janshtabdi Express",
-    "type": "JAN SHATABDI",
+    "name": "Madgaon - Mumbai CSMT Jan Shatabdi Express",
+    "type": "Jan Shatabdi Express",
     "category": "Premium",
     "source": {
       "code": "MAO",
@@ -17,7 +17,7 @@
     },
     "destination": {
       "code": "CSMT",
-      "name": "CHHATRAPATI SHIVAJI MAHARAJ TERMINUS",
+      "name": "Mumbai CSMT",
       "lat": 18.9404925,
       "lng": 72.8357856
     },
@@ -30,9 +30,9 @@
       "sat",
       "sun"
     ],
-    "distance": 582.3,
+    "distance": 582,
     "duration": 730,
-    "avgSpeed": 47.9,
+    "avgSpeed": 47.8,
     "maxSpeed": 70,
     "totalHalts": 11,
     "returnTrain": "12051",
@@ -40,1473 +40,19 @@
   },
   "isLive": true,
   "trackingMode": "real-time",
-  "currentLocation": {
+  "previousHalt": {
     "stationCode": "CHI",
     "stationName": "Chiplun",
-    "sequence": 32,
-    "status": "departed",
-    "isHalt": true,
-    "isActualPosition": true,
-    "positionSource": "gps-refined",
-    "coordinates": {
-      "lat": 17.560715,
-      "lng": 73.49117
-    },
-    "distanceFromOriginKm": 315.91,
-    "distanceFromLastStationKm": 4.01,
-    "segmentProgress": 0.25,
-    "delayMinutes": 48
-  },
-  "previousHalt": {
-    "stationCode": "RN",
-    "stationName": "Ratnagiri",
-    "sequence": 24,
-    "distance": 236.2
+    "sequence": 27,
+    "distance": 311.9
   },
   "nextHalt": {
     "stationCode": "PNVL",
     "stationName": "Panvel",
-    "sequence": 55,
+    "sequence": 48,
     "distance": 514.5
   },
-  "delayMinutes": 48,
-  "route": [
-    {
-      "sequence": 1,
-      "stationCode": "MAO",
-      "stationName": "Madgaon",
-      "isHalt": true,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 15.26799,
-      "lng": 73.97015,
-      "scheduledDeparture": "2026-08-31T12:00:00+05:30",
-      "departureDay": 1,
-      "platform": "5",
-      "distance": 0,
-      "speedToNextStationKmph": 55.2
-    },
-    {
-      "sequence": 2,
-      "stationCode": "SRVX",
-      "stationName": "Suravali (H)",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 15.2913229,
-      "lng": 73.9396519,
-      "scheduledArrival": "2026-08-31T12:05:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T12:05:00+05:30",
-      "departureDay": 1,
-      "distance": 4.4,
-      "speedToNextStationKmph": 55.2
-    },
-    {
-      "sequence": 3,
-      "stationCode": "MJO",
-      "stationName": "Majorda",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 15.3137925,
-      "lng": 73.9219348,
-      "scheduledArrival": "2026-08-31T12:08:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T12:08:00+05:30",
-      "departureDay": 1,
-      "distance": 7.6,
-      "speedToNextStationKmph": 55.2
-    },
-    {
-      "sequence": 4,
-      "stationCode": "VEN",
-      "stationName": "Verna",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 15.3538506,
-      "lng": 73.9124939,
-      "scheduledArrival": "2026-08-31T12:14:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T12:14:00+05:30",
-      "departureDay": 1,
-      "distance": 12.5,
-      "speedToNextStationKmph": 55.2
-    },
-    {
-      "sequence": 5,
-      "stationCode": "KRMI",
-      "stationName": "Karmali",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 15.4904538,
-      "lng": 73.9245522,
-      "scheduledArrival": "2026-08-31T12:31:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T12:31:00+05:30",
-      "departureDay": 1,
-      "distance": 28.6,
-      "speedToNextStationKmph": 55.2
-    },
-    {
-      "sequence": 6,
-      "stationCode": "THVM",
-      "stationName": "Thivim",
-      "isHalt": true,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 15.6298781,
-      "lng": 73.8770455,
-      "scheduledArrival": "2026-08-31T12:50:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T12:52:00+05:30",
-      "departureDay": 1,
-      "actualArrival": "2026-08-31T13:37:57+05:30",
-      "actualDeparture": "2026-08-31T13:40:49+05:30",
-      "delayArrival": 48,
-      "delayDeparture": 49,
-      "platform": "1",
-      "distance": 46,
-      "speedToNextStationKmph": 36.9
-    },
-    {
-      "sequence": 7,
-      "stationCode": "PERN",
-      "stationName": "Pernem",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 15.7089964,
-      "lng": 73.8167602,
-      "scheduledArrival": "2026-08-31T13:10:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T13:10:00+05:30",
-      "departureDay": 1,
-      "distance": 57,
-      "speedToNextStationKmph": 36.9
-    },
-    {
-      "sequence": 8,
-      "stationCode": "MADR",
-      "stationName": "Madure",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 15.8038314,
-      "lng": 73.81286,
-      "scheduledArrival": "2026-08-31T13:28:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T13:28:00+05:30",
-      "departureDay": 1,
-      "distance": 67.9,
-      "speedToNextStationKmph": 36.9
-    },
-    {
-      "sequence": 9,
-      "stationCode": "SWV",
-      "stationName": "Sawantwadi Road",
-      "isHalt": true,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 15.8664634,
-      "lng": 73.785083,
-      "scheduledArrival": "2026-08-31T13:40:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T13:42:00+05:30",
-      "departureDay": 1,
-      "actualArrival": "2026-08-31T14:01:26+05:30",
-      "actualDeparture": "2026-08-31T14:06:35+05:30",
-      "delayArrival": 21,
-      "delayDeparture": 25,
-      "platform": "1",
-      "distance": 75.5,
-      "speedToNextStationKmph": 70
-    },
-    {
-      "sequence": 10,
-      "stationCode": "ZARP",
-      "stationName": "ZARAP",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 15.9483572,
-      "lng": 73.7341532,
-      "scheduledArrival": "2026-08-31T13:51:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T13:51:00+05:30",
-      "departureDay": 1,
-      "distance": 86.1,
-      "speedToNextStationKmph": 70
-    },
-    {
-      "sequence": 11,
-      "stationCode": "KUDL",
-      "stationName": "Kudal",
-      "isHalt": true,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.0172348,
-      "lng": 73.6780522,
-      "scheduledArrival": "2026-08-31T14:00:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T14:02:00+05:30",
-      "departureDay": 1,
-      "actualArrival": "2026-08-31T14:49:41+05:30",
-      "actualDeparture": "2026-08-31T14:53:28+05:30",
-      "delayArrival": 50,
-      "delayDeparture": 51,
-      "platform": "1",
-      "distance": 96.5,
-      "speedToNextStationKmph": 35.3
-    },
-    {
-      "sequence": 12,
-      "stationCode": "SNDD",
-      "stationName": "Sindhudurg",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.1121887,
-      "lng": 73.6798546,
-      "scheduledArrival": "2026-08-31T14:20:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T14:20:00+05:30",
-      "departureDay": 1,
-      "distance": 107,
-      "speedToNextStationKmph": 35.3
-    },
-    {
-      "sequence": 13,
-      "stationCode": "KKW",
-      "stationName": "Kankavli",
-      "isHalt": true,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.2594268,
-      "lng": 73.7199483,
-      "scheduledArrival": "2026-08-31T14:50:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T14:52:00+05:30",
-      "departureDay": 1,
-      "actualArrival": "2026-08-31T15:40:37+05:30",
-      "actualDeparture": "2026-08-31T15:49:30+05:30",
-      "delayArrival": 51,
-      "delayDeparture": 58,
-      "platform": "1",
-      "distance": 124.7,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 14,
-      "stationCode": "NAN",
-      "stationName": "Nandgaon Road",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.3876268,
-      "lng": 73.7308816,
-      "scheduledArrival": "2026-08-31T15:13:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T15:13:00+05:30",
-      "departureDay": 1,
-      "distance": 140.2,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 15,
-      "stationCode": "ACRN",
-      "stationName": "achirne",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.446684,
-      "lng": 73.7438935,
-      "scheduledArrival": "2026-08-31T15:21:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T15:21:00+05:30",
-      "departureDay": 1,
-      "distance": 146.9,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 16,
-      "stationCode": "VBW",
-      "stationName": "Vaibhavwadi Road",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.5123066,
-      "lng": 73.7079427,
-      "scheduledArrival": "2026-08-31T15:33:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T15:33:00+05:30",
-      "departureDay": 1,
-      "distance": 155.8,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 17,
-      "stationCode": "KRPN",
-      "stationName": "kharepatan road",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.5689786,
-      "lng": 73.6607503,
-      "scheduledArrival": "2026-08-31T15:44:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T15:44:00+05:30",
-      "departureDay": 1,
-      "distance": 164,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 18,
-      "stationCode": "RAJP",
-      "stationName": "Rajapur Road",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.635634,
-      "lng": 73.6267989,
-      "scheduledArrival": "2026-08-31T15:55:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T15:55:00+05:30",
-      "departureDay": 1,
-      "distance": 172.4,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 19,
-      "stationCode": "SUAL",
-      "stationName": "SAUNDAL(H)",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.7017062,
-      "lng": 73.6198869,
-      "scheduledArrival": "2026-08-31T16:05:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T16:05:00+05:30",
-      "departureDay": 1,
-      "distance": 179.8,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 20,
-      "stationCode": "VID",
-      "stationName": "Vilavade",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.7856781,
-      "lng": 73.6191607,
-      "scheduledArrival": "2026-08-31T16:17:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T16:17:00+05:30",
-      "departureDay": 1,
-      "distance": 189.1,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 21,
-      "stationCode": "VRLI",
-      "stationName": "VERAVALI",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.8338265,
-      "lng": 73.6152546,
-      "scheduledArrival": "2026-08-31T16:25:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T16:25:00+05:30",
-      "departureDay": 1,
-      "distance": 194.5,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 22,
-      "stationCode": "ADVI",
-      "stationName": "Adavali",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.9215451,
-      "lng": 73.5928085,
-      "scheduledArrival": "2026-08-31T16:38:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T16:38:00+05:30",
-      "departureDay": 1,
-      "distance": 204.7,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 23,
-      "stationCode": "NIV",
-      "stationName": "Nivasar",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 16.9472452,
-      "lng": 73.454825,
-      "scheduledArrival": "2026-08-31T17:00:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T17:00:00+05:30",
-      "departureDay": 1,
-      "distance": 221,
-      "speedToNextStationKmph": 45.2
-    },
-    {
-      "sequence": 24,
-      "stationCode": "RN",
-      "stationName": "Ratnagiri",
-      "isHalt": true,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.00311,
-      "lng": 73.35727,
-      "scheduledArrival": "2026-08-31T17:20:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T17:25:00+05:30",
-      "departureDay": 1,
-      "actualArrival": "2026-08-31T17:24:03+05:30",
-      "actualDeparture": "2026-08-31T17:48:09+05:30",
-      "delayArrival": 4,
-      "delayDeparture": 23,
-      "platform": "2",
-      "distance": 236.2,
-      "speedToNextStationKmph": 60.6
-    },
-    {
-      "sequence": 25,
-      "stationCode": "BOKE",
-      "stationName": "Bhoke",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.0489169,
-      "lng": 73.3810736,
-      "scheduledArrival": "2026-08-31T17:32:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T17:32:00+05:30",
-      "departureDay": 1,
-      "distance": 242.9,
-      "speedToNextStationKmph": 60.6
-    },
-    {
-      "sequence": 26,
-      "stationCode": "UKC",
-      "stationName": "Ukshi",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.1301992,
-      "lng": 73.4568767,
-      "scheduledArrival": "2026-08-31T17:44:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T17:44:00+05:30",
-      "departureDay": 1,
-      "distance": 255.4,
-      "speedToNextStationKmph": 60.6
-    },
-    {
-      "sequence": 27,
-      "stationCode": "SGR",
-      "stationName": "Sangmeshwar",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.2015922,
-      "lng": 73.5463963,
-      "scheduledArrival": "2026-08-31T17:58:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T17:58:00+05:30",
-      "departureDay": 1,
-      "distance": 269.1,
-      "speedToNextStationKmph": 60.6
-    },
-    {
-      "sequence": 28,
-      "stationCode": "KDVI",
-      "stationName": "KADAVAI",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.2652928,
-      "lng": 73.5521906,
-      "scheduledArrival": "2026-08-31T18:05:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T18:05:00+05:30",
-      "departureDay": 1,
-      "distance": 276.5,
-      "speedToNextStationKmph": 60.6
-    },
-    {
-      "sequence": 29,
-      "stationCode": "AVRD",
-      "stationName": "Aravali Road",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.316657,
-      "lng": 73.5380915,
-      "scheduledArrival": "2026-08-31T18:11:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T18:11:00+05:30",
-      "departureDay": 1,
-      "distance": 283.1,
-      "speedToNextStationKmph": 60.6
-    },
-    {
-      "sequence": 30,
-      "stationCode": "SVX",
-      "stationName": "Savarda",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.4046532,
-      "lng": 73.5151946,
-      "scheduledArrival": "2026-08-31T18:22:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T18:22:00+05:30",
-      "departureDay": 1,
-      "distance": 293.5,
-      "speedToNextStationKmph": 60.6
-    },
-    {
-      "sequence": 31,
-      "stationCode": "KMAH",
-      "stationName": "Kamathe",
-      "isHalt": false,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.4778541,
-      "lng": 73.5159247,
-      "scheduledArrival": "2026-08-31T18:30:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T18:30:00+05:30",
-      "departureDay": 1,
-      "distance": 302.2,
-      "speedToNextStationKmph": 60.6
-    },
-    {
-      "sequence": 32,
-      "stationCode": "CHI",
-      "stationName": "Chiplun",
-      "isHalt": true,
-      "status": "departed",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.5423529,
-      "lng": 73.522233,
-      "scheduledArrival": "2026-08-31T18:40:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T18:42:00+05:30",
-      "departureDay": 1,
-      "actualArrival": "2026-08-31T19:04:18+05:30",
-      "actualDeparture": "2026-08-31T19:29:50+05:30",
-      "delayArrival": 24,
-      "delayDeparture": 48,
-      "platform": "1",
-      "distance": 311.9,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 33,
-      "stationCode": "ANO",
-      "stationName": "Anjani",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.6210548,
-      "lng": 73.3997311,
-      "scheduledArrival": "2026-08-31T18:58:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T18:58:00+05:30",
-      "departureDay": 1,
-      "distance": 328.1,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 34,
-      "stationCode": "KHED",
-      "stationName": "Khed",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.7125696,
-      "lng": 73.4106638,
-      "scheduledArrival": "2026-08-31T19:11:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T19:11:00+05:30",
-      "departureDay": 1,
-      "distance": 341.5,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 35,
-      "stationCode": "KLBN",
-      "stationName": "kalambani budruk",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.7660925,
-      "lng": 73.4206896,
-      "scheduledArrival": "2026-08-31T19:18:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T19:18:00+05:30",
-      "departureDay": 1,
-      "distance": 349.1,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 36,
-      "stationCode": "DWV",
-      "stationName": "Diwan Khavati",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.8551345,
-      "lng": 73.4181212,
-      "scheduledArrival": "2026-08-31T19:28:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T19:28:00+05:30",
-      "departureDay": 1,
-      "distance": 359.2,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 37,
-      "stationCode": "VINH",
-      "stationName": "VINHERE",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.9148403,
-      "lng": 73.3836239,
-      "scheduledArrival": "2026-08-31T19:35:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T19:35:00+05:30",
-      "departureDay": 1,
-      "distance": 367.2,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 38,
-      "stationCode": "KFD",
-      "stationName": "Karanjadi",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 17.9992354,
-      "lng": 73.4042369,
-      "scheduledArrival": "2026-08-31T19:45:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T19:45:00+05:30",
-      "departureDay": 1,
-      "distance": 377.3,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 39,
-      "stationCode": "SAPE",
-      "stationName": "Sape-Wamne",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.0581106,
-      "lng": 73.3715683,
-      "scheduledArrival": "2026-08-31T19:53:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T19:53:00+05:30",
-      "departureDay": 1,
-      "distance": 384.9,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 40,
-      "stationCode": "VEER",
-      "stationName": "Veer",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.1137454,
-      "lng": 73.3305792,
-      "scheduledArrival": "2026-08-31T20:00:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T20:00:00+05:30",
-      "departureDay": 1,
-      "distance": 392.9,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 41,
-      "stationCode": "GNO",
-      "stationName": "Goregaon Road (H)",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.1626135,
-      "lng": 73.3030008,
-      "scheduledArrival": "2026-08-31T20:06:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T20:06:00+05:30",
-      "departureDay": 1,
-      "distance": 399.2,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 42,
-      "stationCode": "MNI",
-      "stationName": "Mangaon",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.247448,
-      "lng": 73.275442,
-      "scheduledArrival": "2026-08-31T20:17:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T20:17:00+05:30",
-      "departureDay": 1,
-      "distance": 409.6,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 43,
-      "stationCode": "INP",
-      "stationName": "Indapur",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.2990452,
-      "lng": 73.2446587,
-      "scheduledArrival": "2026-08-31T20:23:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T20:23:00+05:30",
-      "departureDay": 1,
-      "distance": 416.3,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 44,
-      "stationCode": "KOL",
-      "stationName": "Kolad",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.3920231,
-      "lng": 73.2234248,
-      "scheduledArrival": "2026-08-31T20:33:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T20:33:00+05:30",
-      "departureDay": 1,
-      "distance": 427,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 45,
-      "stationCode": "ROHA",
-      "stationName": "Roha",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.44658,
-      "lng": 73.1238722,
-      "scheduledArrival": "2026-08-31T20:46:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T20:46:00+05:30",
-      "departureDay": 1,
-      "distance": 440,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 46,
-      "stationCode": "NIDI",
-      "stationName": "Nidi",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.4741031,
-      "lng": 73.1073063,
-      "scheduledArrival": "2026-08-31T20:50:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T20:50:00+05:30",
-      "departureDay": 1,
-      "distance": 444.2,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 47,
-      "stationCode": "NGTN",
-      "stationName": "Nagothane",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.5401,
-      "lng": 73.14116,
-      "scheduledArrival": "2026-08-31T20:58:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T20:58:00+05:30",
-      "departureDay": 1,
-      "distance": 452.7,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 48,
-      "stationCode": "KASU",
-      "stationName": "Kasu",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.6413721,
-      "lng": 73.0793081,
-      "scheduledArrival": "2026-08-31T21:11:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T21:11:00+05:30",
-      "departureDay": 1,
-      "distance": 466.1,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 49,
-      "stationCode": "PEN",
-      "stationName": "Pen",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.735385,
-      "lng": 73.0868161,
-      "scheduledArrival": "2026-08-31T21:24:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T21:24:00+05:30",
-      "departureDay": 1,
-      "distance": 479.5,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 50,
-      "stationCode": "HMRR",
-      "stationName": "Hamarapur",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.7839356,
-      "lng": 73.0792002,
-      "scheduledArrival": "2026-08-31T21:30:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T21:30:00+05:30",
-      "departureDay": 1,
-      "distance": 485.4,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 51,
-      "stationCode": "JITE",
-      "stationName": "JITE",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.8200931,
-      "lng": 73.0868155,
-      "scheduledArrival": "2026-08-31T21:34:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T21:34:00+05:30",
-      "departureDay": 1,
-      "distance": 489.6,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 52,
-      "stationCode": "APTA",
-      "stationName": "Apta",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.8637081,
-      "lng": 73.1532989,
-      "scheduledArrival": "2026-08-31T21:43:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T21:43:00+05:30",
-      "departureDay": 1,
-      "distance": 499.4,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 53,
-      "stationCode": "RSYI",
-      "stationName": "Rasayani",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.8940449,
-      "lng": 73.1516427,
-      "scheduledArrival": "2026-08-31T21:47:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T21:47:00+05:30",
-      "departureDay": 1,
-      "distance": 502.8,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 54,
-      "stationCode": "SMNE",
-      "stationName": "SOMTANE",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.950646,
-      "lng": 73.14548,
-      "scheduledArrival": "2026-08-31T21:53:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T21:53:00+05:30",
-      "departureDay": 1,
-      "distance": 509.3,
-      "speedToNextStationKmph": 62
-    },
-    {
-      "sequence": 55,
-      "stationCode": "PNVL",
-      "stationName": "Panvel",
-      "isHalt": true,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.9894239,
-      "lng": 73.122695,
-      "scheduledArrival": "2026-08-31T21:58:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:00:00+05:30",
-      "departureDay": 1,
-      "distance": 514.5,
-      "speedToNextStationKmph": 48.3,
-      "actualArrival": "2026-08-31T22:49:00+05:30",
-      "delayArrival": 51,
-      "actualDeparture": "2026-08-31T22:51:00+05:30",
-      "delayDeparture": 51
-    },
-    {
-      "sequence": 56,
-      "stationCode": "KNDS",
-      "stationName": "Khandeshwar",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0073498,
-      "lng": 73.0952827,
-      "scheduledArrival": "2026-08-31T22:04:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:04:00+05:30",
-      "departureDay": 1,
-      "distance": 518,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 57,
-      "stationCode": "MANR",
-      "stationName": "MANSAROVAR",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0164338,
-      "lng": 73.0806552,
-      "scheduledArrival": "2026-08-31T22:07:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:07:00+05:30",
-      "departureDay": 1,
-      "distance": 519.9,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 58,
-      "stationCode": "KHAG",
-      "stationName": "Kharghar",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0258415,
-      "lng": 73.0593001,
-      "scheduledArrival": "2026-08-31T22:10:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:10:00+05:30",
-      "departureDay": 1,
-      "distance": 522.8,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 59,
-      "stationCode": "BEPR",
-      "stationName": "Belapur C.B.D",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0190075,
-      "lng": 73.0391304,
-      "scheduledArrival": "2026-08-31T22:13:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:13:00+05:30",
-      "departureDay": 1,
-      "distance": 525.2,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 60,
-      "stationCode": "SWDK",
-      "stationName": "SEAWOODS- DARAVE KARAVE",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0218,
-      "lng": 73.019,
-      "scheduledArrival": "2026-08-31T22:16:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:16:00+05:30",
-      "departureDay": 1,
-      "distance": 527.6,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 61,
-      "stationCode": "NEU",
-      "stationName": "Nerul",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.033139,
-      "lng": 73.018182,
-      "scheduledArrival": "2026-08-31T22:18:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:18:00+05:30",
-      "departureDay": 1,
-      "distance": 528.9,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 62,
-      "stationCode": "JNJ",
-      "stationName": "Juinagar",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.05585,
-      "lng": 73.01844,
-      "scheduledArrival": "2026-08-31T22:21:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:21:00+05:30",
-      "departureDay": 1,
-      "distance": 531.5,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 63,
-      "stationCode": "TUH",
-      "stationName": "TURBHE",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.07622,
-      "lng": 73.01776,
-      "scheduledArrival": "2026-08-31T22:24:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:24:00+05:30",
-      "departureDay": 1,
-      "distance": 533.7,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 64,
-      "stationCode": "KPHN",
-      "stationName": "KOPAR KHAIRNA",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.10333,
-      "lng": 73.0113,
-      "scheduledArrival": "2026-08-31T22:28:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:28:00+05:30",
-      "departureDay": 1,
-      "distance": 536.9,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 65,
-      "stationCode": "GNSL",
-      "stationName": "GHANSOLI",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.11617,
-      "lng": 73.00709,
-      "scheduledArrival": "2026-08-31T22:30:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:30:00+05:30",
-      "departureDay": 1,
-      "distance": 538.4,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 66,
-      "stationCode": "RABE",
-      "stationName": "Rabada",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.13678,
-      "lng": 73.00275,
-      "scheduledArrival": "2026-08-31T22:33:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:33:00+05:30",
-      "departureDay": 1,
-      "distance": 540.8,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 67,
-      "stationCode": "AIRL",
-      "stationName": "AIRAVALI",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.1586,
-      "lng": 72.99938,
-      "scheduledArrival": "2026-08-31T22:36:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:36:00+05:30",
-      "departureDay": 1,
-      "distance": 543.2,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 68,
-      "stationCode": "DIGH",
-      "stationName": "DIGHA GAON",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.17582,
-      "lng": 72.99471,
-      "scheduledArrival": "2026-08-31T22:38:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:38:00+05:30",
-      "departureDay": 1,
-      "distance": 545.3,
-      "speedToNextStationKmph": 48.3
-    },
-    {
-      "sequence": 69,
-      "stationCode": "TNA",
-      "stationName": "Thane",
-      "isHalt": true,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.186483,
-      "lng": 72.9757664,
-      "scheduledArrival": "2026-08-31T22:43:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:45:00+05:30",
-      "departureDay": 1,
-      "platform": "PF 6",
-      "distance": 549.1,
-      "speedToNextStationKmph": 63.1,
-      "actualArrival": "2026-08-31T23:34:00+05:30",
-      "delayArrival": 51,
-      "actualDeparture": "2026-08-31T23:36:00+05:30",
-      "delayDeparture": 51
-    },
-    {
-      "sequence": 70,
-      "stationCode": "MLND",
-      "stationName": "Mulund",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.1721366,
-      "lng": 72.9566971,
-      "scheduledArrival": "2026-08-31T22:47:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:47:00+05:30",
-      "departureDay": 1,
-      "distance": 551.7,
-      "speedToNextStationKmph": 63.1
-    },
-    {
-      "sequence": 71,
-      "stationCode": "NHU",
-      "stationName": "NAHUR",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.1546402,
-      "lng": 72.9466525,
-      "scheduledArrival": "2026-08-31T22:50:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:50:00+05:30",
-      "departureDay": 1,
-      "distance": 553.9,
-      "speedToNextStationKmph": 63.1
-    },
-    {
-      "sequence": 72,
-      "stationCode": "BND",
-      "stationName": "Bhandup",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.142757,
-      "lng": 72.9376543,
-      "scheduledArrival": "2026-08-31T22:51:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:51:00+05:30",
-      "departureDay": 1,
-      "distance": 555.6,
-      "speedToNextStationKmph": 63.1
-    },
-    {
-      "sequence": 73,
-      "stationCode": "KJRD",
-      "stationName": "Kanjur Marg",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.1286526,
-      "lng": 72.9280394,
-      "scheduledArrival": "2026-08-31T22:53:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:53:00+05:30",
-      "departureDay": 1,
-      "distance": 557.4,
-      "speedToNextStationKmph": 63.1
-    },
-    {
-      "sequence": 74,
-      "stationCode": "VK",
-      "stationName": "Vikhroli",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.1114795,
-      "lng": 72.928021,
-      "scheduledArrival": "2026-08-31T22:55:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:55:00+05:30",
-      "departureDay": 1,
-      "distance": 559.3,
-      "speedToNextStationKmph": 63.1
-    },
-    {
-      "sequence": 75,
-      "stationCode": "GC",
-      "stationName": "Ghat Kopar",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0856928,
-      "lng": 72.9083668,
-      "scheduledArrival": "2026-08-31T22:58:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:58:00+05:30",
-      "departureDay": 1,
-      "distance": 563,
-      "speedToNextStationKmph": 63.1
-    },
-    {
-      "sequence": 76,
-      "stationCode": "VVH",
-      "stationName": "Vidyavihar",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0795422,
-      "lng": 72.8971169,
-      "scheduledArrival": "2026-08-31T22:59:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T22:59:00+05:30",
-      "departureDay": 1,
-      "distance": 564.3,
-      "speedToNextStationKmph": 63.1
-    },
-    {
-      "sequence": 77,
-      "stationCode": "CLA",
-      "stationName": "Kurla Jn.",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0652797,
-      "lng": 72.8793805,
-      "scheduledArrival": "2026-08-31T23:02:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T23:02:00+05:30",
-      "departureDay": 1,
-      "distance": 566.8,
-      "speedToNextStationKmph": 63.1
-    },
-    {
-      "sequence": 78,
-      "stationCode": "SION",
-      "stationName": "SION",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.04653,
-      "lng": 72.86332,
-      "scheduledArrival": "2026-08-31T23:04:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T23:04:00+05:30",
-      "departureDay": 1,
-      "distance": 569.5,
-      "speedToNextStationKmph": 63.1
-    },
-    {
-      "sequence": 79,
-      "stationCode": "MTN",
-      "stationName": "MUMBAI (Matunga )",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0274356,
-      "lng": 72.8501467,
-      "scheduledArrival": "2026-08-31T23:07:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T23:07:00+05:30",
-      "departureDay": 1,
-      "distance": 572,
-      "speedToNextStationKmph": 63.1
-    },
-    {
-      "sequence": 80,
-      "stationCode": "DR",
-      "stationName": "DADAR",
-      "isHalt": true,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0173761,
-      "lng": 72.8430265,
-      "scheduledArrival": "2026-08-31T23:08:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T23:10:00+05:30",
-      "departureDay": 1,
-      "platform": "PF 12",
-      "distance": 573.3,
-      "speedToNextStationKmph": 9,
-      "actualArrival": "2026-08-31T23:59:00+05:30",
-      "delayArrival": 51,
-      "actualDeparture": "2026-09-01T00:01:00+05:30",
-      "delayDeparture": 51
-    },
-    {
-      "sequence": 81,
-      "stationCode": "PR",
-      "stationName": "MUMBAI (Parel)",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 19.0094817,
-      "lng": 72.8376614,
-      "scheduledArrival": "2026-08-31T23:17:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T23:17:00+05:30",
-      "departureDay": 1,
-      "distance": 574.4,
-      "speedToNextStationKmph": 9
-    },
-    {
-      "sequence": 82,
-      "stationCode": "CRD",
-      "stationName": "MUMBAI(CURREY ROAD)",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.9937486,
-      "lng": 72.8328556,
-      "scheduledArrival": "2026-08-31T23:29:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T23:29:00+05:30",
-      "departureDay": 1,
-      "distance": 576.2,
-      "speedToNextStationKmph": 9
-    },
-    {
-      "sequence": 83,
-      "stationCode": "CHG",
-      "stationName": "MUMBAI(CHINCHPOKLI)",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.9871984,
-      "lng": 72.8326716,
-      "scheduledArrival": "2026-08-31T23:34:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T23:34:00+05:30",
-      "departureDay": 1,
-      "distance": 576.9,
-      "speedToNextStationKmph": 9
-    },
-    {
-      "sequence": 84,
-      "stationCode": "BY",
-      "stationName": "Byculla",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.9766219,
-      "lng": 72.8327936,
-      "scheduledArrival": "2026-08-31T23:42:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T23:42:00+05:30",
-      "departureDay": 1,
-      "distance": 578.1,
-      "speedToNextStationKmph": 9
-    },
-    {
-      "sequence": 85,
-      "stationCode": "SNRD",
-      "stationName": "Sandhurst Road",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.9609243,
-      "lng": 72.8393719,
-      "scheduledArrival": "2026-08-31T23:55:00+05:30",
-      "arrivalDay": 1,
-      "scheduledDeparture": "2026-08-31T23:55:00+05:30",
-      "departureDay": 1,
-      "distance": 580,
-      "speedToNextStationKmph": 9
-    },
-    {
-      "sequence": 86,
-      "stationCode": "MSD",
-      "stationName": "MUMBAI (Masjid)",
-      "isHalt": false,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.9522949,
-      "lng": 72.8381771,
-      "scheduledArrival": "2026-09-01T00:01:00+05:30",
-      "arrivalDay": 2,
-      "scheduledDeparture": "2026-09-01T00:01:00+05:30",
-      "departureDay": 2,
-      "distance": 580.9,
-      "speedToNextStationKmph": 9
-    },
-    {
-      "sequence": 87,
-      "stationCode": "CSMT",
-      "stationName": "CHHATRAPATI SHIVAJI MAHARAJ TERMINUS",
-      "isHalt": true,
-      "status": "upcoming",
-      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
-      "lat": 18.9404925,
-      "lng": 72.8357856,
-      "scheduledArrival": "2026-09-01T00:10:00+05:30",
-      "arrivalDay": 2,
-      "platform": "PF 14",
-      "distance": 582.3,
-      "actualArrival": "2026-09-01T01:01:00+05:30",
-      "delayArrival": 51
-    }
-  ],
+  "delayMinutes": 34,
   "geometry": {
     "trainNumber": "12052",
     "format": "geojson",
@@ -2307,16 +853,12 @@
             15.59566
           ],
           [
-            73.90086,
-            15.59625
+            73.90092,
+            15.5962
           ],
           [
             73.90064,
             15.59646
-          ],
-          [
-            73.90002,
-            15.59711
           ],
           [
             73.89917,
@@ -3387,10 +1929,6 @@
             16.44617
           ],
           [
-            73.7436,
-            16.44669
-          ],
-          [
             73.74384,
             16.46378
           ],
@@ -3545,10 +2083,6 @@
           [
             73.66844,
             16.55865
-          ],
-          [
-            73.66067,
-            16.56892
           ],
           [
             73.66028,
@@ -3707,10 +2241,6 @@
             16.70075
           ],
           [
-            73.61974,
-            16.7017
-          ],
-          [
             73.61969,
             16.70345
           ],
@@ -3829,10 +2359,6 @@
           [
             73.61524,
             16.83079
-          ],
-          [
-            73.61502,
-            16.83381
           ],
           [
             73.61496,
@@ -5215,10 +3741,6 @@
             17.26289
           ],
           [
-            73.55195,
-            17.26517
-          ],
-          [
             73.55137,
             17.2663
           ],
@@ -6523,10 +5045,6 @@
             17.7647
           ],
           [
-            73.42078,
-            17.7661
-          ],
-          [
             73.42074,
             17.76684
           ],
@@ -6785,10 +5303,6 @@
           [
             73.38387,
             17.9148
-          ],
-          [
-            73.38387,
-            17.91486
           ],
           [
             73.38334,
@@ -7895,10 +6409,6 @@
             18.44675
           ],
           [
-            73.12376,
-            18.44679
-          ],
-          [
             73.12081,
             18.44761
           ],
@@ -8819,10 +7329,6 @@
             18.73466
           ],
           [
-            73.08666,
-            18.73542
-          ],
-          [
             73.08837,
             18.74388
           ],
@@ -9603,124 +8109,116 @@
             18.98963
           ],
           [
-            73.12264,
-            18.98937
+            73.11917,
+            18.99217
           ],
           [
-            73.11963,
-            18.99233
+            73.11893,
+            18.9925
           ],
           [
-            73.11799,
-            18.99387
+            73.11843,
+            18.9933
           ],
           [
-            73.1177,
-            18.99408
+            73.11819,
+            18.99361
           ],
           [
-            73.11713,
-            18.99463
+            73.11743,
+            18.99435
           ],
           [
-            73.11624,
-            18.99559
+            73.11716,
+            18.99467
           ],
           [
-            73.11299,
-            18.99922
+            73.11665,
+            18.9952
           ],
           [
-            73.11266,
-            18.99952
+            73.11487,
+            18.99717
           ],
           [
-            73.11213,
-            18.99996
+            73.11409,
+            18.99808
           ],
           [
-            73.11163,
-            19.00031
+            73.11296,
+            18.9993
           ],
           [
-            73.1076,
-            19.00253
+            73.11256,
+            18.99966
           ],
           [
-            73.10717,
-            19.00275
+            73.112,
+            19.00012
           ],
           [
-            73.10239,
-            19.00537
+            73.11138,
+            19.00052
           ],
           [
-            73.1014,
-            19.00584
+            73.10541,
+            19.00376
           ],
           [
-            73.10086,
-            19.00603
+            73.10411,
+            19.00449
           ],
           [
-            73.10048,
-            19.00614
+            73.10212,
+            19.00554
           ],
           [
-            73.09978,
-            19.00632
+            73.10142,
+            19.00587
           ],
           [
-            73.09848,
-            19.00653
+            73.10089,
+            19.00606
           ],
           [
-            73.09527,
-            19.00728
+            73.09968,
+            19.0064
           ],
           [
-            73.09395,
-            19.00759
+            73.0953,
+            19.00741
           ],
           [
-            73.09285,
-            19.00786
+            73.09318,
+            19.0079
           ],
           [
-            73.09212,
-            19.00809
+            73.08945,
+            19.0088
           ],
           [
-            73.08943,
-            19.00874
+            73.08895,
+            19.00896
           ],
           [
-            73.08893,
-            19.00891
+            73.08823,
+            19.00926
           ],
           [
-            73.0882,
-            19.00921
+            73.0878,
+            19.00952
           ],
           [
-            73.08733,
-            19.00977
+            73.08738,
+            19.00982
           ],
           [
-            73.08668,
-            19.01037
+            73.0867,
+            19.01042
           ],
           [
-            73.08319,
-            19.01389
-          ],
-          [
-            73.0815,
-            19.01549
-          ],
-          [
-            73.08061,
-            19.01639
+            73.0807,
+            19.01648
           ],
           [
             73.07896,
@@ -9799,8 +8297,8 @@
             19.02763
           ],
           [
-            73.0616,
-            19.0272
+            73.06168,
+            19.02724
           ],
           [
             73.06041,
@@ -9867,6 +8365,10 @@
             19.02212
           ],
           [
+            73.04489,
+            19.02211
+          ],
+          [
             73.04464,
             19.02209
           ],
@@ -9879,8 +8381,8 @@
             19.02191
           ],
           [
-            73.04362,
-            19.02182
+            73.04331,
+            19.02169
           ],
           [
             73.04313,
@@ -9895,16 +8397,12 @@
             19.02077
           ],
           [
-            73.04076,
-            19.02009
+            73.04021,
+            19.01974
           ],
           [
             73.0391,
             19.01906
-          ],
-          [
-            73.03903,
-            19.01916
           ],
           [
             73.03787,
@@ -9983,8 +8481,8 @@
             19.01922
           ],
           [
-            73.01923,
-            19.02203
+            73.0193,
+            19.02197
           ],
           [
             73.01799,
@@ -10001,6 +8499,10 @@
           [
             73.01717,
             19.02411
+          ],
+          [
+            73.01703,
+            19.02438
           ],
           [
             73.01689,
@@ -10059,68 +8561,44 @@
             19.03229
           ],
           [
-            73.0182,
-            19.03314
+            73.0185,
+            19.0368
           ],
           [
-            73.01827,
-            19.03473
+            73.01894,
+            19.0424
           ],
           [
-            73.01833,
-            19.03549
+            73.01895,
+            19.04454
           ],
           [
-            73.01848,
-            19.03723
-          ],
-          [
-            73.01888,
-            19.04241
-          ],
-          [
-            73.0189,
-            19.0435
-          ],
-          [
-            73.01888,
+            73.01894,
             19.04673
           ],
           [
-            73.0189,
+            73.01895,
             19.04899
           ],
           [
-            73.01889,
+            73.01894,
             19.04958
           ],
           [
-            73.01886,
-            19.05009
+            73.01891,
+            19.0501
           ],
           [
-            73.01872,
-            19.05109
+            73.01861,
+            19.05217
           ],
           [
-            73.01854,
-            19.0522
-          ],
-          [
-            73.01841,
+            73.01852,
             19.05335
           ],
           [
-            73.01836,
-            19.05416
-          ],
-          [
-            73.0183,
+            73.01845,
             19.05585
-          ],
-          [
-            73.01844,
-            19.0559
           ],
           [
             73.0184,
@@ -10177,10 +8655,6 @@
           [
             73.01781,
             19.07623
-          ],
-          [
-            73.01752,
-            19.07618
           ],
           [
             73.01729,
@@ -10371,10 +8845,6 @@
             19.1355
           ],
           [
-            73.00281,
-            19.1368
-          ],
-          [
             73.00241,
             19.13844
           ],
@@ -10493,10 +8963,6 @@
           [
             72.99517,
             19.17531
-          ],
-          [
-            72.99475,
-            19.17585
           ],
           [
             72.99471,
@@ -10659,10 +9125,6 @@
             19.18567
           ],
           [
-            72.97545,
-            19.18637
-          ],
-          [
             72.97361,
             19.18587
           ],
@@ -10719,108 +9181,100 @@
             19.17218
           ],
           [
-            72.95677,
-            19.17206
+            72.95559,
+            19.17064
           ],
           [
-            72.9559,
-            19.1712
+            72.95479,
+            19.16978
           ],
           [
-            72.95549,
-            19.17076
+            72.95388,
+            19.16862
           ],
           [
-            72.95439,
-            19.16951
+            72.95331,
+            19.1679
           ],
           [
-            72.95375,
-            19.16871
+            72.95276,
+            19.16713
           ],
           [
-            72.95268,
-            19.16718
+            72.95231,
+            19.16641
           ],
           [
-            72.95222,
-            19.16645
+            72.95159,
+            19.1652
           ],
           [
-            72.95149,
-            19.16524
+            72.95125,
+            19.16456
           ],
           [
-            72.95076,
-            19.16378
+            72.95084,
+            19.16372
           ],
           [
-            72.95044,
-            19.16311
+            72.95053,
+            19.16308
           ],
           [
-            72.95009,
-            19.16234
+            72.9502,
+            19.16232
           ],
           [
-            72.9496,
-            19.16105
+            72.94987,
+            19.1615
           ],
           [
-            72.94901,
-            19.15929
+            72.9497,
+            19.16102
           ],
           [
-            72.94876,
-            19.15862
+            72.9489,
+            19.15859
           ],
           [
-            72.9483,
-            19.15749
+            72.94845,
+            19.15741
           ],
           [
-            72.94757,
-            19.15598
+            72.94763,
+            19.15569
           ],
           [
-            72.94711,
-            19.15508
+            72.94698,
+            19.15462
           ],
           [
-            72.94687,
-            19.15466
+            72.94558,
+            19.15246
           ],
           [
-            72.9468,
-            19.15455
+            72.94494,
+            19.1516
           ],
           [
-            72.94617,
-            19.15354
+            72.94325,
+            19.14941
           ],
           [
-            72.94549,
-            19.15253
+            72.94112,
+            19.14658
           ],
           [
-            72.9443,
-            19.15095
+            72.93975,
+            19.14481
           ],
           [
-            72.93935,
-            19.14455
+            72.93873,
+            19.1434
           ],
           [
-            72.93857,
-            19.14352
-          ],
-          [
-            72.93786,
-            19.14261
-          ],
-          [
-            72.9377,
-            19.14272
+            72.93803,
+            19.1425
           ],
           [
             72.93672,
@@ -10861,10 +9315,6 @@
           [
             72.92811,
             19.12868
-          ],
-          [
-            72.9281,
-            19.12864
           ],
           [
             72.92796,
@@ -11035,10 +9485,6 @@
             19.07948
           ],
           [
-            72.89727,
-            19.07934
-          ],
-          [
             72.89601,
             19.07836
           ],
@@ -11065,10 +9511,6 @@
           [
             72.87939,
             19.06526
-          ],
-          [
-            72.87908,
-            19.06507
           ],
           [
             72.87829,
@@ -11127,8 +9569,8 @@
             19.04862
           ],
           [
-            72.86324,
-            19.04659
+            72.86322,
+            19.04656
           ],
           [
             72.86288,
@@ -11191,10 +9633,6 @@
             19.01728
           ],
           [
-            72.84309,
-            19.01733
-          ],
-          [
             72.8424,
             19.01637
           ],
@@ -11213,10 +9651,6 @@
           [
             72.83776,
             19.00942
-          ],
-          [
-            72.83762,
-            19.00896
           ],
           [
             72.83712,
@@ -11411,10 +9845,6 @@
             18.9618
           ],
           [
-            72.83961,
-            18.96091
-          ],
-          [
             72.83957,
             18.96029
           ],
@@ -11518,34 +9948,1288 @@
       }
     }
   },
+  "currentLocation": {
+    "stationCode": "GNO",
+    "stationName": "Goregaon Road (H)",
+    "sequence": 34,
+    "status": "departed",
+    "isHalt": false,
+    "coordinates": {
+      "lat": 18.204903,
+      "lng": 73.29701
+    },
+    "distanceFromOriginKm": 404.13,
+    "distanceFromLastStationKm": 4.93,
+    "segmentProgress": 0.47,
+    "delayMinutes": 34
+  },
+  "route": [
+    {
+      "sequence": 1,
+      "stationCode": "MAO",
+      "stationName": "Madgaon",
+      "isHalt": true,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 15.26799,
+      "lng": 73.97015,
+      "scheduledDeparture": "2026-09-16T12:00:00+05:30",
+      "departureDay": 1,
+      "platform": "3",
+      "distance": 0,
+      "speedToNextStationKmph": 55.2
+    },
+    {
+      "sequence": 2,
+      "stationCode": "SRVX",
+      "stationName": "Suravali (H)",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 15.2913229,
+      "lng": 73.9396519,
+      "scheduledArrival": "2026-09-16T12:05:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T12:05:00+05:30",
+      "departureDay": 1,
+      "distance": 4.4,
+      "speedToNextStationKmph": 55.2
+    },
+    {
+      "sequence": 3,
+      "stationCode": "MJO",
+      "stationName": "Majorda",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 15.3137925,
+      "lng": 73.9219348,
+      "scheduledArrival": "2026-09-16T12:08:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T12:08:00+05:30",
+      "departureDay": 1,
+      "distance": 7.6,
+      "speedToNextStationKmph": 55.2
+    },
+    {
+      "sequence": 4,
+      "stationCode": "VEN",
+      "stationName": "Verna",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 15.3538506,
+      "lng": 73.9124939,
+      "scheduledArrival": "2026-09-16T12:14:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T12:14:00+05:30",
+      "departureDay": 1,
+      "distance": 12.5,
+      "speedToNextStationKmph": 55.2
+    },
+    {
+      "sequence": 5,
+      "stationCode": "KRMI",
+      "stationName": "Karmali",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 15.4904538,
+      "lng": 73.9245522,
+      "scheduledArrival": "2026-09-16T12:31:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T12:31:00+05:30",
+      "departureDay": 1,
+      "distance": 28.6,
+      "speedToNextStationKmph": 55.2
+    },
+    {
+      "sequence": 6,
+      "stationCode": "THVM",
+      "stationName": "Thivim",
+      "isHalt": true,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 15.6298781,
+      "lng": 73.8770455,
+      "scheduledArrival": "2026-09-16T12:50:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T12:52:00+05:30",
+      "departureDay": 1,
+      "actualDeparture": "2026-09-16T13:25:19+05:30",
+      "delayDeparture": 33,
+      "platform": "1",
+      "distance": 46,
+      "speedToNextStationKmph": 36.9
+    },
+    {
+      "sequence": 7,
+      "stationCode": "PERN",
+      "stationName": "Pernem",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 15.7089964,
+      "lng": 73.8167602,
+      "scheduledArrival": "2026-09-16T13:10:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T13:10:00+05:30",
+      "departureDay": 1,
+      "distance": 57,
+      "speedToNextStationKmph": 36.9
+    },
+    {
+      "sequence": 8,
+      "stationCode": "MADR",
+      "stationName": "Madure",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 15.8038314,
+      "lng": 73.81286,
+      "scheduledArrival": "2026-09-16T13:28:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T13:28:00+05:30",
+      "departureDay": 1,
+      "distance": 67.9,
+      "speedToNextStationKmph": 36.9
+    },
+    {
+      "sequence": 9,
+      "stationCode": "SWV",
+      "stationName": "Sawantwadi Road",
+      "isHalt": true,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 15.8664634,
+      "lng": 73.785083,
+      "scheduledArrival": "2026-09-16T13:40:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T13:42:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-16T13:58:22+05:30",
+      "actualDeparture": "2026-09-16T14:06:37+05:30",
+      "delayArrival": 18,
+      "delayDeparture": 25,
+      "platform": "1",
+      "distance": 75.5,
+      "speedToNextStationKmph": 70
+    },
+    {
+      "sequence": 10,
+      "stationCode": "ZARP",
+      "stationName": "Zarap",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 15.9483572,
+      "lng": 73.7341532,
+      "scheduledArrival": "2026-09-16T13:51:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T13:51:00+05:30",
+      "departureDay": 1,
+      "distance": 86.1,
+      "speedToNextStationKmph": 70
+    },
+    {
+      "sequence": 11,
+      "stationCode": "KUDL",
+      "stationName": "Kudal",
+      "isHalt": true,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 16.0172348,
+      "lng": 73.6780522,
+      "scheduledArrival": "2026-09-16T14:00:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T14:02:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-16T14:32:46+05:30",
+      "actualDeparture": "2026-09-16T14:43:32+05:30",
+      "delayArrival": 33,
+      "delayDeparture": 42,
+      "platform": "1",
+      "distance": 96.5,
+      "speedToNextStationKmph": 35.3
+    },
+    {
+      "sequence": 12,
+      "stationCode": "SNDD",
+      "stationName": "Sindhudurg",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 16.1121887,
+      "lng": 73.6798546,
+      "scheduledArrival": "2026-09-16T14:20:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T14:20:00+05:30",
+      "departureDay": 1,
+      "distance": 107,
+      "speedToNextStationKmph": 35.3
+    },
+    {
+      "sequence": 13,
+      "stationCode": "KKW",
+      "stationName": "Kankavli",
+      "isHalt": true,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 16.2594268,
+      "lng": 73.7199483,
+      "scheduledArrival": "2026-09-16T14:50:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T14:52:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-16T15:06:35+05:30",
+      "actualDeparture": "2026-09-16T15:13:44+05:30",
+      "delayArrival": 17,
+      "delayDeparture": 22,
+      "platform": "1",
+      "distance": 124.7,
+      "speedToNextStationKmph": 45.2
+    },
+    {
+      "sequence": 14,
+      "stationCode": "NAN",
+      "stationName": "Nandgaon Road",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 16.3876268,
+      "lng": 73.7308816,
+      "scheduledArrival": "2026-09-16T15:13:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T15:13:00+05:30",
+      "departureDay": 1,
+      "distance": 140.2,
+      "speedToNextStationKmph": 45.2
+    },
+    {
+      "sequence": 15,
+      "stationCode": "VBW",
+      "stationName": "Vaibhavwadi Road",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 16.5123066,
+      "lng": 73.7079427,
+      "scheduledArrival": "2026-09-16T15:33:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T15:33:00+05:30",
+      "departureDay": 1,
+      "distance": 155.8,
+      "speedToNextStationKmph": 45.2
+    },
+    {
+      "sequence": 16,
+      "stationCode": "RAJP",
+      "stationName": "Rajapur Road",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 16.635634,
+      "lng": 73.6267989,
+      "scheduledArrival": "2026-09-16T15:55:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T15:55:00+05:30",
+      "departureDay": 1,
+      "distance": 172.4,
+      "speedToNextStationKmph": 45.2
+    },
+    {
+      "sequence": 17,
+      "stationCode": "VID",
+      "stationName": "Vilavade",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 16.7856781,
+      "lng": 73.6191607,
+      "scheduledArrival": "2026-09-16T16:17:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T16:17:00+05:30",
+      "departureDay": 1,
+      "distance": 189.1,
+      "speedToNextStationKmph": 45.2
+    },
+    {
+      "sequence": 18,
+      "stationCode": "ADVI",
+      "stationName": "Adavali",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 16.9215451,
+      "lng": 73.5928085,
+      "scheduledArrival": "2026-09-16T16:38:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T16:38:00+05:30",
+      "departureDay": 1,
+      "distance": 204.7,
+      "speedToNextStationKmph": 45.2
+    },
+    {
+      "sequence": 19,
+      "stationCode": "NIV",
+      "stationName": "Nivasar",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 16.9472452,
+      "lng": 73.454825,
+      "scheduledArrival": "2026-09-16T17:00:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T17:00:00+05:30",
+      "departureDay": 1,
+      "distance": 221,
+      "speedToNextStationKmph": 45.2
+    },
+    {
+      "sequence": 20,
+      "stationCode": "RN",
+      "stationName": "Ratnagiri",
+      "isHalt": true,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.00311,
+      "lng": 73.35727,
+      "scheduledArrival": "2026-09-16T17:20:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T17:25:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-16T17:27:55+05:30",
+      "actualDeparture": "2026-09-16T17:40:09+05:30",
+      "delayArrival": 8,
+      "delayDeparture": 15,
+      "platform": "2",
+      "distance": 236.2,
+      "speedToNextStationKmph": 60.6
+    },
+    {
+      "sequence": 21,
+      "stationCode": "BOKE",
+      "stationName": "Bhoke",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.0489169,
+      "lng": 73.3810736,
+      "scheduledArrival": "2026-09-16T17:32:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T17:32:00+05:30",
+      "departureDay": 1,
+      "distance": 242.9,
+      "speedToNextStationKmph": 60.6
+    },
+    {
+      "sequence": 22,
+      "stationCode": "UKC",
+      "stationName": "Ukshi",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.1301992,
+      "lng": 73.4568767,
+      "scheduledArrival": "2026-09-16T17:44:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T17:44:00+05:30",
+      "departureDay": 1,
+      "distance": 255.4,
+      "speedToNextStationKmph": 60.6
+    },
+    {
+      "sequence": 23,
+      "stationCode": "SGR",
+      "stationName": "Sangmeshwar",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.2015922,
+      "lng": 73.5463963,
+      "scheduledArrival": "2026-09-16T17:58:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T17:58:00+05:30",
+      "departureDay": 1,
+      "distance": 269.1,
+      "speedToNextStationKmph": 60.6
+    },
+    {
+      "sequence": 24,
+      "stationCode": "AVRD",
+      "stationName": "Aravali Road",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.316657,
+      "lng": 73.5380915,
+      "scheduledArrival": "2026-09-16T18:11:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T18:11:00+05:30",
+      "departureDay": 1,
+      "distance": 283.1,
+      "speedToNextStationKmph": 60.6
+    },
+    {
+      "sequence": 25,
+      "stationCode": "SVX",
+      "stationName": "Savarda",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.4046532,
+      "lng": 73.5151946,
+      "scheduledArrival": "2026-09-16T18:22:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T18:22:00+05:30",
+      "departureDay": 1,
+      "distance": 293.5,
+      "speedToNextStationKmph": 60.6
+    },
+    {
+      "sequence": 26,
+      "stationCode": "KMAH",
+      "stationName": "Kamathe",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.4778541,
+      "lng": 73.5159247,
+      "scheduledArrival": "2026-09-16T18:30:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T18:30:00+05:30",
+      "departureDay": 1,
+      "distance": 302.2,
+      "speedToNextStationKmph": 60.6
+    },
+    {
+      "sequence": 27,
+      "stationCode": "CHI",
+      "stationName": "Chiplun",
+      "isHalt": true,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.5423529,
+      "lng": 73.522233,
+      "scheduledArrival": "2026-09-16T18:40:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T18:42:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-16T19:15:24+05:30",
+      "actualDeparture": "2026-09-16T19:26:11+05:30",
+      "delayArrival": 35,
+      "delayDeparture": 44,
+      "platform": "1",
+      "distance": 311.9,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 28,
+      "stationCode": "ANO",
+      "stationName": "Anjani",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.6210548,
+      "lng": 73.3997311,
+      "scheduledArrival": "2026-09-16T18:58:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T18:58:00+05:30",
+      "departureDay": 1,
+      "distance": 328.1,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 29,
+      "stationCode": "KHED",
+      "stationName": "Khed",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.7125696,
+      "lng": 73.4106638,
+      "scheduledArrival": "2026-09-16T19:11:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T19:11:00+05:30",
+      "departureDay": 1,
+      "distance": 341.5,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 30,
+      "stationCode": "DWV",
+      "stationName": "Diwan Khavati",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.8551345,
+      "lng": 73.4181212,
+      "scheduledArrival": "2026-09-16T19:28:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T19:28:00+05:30",
+      "departureDay": 1,
+      "distance": 359.2,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 31,
+      "stationCode": "KFD",
+      "stationName": "Karanjadi",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 17.9992354,
+      "lng": 73.4042369,
+      "scheduledArrival": "2026-09-16T19:45:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T19:45:00+05:30",
+      "departureDay": 1,
+      "distance": 377.3,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 32,
+      "stationCode": "SAPE",
+      "stationName": "Sape-Wamne",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.0581106,
+      "lng": 73.3715683,
+      "scheduledArrival": "2026-09-16T19:53:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T19:53:00+05:30",
+      "departureDay": 1,
+      "distance": 384.9,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 33,
+      "stationCode": "VEER",
+      "stationName": "Veer",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.1137454,
+      "lng": 73.3305792,
+      "scheduledArrival": "2026-09-16T20:00:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T20:00:00+05:30",
+      "departureDay": 1,
+      "distance": 392.9,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 34,
+      "stationCode": "GNO",
+      "stationName": "Goregaon Road (H)",
+      "isHalt": false,
+      "status": "departed",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.1626135,
+      "lng": 73.3030008,
+      "scheduledArrival": "2026-09-16T20:06:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T20:06:00+05:30",
+      "departureDay": 1,
+      "actualArrival": "2026-09-16T20:40:13+05:30",
+      "actualDeparture": "2026-09-16T20:40:13+05:30",
+      "delayArrival": 34,
+      "delayDeparture": 34,
+      "distance": 399.2,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 35,
+      "stationCode": "MNI",
+      "stationName": "Mangaon",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.247448,
+      "lng": 73.275442,
+      "scheduledArrival": "2026-09-16T20:17:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T20:17:00+05:30",
+      "departureDay": 1,
+      "distance": 409.6,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 36,
+      "stationCode": "INP",
+      "stationName": "Indapur",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.2990452,
+      "lng": 73.2446587,
+      "scheduledArrival": "2026-09-16T20:23:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T20:23:00+05:30",
+      "departureDay": 1,
+      "distance": 416.3,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 37,
+      "stationCode": "KOL",
+      "stationName": "Kolad",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.3920231,
+      "lng": 73.2234248,
+      "scheduledArrival": "2026-09-16T20:33:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T20:33:00+05:30",
+      "departureDay": 1,
+      "distance": 427,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 38,
+      "stationCode": "ROHA",
+      "stationName": "Roha",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.44658,
+      "lng": 73.1238722,
+      "scheduledArrival": "2026-09-16T20:46:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T20:46:00+05:30",
+      "departureDay": 1,
+      "distance": 440,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 39,
+      "stationCode": "NIDI",
+      "stationName": "Nidi",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.4741031,
+      "lng": 73.1073063,
+      "scheduledArrival": "2026-09-16T20:50:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T20:50:00+05:30",
+      "departureDay": 1,
+      "distance": 444.2,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 40,
+      "stationCode": "NGTN",
+      "stationName": "Nagothane",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.5401,
+      "lng": 73.14116,
+      "scheduledArrival": "2026-09-16T20:58:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T20:58:00+05:30",
+      "departureDay": 1,
+      "distance": 452.7,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 41,
+      "stationCode": "KASU",
+      "stationName": "Kasu",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.6413721,
+      "lng": 73.0793081,
+      "scheduledArrival": "2026-09-16T21:11:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T21:11:00+05:30",
+      "departureDay": 1,
+      "distance": 466.1,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 42,
+      "stationCode": "PEN",
+      "stationName": "Pen",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.735385,
+      "lng": 73.0868161,
+      "scheduledArrival": "2026-09-16T21:24:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T21:24:00+05:30",
+      "departureDay": 1,
+      "distance": 479.5,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 43,
+      "stationCode": "HMRR",
+      "stationName": "Hamarapur",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.7839356,
+      "lng": 73.0792002,
+      "scheduledArrival": "2026-09-16T21:30:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T21:30:00+05:30",
+      "departureDay": 1,
+      "distance": 485.4,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 44,
+      "stationCode": "JITE",
+      "stationName": "Jite",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.8200931,
+      "lng": 73.0868155,
+      "scheduledArrival": "2026-09-16T21:34:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T21:34:00+05:30",
+      "departureDay": 1,
+      "distance": 489.6,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 45,
+      "stationCode": "APTA",
+      "stationName": "Apta",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.8637081,
+      "lng": 73.1532989,
+      "scheduledArrival": "2026-09-16T21:43:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T21:43:00+05:30",
+      "departureDay": 1,
+      "distance": 499.4,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 46,
+      "stationCode": "RSYI",
+      "stationName": "Rasayani",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.8940449,
+      "lng": 73.1516427,
+      "scheduledArrival": "2026-09-16T21:47:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T21:47:00+05:30",
+      "departureDay": 1,
+      "distance": 502.8,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 47,
+      "stationCode": "SMNE",
+      "stationName": "Somtane",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.950646,
+      "lng": 73.14548,
+      "scheduledArrival": "2026-09-16T21:53:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T21:53:00+05:30",
+      "departureDay": 1,
+      "distance": 509.3,
+      "speedToNextStationKmph": 62
+    },
+    {
+      "sequence": 48,
+      "stationCode": "PNVL",
+      "stationName": "Panvel",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.9894239,
+      "lng": 73.122695,
+      "scheduledArrival": "2026-09-16T21:58:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:00:00+05:30",
+      "departureDay": 1,
+      "distance": 514.5,
+      "speedToNextStationKmph": 48,
+      "actualArrival": "2026-09-16T22:35:00+05:30",
+      "delayArrival": 37,
+      "actualDeparture": "2026-09-16T22:37:00+05:30",
+      "delayDeparture": 37
+    },
+    {
+      "sequence": 49,
+      "stationCode": "KNDS",
+      "stationName": "Khandeshwar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0073498,
+      "lng": 73.0952827,
+      "scheduledArrival": "2026-09-16T22:04:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:04:00+05:30",
+      "departureDay": 1,
+      "distance": 517.9,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 50,
+      "stationCode": "MANR",
+      "stationName": "Mansarovar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0164338,
+      "lng": 73.0806552,
+      "scheduledArrival": "2026-09-16T22:07:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:07:00+05:30",
+      "departureDay": 1,
+      "distance": 519.8,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 51,
+      "stationCode": "KHAG",
+      "stationName": "Kharghar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0258415,
+      "lng": 73.0593001,
+      "scheduledArrival": "2026-09-16T22:10:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:10:00+05:30",
+      "departureDay": 1,
+      "distance": 522.7,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 52,
+      "stationCode": "BEPR",
+      "stationName": "Belapur C. B.d",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0190075,
+      "lng": 73.0391304,
+      "scheduledArrival": "2026-09-16T22:13:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:13:00+05:30",
+      "departureDay": 1,
+      "distance": 525,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 53,
+      "stationCode": "SWDV",
+      "stationName": "Seawood Darave",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0218192,
+      "lng": 73.0191588,
+      "scheduledArrival": "2026-09-16T22:16:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:16:00+05:30",
+      "departureDay": 1,
+      "distance": 527.4,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 54,
+      "stationCode": "NEU",
+      "stationName": "Nerul",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.033139,
+      "lng": 73.018182,
+      "scheduledArrival": "2026-09-16T22:18:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:18:00+05:30",
+      "departureDay": 1,
+      "distance": 528.7,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 55,
+      "stationCode": "JNJ",
+      "stationName": "Juinagar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.05585,
+      "lng": 73.01844,
+      "scheduledArrival": "2026-09-16T22:21:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:21:00+05:30",
+      "departureDay": 1,
+      "distance": 531.2,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 56,
+      "stationCode": "TUH",
+      "stationName": "Turbhe",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.07622,
+      "lng": 73.01776,
+      "scheduledArrival": "2026-09-16T22:24:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:24:00+05:30",
+      "departureDay": 1,
+      "distance": 533.5,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 57,
+      "stationCode": "KPHN",
+      "stationName": "Kopar Khairna",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.10333,
+      "lng": 73.0113,
+      "scheduledArrival": "2026-09-16T22:28:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:28:00+05:30",
+      "departureDay": 1,
+      "distance": 536.7,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 58,
+      "stationCode": "GNSL",
+      "stationName": "Ghansoli",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.11617,
+      "lng": 73.00709,
+      "scheduledArrival": "2026-09-16T22:30:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:30:00+05:30",
+      "departureDay": 1,
+      "distance": 538.2,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 59,
+      "stationCode": "AIRL",
+      "stationName": "Airavali",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.1586,
+      "lng": 72.99938,
+      "scheduledArrival": "2026-09-16T22:36:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:36:00+05:30",
+      "departureDay": 1,
+      "distance": 543,
+      "speedToNextStationKmph": 48
+    },
+    {
+      "sequence": 60,
+      "stationCode": "TNA",
+      "stationName": "Thane",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.186483,
+      "lng": 72.9757664,
+      "scheduledArrival": "2026-09-16T22:43:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:45:00+05:30",
+      "departureDay": 1,
+      "platform": "6",
+      "distance": 548.9,
+      "speedToNextStationKmph": 63.1,
+      "actualArrival": "2026-09-16T23:20:00+05:30",
+      "delayArrival": 37,
+      "actualDeparture": "2026-09-16T23:22:00+05:30",
+      "delayDeparture": 37
+    },
+    {
+      "sequence": 61,
+      "stationCode": "MLND",
+      "stationName": "Mulund",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.1721366,
+      "lng": 72.9566971,
+      "scheduledArrival": "2026-09-16T22:47:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:47:00+05:30",
+      "departureDay": 1,
+      "distance": 551.5,
+      "speedToNextStationKmph": 63.1
+    },
+    {
+      "sequence": 62,
+      "stationCode": "BND",
+      "stationName": "Bhandup",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.142757,
+      "lng": 72.9376543,
+      "scheduledArrival": "2026-09-16T22:51:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:51:00+05:30",
+      "departureDay": 1,
+      "distance": 555.3,
+      "speedToNextStationKmph": 63.1
+    },
+    {
+      "sequence": 63,
+      "stationCode": "VK",
+      "stationName": "Vikhroli",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.1114795,
+      "lng": 72.928021,
+      "scheduledArrival": "2026-09-16T22:55:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:55:00+05:30",
+      "departureDay": 1,
+      "distance": 559.1,
+      "speedToNextStationKmph": 63.1
+    },
+    {
+      "sequence": 64,
+      "stationCode": "GC",
+      "stationName": "Ghat Kopar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0856928,
+      "lng": 72.9083668,
+      "scheduledArrival": "2026-09-16T22:58:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:58:00+05:30",
+      "departureDay": 1,
+      "distance": 562.7,
+      "speedToNextStationKmph": 63.1
+    },
+    {
+      "sequence": 65,
+      "stationCode": "VVH",
+      "stationName": "Vidyavihar",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0795422,
+      "lng": 72.8971169,
+      "scheduledArrival": "2026-09-16T22:59:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T22:59:00+05:30",
+      "departureDay": 1,
+      "distance": 564.1,
+      "speedToNextStationKmph": 63.1
+    },
+    {
+      "sequence": 66,
+      "stationCode": "CLA",
+      "stationName": "Kurla Jn",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0652797,
+      "lng": 72.8793805,
+      "scheduledArrival": "2026-09-16T23:02:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T23:02:00+05:30",
+      "departureDay": 1,
+      "distance": 566.5,
+      "speedToNextStationKmph": 63.1
+    },
+    {
+      "sequence": 67,
+      "stationCode": "SIN",
+      "stationName": "Mumbai (Sion)",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0465213,
+      "lng": 72.8632834,
+      "scheduledArrival": "2026-09-16T23:04:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T23:04:00+05:30",
+      "departureDay": 1,
+      "distance": 569.2,
+      "speedToNextStationKmph": 63.1
+    },
+    {
+      "sequence": 68,
+      "stationCode": "MTN",
+      "stationName": "Matunga",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0274356,
+      "lng": 72.8501467,
+      "scheduledArrival": "2026-09-16T23:07:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T23:07:00+05:30",
+      "departureDay": 1,
+      "distance": 571.8,
+      "speedToNextStationKmph": 63.1
+    },
+    {
+      "sequence": 69,
+      "stationCode": "DR",
+      "stationName": "Dadar",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0173761,
+      "lng": 72.8430265,
+      "scheduledArrival": "2026-09-16T23:08:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T23:10:00+05:30",
+      "departureDay": 1,
+      "platform": "12",
+      "distance": 573.1,
+      "speedToNextStationKmph": 8.9,
+      "actualArrival": "2026-09-16T23:45:00+05:30",
+      "delayArrival": 37,
+      "actualDeparture": "2026-09-16T23:47:00+05:30",
+      "delayDeparture": 37
+    },
+    {
+      "sequence": 70,
+      "stationCode": "PR",
+      "stationName": "Parel",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 19.0094817,
+      "lng": 72.8376614,
+      "scheduledArrival": "2026-09-16T23:17:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T23:17:00+05:30",
+      "departureDay": 1,
+      "distance": 574.1,
+      "speedToNextStationKmph": 8.9
+    },
+    {
+      "sequence": 71,
+      "stationCode": "CRD",
+      "stationName": "Mumbai (currey Road)",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.9937486,
+      "lng": 72.8328556,
+      "scheduledArrival": "2026-09-16T23:29:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T23:29:00+05:30",
+      "departureDay": 1,
+      "distance": 575.9,
+      "speedToNextStationKmph": 8.9
+    },
+    {
+      "sequence": 72,
+      "stationCode": "CHG",
+      "stationName": "Mumbai (Chinchpokli)",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.9871984,
+      "lng": 72.8326716,
+      "scheduledArrival": "2026-09-16T23:34:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T23:34:00+05:30",
+      "departureDay": 1,
+      "distance": 576.7,
+      "speedToNextStationKmph": 8.9
+    },
+    {
+      "sequence": 73,
+      "stationCode": "BY",
+      "stationName": "Byculla",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.9766219,
+      "lng": 72.8327936,
+      "scheduledArrival": "2026-09-16T23:42:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T23:42:00+05:30",
+      "departureDay": 1,
+      "distance": 577.8,
+      "speedToNextStationKmph": 8.9
+    },
+    {
+      "sequence": 74,
+      "stationCode": "SNRD",
+      "stationName": "Sandhurst Road",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.9609243,
+      "lng": 72.8393719,
+      "scheduledArrival": "2026-09-16T23:54:00+05:30",
+      "arrivalDay": 1,
+      "scheduledDeparture": "2026-09-16T23:54:00+05:30",
+      "departureDay": 1,
+      "distance": 579.7,
+      "speedToNextStationKmph": 8.9
+    },
+    {
+      "sequence": 75,
+      "stationCode": "MSD",
+      "stationName": "Masjid",
+      "isHalt": false,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.9522949,
+      "lng": 72.8381771,
+      "scheduledArrival": "2026-09-17T00:01:00+05:30",
+      "arrivalDay": 2,
+      "scheduledDeparture": "2026-09-17T00:01:00+05:30",
+      "departureDay": 2,
+      "distance": 580.7,
+      "speedToNextStationKmph": 8.9
+    },
+    {
+      "sequence": 76,
+      "stationCode": "CSMT",
+      "stationName": "Mumbai CSMT",
+      "isHalt": true,
+      "status": "upcoming",
+      "coachPosition": "ENG-EV1-DL1-C1-C2-C3-D1-D2-D3-D4-D5-D6-D7-D8-D9-D10-LPR",
+      "lat": 18.9404925,
+      "lng": 72.8357856,
+      "scheduledArrival": "2026-09-17T00:10:00+05:30",
+      "arrivalDay": 2,
+      "platform": "14",
+      "distance": 582,
+      "actualArrival": "2026-09-17T00:47:00+05:30",
+      "delayArrival": 37
+    }
+  ],
   "tunnels": {
     "inside": null,
-    "ahead": {
-      "id": "dhamandevi-tunnel",
-      "no": "15",
-      "name": "Dhamandevi Tunnel",
-      "chordLengthM": 693.5,
-      "portalA": {
-        "lat": 17.571526,
-        "lng": 73.48036
-      },
-      "portalB": {
-        "lat": 17.575129,
-        "lng": 73.47502
-      },
-      "entryKm": 317.65,
-      "exitKm": 318.342,
-      "chainageLengthM": 692,
-      "polylineKm": [
-        317.661,
-        318.354
-      ],
-      "portalOffsetM": 0.4,
-      "positionalConfidence": "high",
-      "metresToEntry": 1740,
-      "minutesToEntry": 1.7
-    },
-    "passedCount": 54,
+    "ahead": null,
+    "passedCount": 69,
     "totalCount": 69,
     "list": [
       {
@@ -11607,9 +11291,9 @@
           "lat": 16.531575,
           "lng": 73.688158
         },
-        "entryKm": 158.559,
-        "exitKm": 158.871,
-        "chainageLengthM": 311.3,
+        "entryKm": 158.54,
+        "exitKm": 158.849,
+        "chainageLengthM": 309.2,
         "polylineKm": [
           158.578,
           158.887
@@ -11630,9 +11314,9 @@
           "lat": 16.552087,
           "lng": 73.673188
         },
-        "entryKm": 161.266,
-        "exitKm": 161.68,
-        "chainageLengthM": 414.3,
+        "entryKm": 161.227,
+        "exitKm": 161.639,
+        "chainageLengthM": 411.4,
         "polylineKm": [
           161.26,
           161.67
@@ -11653,12 +11337,12 @@
           "lat": 16.609207,
           "lng": 73.631608
         },
-        "entryKm": 168.211,
-        "exitKm": 169.425,
-        "chainageLengthM": 1213.8,
+        "entryKm": 168.183,
+        "exitKm": 169.405,
+        "chainageLengthM": 1222,
         "polylineKm": [
           168.2,
-          169.419
+          169.42
         ],
         "portalOffsetM": 0.4,
         "positionalConfidence": "high"
@@ -11676,11 +11360,11 @@
           "lat": 16.613873,
           "lng": 73.630069
         },
-        "entryKm": 169.828,
-        "exitKm": 169.967,
-        "chainageLengthM": 138.8,
+        "entryKm": 169.811,
+        "exitKm": 169.95,
+        "chainageLengthM": 139.7,
         "polylineKm": [
-          169.824,
+          169.825,
           169.964
         ],
         "portalOffsetM": 0.5,
@@ -11699,12 +11383,12 @@
           "lat": 16.625141,
           "lng": 73.62847
         },
-        "entryKm": 170.958,
-        "exitKm": 171.226,
-        "chainageLengthM": 267.7,
+        "entryKm": 170.948,
+        "exitKm": 171.218,
+        "chainageLengthM": 269.5,
         "polylineKm": [
           170.96,
-          171.228
+          171.229
         ],
         "portalOffsetM": 0,
         "positionalConfidence": "high"
@@ -11722,9 +11406,9 @@
           "lat": 16.673817,
           "lng": 73.622204
         },
-        "entryKm": 176.35,
-        "exitKm": 176.68,
-        "chainageLengthM": 329.5,
+        "entryKm": 176.336,
+        "exitKm": 176.664,
+        "chainageLengthM": 328.3,
         "polylineKm": [
           176.353,
           176.682
@@ -11745,12 +11429,12 @@
           "lat": 16.681535,
           "lng": 73.621261
         },
-        "entryKm": 177.214,
-        "exitKm": 177.545,
-        "chainageLengthM": 330.7,
+        "entryKm": 177.197,
+        "exitKm": 177.527,
+        "chainageLengthM": 329.6,
         "polylineKm": [
           177.216,
-          177.546
+          177.547
         ],
         "portalOffsetM": 0.3,
         "positionalConfidence": "high"
@@ -11768,12 +11452,12 @@
           "lat": 16.707245,
           "lng": 73.619665
         },
-        "entryKm": 179.994,
-        "exitKm": 180.414,
-        "chainageLengthM": 420.7,
+        "entryKm": 179.968,
+        "exitKm": 180.39,
+        "chainageLengthM": 421.9,
         "polylineKm": [
           179.994,
-          180.416
+          180.417
         ],
         "portalOffsetM": 0.8,
         "positionalConfidence": "high"
@@ -11791,12 +11475,12 @@
           "lat": 16.717783,
           "lng": 73.61996
         },
-        "entryKm": 181.282,
-        "exitKm": 181.582,
-        "chainageLengthM": 300.1,
+        "entryKm": 181.26,
+        "exitKm": 181.56,
+        "chainageLengthM": 301,
         "polylineKm": [
           181.288,
-          181.589
+          181.59
         ],
         "portalOffsetM": 0.6,
         "positionalConfidence": "high"
@@ -11814,9 +11498,9 @@
           "lat": 16.733514,
           "lng": 73.620231
         },
-        "entryKm": 182.604,
-        "exitKm": 183.322,
-        "chainageLengthM": 718.5,
+        "entryKm": 182.585,
+        "exitKm": 183.306,
+        "chainageLengthM": 720.6,
         "polylineKm": [
           182.617,
           183.339
@@ -11837,9 +11521,9 @@
           "lat": 16.749089,
           "lng": 73.620468
         },
-        "entryKm": 183.954,
-        "exitKm": 185.046,
-        "chainageLengthM": 1091.8,
+        "entryKm": 183.939,
+        "exitKm": 185.034,
+        "chainageLengthM": 1094.9,
         "polylineKm": [
           183.974,
           185.071
@@ -11860,9 +11544,9 @@
           "lat": 16.752418,
           "lng": 73.620509
         },
-        "entryKm": 185.127,
-        "exitKm": 185.414,
-        "chainageLengthM": 286.4,
+        "entryKm": 185.116,
+        "exitKm": 185.403,
+        "chainageLengthM": 287.3,
         "polylineKm": [
           185.153,
           185.441
@@ -11883,9 +11567,9 @@
           "lat": 16.758252,
           "lng": 73.620543
         },
-        "entryKm": 185.765,
-        "exitKm": 186.06,
-        "chainageLengthM": 294.7,
+        "entryKm": 185.756,
+        "exitKm": 186.052,
+        "chainageLengthM": 295.6,
         "polylineKm": [
           185.795,
           186.091
@@ -11906,9 +11590,9 @@
           "lat": 16.776501,
           "lng": 73.619718
         },
-        "entryKm": 186.333,
-        "exitKm": 188.083,
-        "chainageLengthM": 1750.1,
+        "entryKm": 186.326,
+        "exitKm": 188.081,
+        "chainageLengthM": 1755,
         "polylineKm": [
           186.365,
           188.124
@@ -11929,11 +11613,11 @@
           "lat": 16.794727,
           "lng": 73.618202
         },
-        "entryKm": 189.537,
-        "exitKm": 190.117,
-        "chainageLengthM": 580.3,
+        "entryKm": 189.536,
+        "exitKm": 190.115,
+        "chainageLengthM": 579.3,
         "polylineKm": [
-          189.58,
+          189.581,
           190.158
         ],
         "portalOffsetM": 0.2,
@@ -11952,11 +11636,11 @@
           "lat": 16.802668,
           "lng": 73.617611
         },
-        "entryKm": 190.775,
-        "exitKm": 191.007,
-        "chainageLengthM": 231.6,
+        "entryKm": 190.772,
+        "exitKm": 191.003,
+        "chainageLengthM": 231.2,
         "polylineKm": [
-          190.812,
+          190.813,
           191.043
         ],
         "portalOffsetM": 0.3,
@@ -11975,9 +11659,9 @@
           "lat": 16.817727,
           "lng": 73.616331
         },
-        "entryKm": 192.475,
-        "exitKm": 192.696,
-        "chainageLengthM": 220.4,
+        "entryKm": 192.469,
+        "exitKm": 192.689,
+        "chainageLengthM": 220,
         "polylineKm": [
           192.504,
           192.723
@@ -11998,9 +11682,9 @@
           "lat": 16.895253,
           "lng": 73.606335
         },
-        "entryKm": 197.365,
-        "exitKm": 201.416,
-        "chainageLengthM": 4051.2,
+        "entryKm": 197.358,
+        "exitKm": 201.413,
+        "chainageLengthM": 4055,
         "polylineKm": [
           197.375,
           201.416
@@ -12021,9 +11705,9 @@
           "lat": 16.900853,
           "lng": 73.604672
         },
-        "entryKm": 201.761,
-        "exitKm": 202.069,
-        "chainageLengthM": 307.9,
+        "entryKm": 201.758,
+        "exitKm": 202.066,
+        "chainageLengthM": 308.2,
         "polylineKm": [
           201.76,
           202.067
@@ -12044,9 +11728,9 @@
           "lat": 16.906673,
           "lng": 73.601494
         },
-        "entryKm": 202.142,
-        "exitKm": 202.801,
-        "chainageLengthM": 658.5,
+        "entryKm": 202.14,
+        "exitKm": 202.799,
+        "chainageLengthM": 659.2,
         "polylineKm": [
           202.14,
           202.797
@@ -12072,7 +11756,7 @@
         "chainageLengthM": 352.8,
         "polylineKm": [
           207.377,
-          207.729
+          207.73
         ],
         "portalOffsetM": 0.2,
         "positionalConfidence": "high"
@@ -12301,7 +11985,7 @@
         "exitKm": 240.359,
         "chainageLengthM": 623.2,
         "polylineKm": [
-          239.738,
+          239.739,
           240.361
         ],
         "portalOffsetM": 0.2,
@@ -12324,7 +12008,7 @@
         "exitKm": 241.183,
         "chainageLengthM": 618.2,
         "polylineKm": [
-          240.565,
+          240.566,
           241.183
         ],
         "portalOffsetM": 0,
@@ -12600,7 +12284,7 @@
         "exitKm": 268.248,
         "chainageLengthM": 1245.3,
         "polylineKm": [
-          266.989,
+          266.99,
           268.23
         ],
         "portalOffsetM": 0.8,
@@ -12619,9 +12303,9 @@
           "lat": 17.21863,
           "lng": 73.549104
         },
-        "entryKm": 270.656,
-        "exitKm": 271.022,
-        "chainageLengthM": 365.3,
+        "entryKm": 270.669,
+        "exitKm": 271.037,
+        "chainageLengthM": 368.3,
         "polylineKm": [
           270.647,
           271.015
@@ -12642,12 +12326,12 @@
           "lat": 17.22408,
           "lng": 73.551084
         },
-        "entryKm": 271.104,
-        "exitKm": 271.662,
-        "chainageLengthM": 557.4,
+        "entryKm": 271.121,
+        "exitKm": 271.682,
+        "chainageLengthM": 561.9,
         "polylineKm": [
           271.099,
-          271.66
+          271.661
         ],
         "portalOffsetM": 0.7,
         "positionalConfidence": "high"
@@ -12665,9 +12349,9 @@
           "lat": 17.308059,
           "lng": 73.532995
         },
-        "entryKm": 279.98,
-        "exitKm": 281.97,
-        "chainageLengthM": 1990.1,
+        "entryKm": 280.009,
+        "exitKm": 281.981,
+        "chainageLengthM": 1972,
         "polylineKm": [
           279.987,
           281.959
@@ -12688,9 +12372,9 @@
           "lat": 17.311837,
           "lng": 73.536112
         },
-        "entryKm": 282.04,
-        "exitKm": 282.51,
-        "chainageLengthM": 470.1,
+        "entryKm": 282.05,
+        "exitKm": 282.515,
+        "chainageLengthM": 465.8,
         "polylineKm": [
           282.028,
           282.494
@@ -12715,7 +12399,7 @@
         "exitKm": 287.417,
         "chainageLengthM": 1058.2,
         "polylineKm": [
-          286.343,
+          286.344,
           287.404
         ],
         "portalOffsetM": 0.4,
@@ -12808,7 +12492,7 @@
         "chainageLengthM": 692,
         "polylineKm": [
           317.661,
-          318.354
+          318.355
         ],
         "portalOffsetM": 0.4,
         "positionalConfidence": "high"
@@ -12853,7 +12537,7 @@
         "exitKm": 322.53,
         "chainageLengthM": 415.4,
         "polylineKm": [
-          322.135,
+          322.136,
           322.552
         ],
         "portalOffsetM": 0.2,
@@ -12946,7 +12630,7 @@
         "chainageLengthM": 580.7,
         "polylineKm": [
           337.796,
-          338.377
+          338.378
         ],
         "portalOffsetM": 0.3,
         "positionalConfidence": "high"
@@ -12987,9 +12671,9 @@
           "lat": 17.842138,
           "lng": 73.41632
         },
-        "entryKm": 357.404,
-        "exitKm": 357.747,
-        "chainageLengthM": 342.7,
+        "entryKm": 357.396,
+        "exitKm": 357.74,
+        "chainageLengthM": 344.2,
         "polylineKm": [
           357.414,
           357.757
@@ -13010,12 +12694,12 @@
           "lat": 17.893624,
           "lng": 73.386944
         },
-        "entryKm": 360.332,
-        "exitKm": 364.782,
-        "chainageLengthM": 4449.6,
+        "entryKm": 360.327,
+        "exitKm": 364.758,
+        "chainageLengthM": 4430.4,
         "polylineKm": [
           360.339,
-          364.76
+          364.761
         ],
         "portalOffsetM": 0.8,
         "positionalConfidence": "high"
@@ -13033,11 +12717,11 @@
           "lat": 17.930739,
           "lng": 73.382672
         },
-        "entryKm": 368.049,
-        "exitKm": 368.97,
-        "chainageLengthM": 921,
+        "entryKm": 368.017,
+        "exitKm": 368.942,
+        "chainageLengthM": 924.1,
         "polylineKm": [
-          368.013,
+          368.014,
           368.936
         ],
         "portalOffsetM": 0.3,
@@ -13056,9 +12740,9 @@
           "lat": 17.982172,
           "lng": 73.39512
         },
-        "entryKm": 374.747,
-        "exitKm": 374.924,
-        "chainageLengthM": 177.1,
+        "entryKm": 374.738,
+        "exitKm": 374.915,
+        "chainageLengthM": 177.7,
         "polylineKm": [
           374.72,
           374.897
@@ -13079,11 +12763,11 @@
           "lat": 17.99102,
           "lng": 73.40483
         },
-        "entryKm": 376.178,
-        "exitKm": 376.371,
-        "chainageLengthM": 192.8,
+        "entryKm": 376.174,
+        "exitKm": 376.368,
+        "chainageLengthM": 193.5,
         "polylineKm": [
-          376.153,
+          376.154,
           376.347
         ],
         "portalOffsetM": 0.2,
@@ -13141,15 +12825,20 @@
       "totalKm": 65.6
     },
     "axisBasis": "station-anchored",
-    "anchorCount": 87,
-    "axisMismatchM": 537,
+    "anchorCount": 76,
+    "axisMismatchM": 649,
     "source": "OpenStreetMap way geometry, supplied as CSV (konkan_railway_tunnels_mumbai_goa (1).csv)",
     "sourceIsOfficial": false,
     "caveat": "Tunnel positions and lengths are derived from OpenStreetMap way geometry, not official KRCL alignment data. Time-to-exit uses the schedule-derived block speed — there is no live speed in the data source."
   },
   "deadReckoning": {
     "active": false,
-    "staleSinceMs": 40546,
+    "staleSinceMs": 49644,
     "method": "live_signal"
+  },
+  "curvatureEtaUnavailable": {
+    "reason": "stripped-hazard-derived",
+    "detail": "The ETA on this request included the crowdsourced hazard layer, which is derived from a store a controller can change. It is recomputed on read rather than persisted (VERIFIED #21/#29).",
+    "modelReachable": true
   }
 }
