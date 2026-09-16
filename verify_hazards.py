@@ -108,8 +108,11 @@ out.rejectedPeer = conf.scoreIndependentReports(withRejected[0], withRejected);
 out.plausOn  = conf.scoreCorridorPlausibility(mk('p1', 'devA'));
 out.plausOff = conf.scoreCorridorPlausibility(
   mk('p2', 'devA', { lat: ON_CORRIDOR.lat, lng: ON_CORRIDOR.lng + 0.10 }));   // ~10.5 km east
+// Must clear corridorFarM (5000 m). lng+0.05 is only ~4963 m projected here —
+// still on the near→far ramp (score ≈0.01), which made H4 fail while looking
+// like a "~5.3 km → ~0" case. lng+0.055 lands past the far threshold.
 out.plausFar = conf.scoreCorridorPlausibility(
-  mk('p3', 'devA', { lat: ON_CORRIDOR.lat, lng: ON_CORRIDOR.lng + 0.05 }));   // ~5.3 km east
+  mk('p3', 'devA', { lat: ON_CORRIDOR.lat, lng: ON_CORRIDOR.lng + 0.055 }));  // ~5.8 km east
 out.plausNear = conf.scoreCorridorPlausibility(
   mk('p4', 'devA', { lat: ON_CORRIDOR.lat, lng: ON_CORRIDOR.lng + 0.02 }));   // ~2.1 km east
 
@@ -269,7 +272,7 @@ print(f"  weights sum to {sum(T['weights'].values()):.2f} over 5 components")
 # ────────────────────────────────────────────────────────────────────────────
 print("\n=== H4  plausibility falls to ~0 away from the track ===")
 for label, key in (("on the corridor", "plausOn"), ("~2.1 km off", "plausNear"),
-                   ("~5.3 km off", "plausFar"), ("~10.5 km off", "plausOff")):
+                   ("~5.8 km off", "plausFar"), ("~10.5 km off", "plausOff")):
     p = js[key]
     print(f"  {label:<18} offset {str(p['offsetM']):>7} m  score {p['score']}  basis {p['basis']}")
 on, near, far, off = js["plausOn"], js["plausNear"], js["plausFar"], js["plausOff"]
@@ -278,7 +281,7 @@ check(on["offsetM"] <= T["corridorNearM"],
       f"H4: the on-corridor fixture is {on['offsetM']} m out, beyond corridorNearM")
 # The far cases are the point of the check: ~0, or explicitly excluded — never a
 # middling score that would let a hoax kilometres from any track look plausible.
-for label, p in (("5.3 km", far), ("10.5 km", off)):
+for label, p in (("5.8 km", far), ("10.5 km", off)):
     check(p["score"] == 0 or p["score"] is None,
           f"H4: a report {label} from the track scored {p['score']} on plausibility")
 check(near["score"] is None or 0 < near["score"] < 1,
@@ -486,7 +489,9 @@ with tempfile.TemporaryDirectory() as td:
     oj = json.dumps(o, sort_keys=True)
     check(bj == oj, "H9: hazards=False changed the payload versus the default call")
     print(f"  payload identical outside `hazard_layer`: {bj == oj}  ({len(bj)} bytes compared)")
-    for key in ("running_min", "historical_delay_min", "dwell_min", "eta_min"):
+    # Key is `predicted_eta_min`, not `eta_min` — the latter is absent and used
+    # to KeyError the whole harness after H8 had already passed.
+    for key in ("running_min", "historical_delay_min", "dwell_min", "predicted_eta_min"):
         bv, ov = base["totals"].get(key), off["totals"].get(key)
         check(bv == ov, f"H9: totals.{key} moved {bv} → {ov} with hazards=False")
         print(f"    totals.{key:<22} {bv}")
@@ -495,16 +500,16 @@ with tempfile.TemporaryDirectory() as td:
     check(base["hazard_layer"]["enabled"] is False,
           "H9: the default path reports the hazard layer as enabled")
     # §4b's own gate numbers, asserted here so this file fails if the layer moves them.
-    check(abs(base["totals"]["eta_min"] - 615.7) < 0.15,
-          f"H9: block-mode ETA is {base['totals']['eta_min']}, §4b says 615.7")
-    print(f"  §4b block-mode ETA unchanged: {base['totals']['eta_min']} (expected 615.7)")
+    check(abs(base["totals"]["predicted_eta_min"] - 615.7) < 0.15,
+          f"H9: block-mode ETA is {base['totals']['predicted_eta_min']}, §4b says 615.7")
+    print(f"  §4b block-mode ETA unchanged: {base['totals']['predicted_eta_min']} (expected 615.7)")
 
     # ── H7b — prove the zero is wired, not broken (VERIFIED #9) ─────────────
     # With no confirmed hazards the contribution is legitimately 0.0, which is
     # indistinguishable from a dead layer.  Show it move.
     print("\n=== H7b  the zero layer is wired — a confirmed hazard moves the ETA ===")
-    eta_off = base["totals"]["eta_min"]
-    eta_on = with_hz["totals"]["eta_min"]
+    eta_off = base["totals"]["predicted_eta_min"]
+    eta_on = with_hz["totals"]["predicted_eta_min"]
     print(f"  no confirmed hazard : {eta_off:.1f} min")
     print(f"  one confirmed hazard: {eta_on:.1f} min   (+{eta_on - eta_off:.3f})")
     check(eta_on > eta_off, "H7b: a confirmed hazard did not move the ETA at all")
