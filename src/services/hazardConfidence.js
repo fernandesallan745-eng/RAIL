@@ -272,8 +272,18 @@ export function scoreIndependentReports(report, peers) {
   devices.add(report.deviceHash);
   const n = devices.size;
 
-  // Saturating, not linear: the 2nd independent witness is the big jump, the 5th
-  // adds little. 1 → 0.0, 2 → 0.6, 3 → 0.8, 4 → 0.9, 5+ → ~1.0
+  // Saturating, not linear — 1 → 0.0, 2 → 0.4, 3 → 0.667, 4 → 0.75, 5 → 0.8,
+  // approaching but never reaching 1. verify_hazards.py H5 pins these exact
+  // values, because this comment previously claimed 0.6/0.8/0.9/1.0 and every
+  // one of them was wrong: a docstring that drifts from its formula is worse
+  // than none, since it is the thing a reader checks the weights against.
+  //
+  // The `-0.1` at n === 2 damps the two-witness case ON PURPOSE, and the old
+  // comment had its rationale backwards. Two reports are the EASIEST corroboration
+  // to fake — one person with two phones, or two people travelling together who
+  // saw the same thing wrong — so a single corroborating device buys less than
+  // the 1-1/n curve alone would give it. The third independent device is the one
+  // that is hard to manufacture, and it is where the curve jumps most (+0.267).
   const score = n <= 1 ? 0 : Math.min(1, 1 - 1 / n - (n === 2 ? 0.1 : 0));
 
   return {
