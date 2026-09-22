@@ -43,6 +43,9 @@ if (config.nodeEnv !== 'test') {
 // admin console and the user map are one origin. That matters beyond tidiness: the model
 // service binds 127.0.0.1 by default, so a page served from THERE is unreachable from the
 // phone — serving it here is what makes the admin surface work on the iOS demo.
+// Redirect trailing slash on /admin/ so it resolves to /admin -> admin.html
+app.get('/admin/', (req, res) => res.redirect(301, '/admin'));
+
 const publicDir = path.join(__dirname, '../public');
 app.use(express.static(publicDir, { extensions: ['html'] }));
 
