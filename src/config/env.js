@@ -145,6 +145,11 @@ export const config = {
   // which drifts the moment the model runs on another port.
   modelApi: {
     baseUrl: (process.env.MODEL_API_URL || 'http://127.0.0.1:8000').replace(/\/+$/, ''),
+    // The corridor-wide conflict sweep evaluates all ~206 roster trains against each
+    // other — O(n²) timetable intersections. On Render's free tier (shared CPU) this
+    // routinely takes 30–60 s, so the old 15 s timeout was too tight. 90 s is generous
+    // headroom; tune it down once the instance is on a paid plan with dedicated CPU.
+    corridorTimeoutMs: intEnv('CORRIDOR_TIMEOUT_MS', 90000, 1000),
   },
   railRadar: {
     apiKey: apiKeys[0] || '',

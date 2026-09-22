@@ -782,7 +782,7 @@ export const getCorridorConflicts = async (req, res) => {
     }
     const upstream = await axios.get(
       `${config.modelApi.baseUrl}/corridor/conflicts`,
-      { params, timeout: 15000 }   // a full 206-train sweep, not a single lookup
+      { params, timeout: config.modelApi.corridorTimeoutMs }
     );
     res.json({ success: true, data: upstream.data });
   } catch (error) {

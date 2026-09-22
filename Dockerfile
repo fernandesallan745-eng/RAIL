@@ -19,6 +19,14 @@ RUN npm ci --omit=dev
 # Copy application source
 COPY . .
 
+# Vendor Leaflet into public/ from the npm-installed copy. The HTML loads from
+# public/vendor/leaflet/ first and falls back to the CDN — this ensures the
+# vendored copy exists in the image so the map works without network to unpkg.
+# No new download: uses the version already pinned in package.json.
+RUN mkdir -p public/vendor/leaflet && \
+    cp node_modules/leaflet/dist/leaflet.js  public/vendor/leaflet/leaflet.js && \
+    cp node_modules/leaflet/dist/leaflet.css public/vendor/leaflet/leaflet.css
+
 # Ensure production environment
 ENV NODE_ENV=production
 ENV PORT=5050
