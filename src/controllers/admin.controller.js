@@ -98,7 +98,7 @@ export const getModelRunState = async (req, res) => {
 export const getModelEta = async (req, res) => {
   try {
     const { trainNumber } = req.params;
-    const params = pickParams(req.query, ['date', 'weather', 'mode', 'max_speed', 'hazards']);
+    const params = pickParams(req.query, ['date', 'weather', 'mode', 'max_speed', 'hazards', 'quantile']);
     const upstream = await axios.get(
       `${config.modelApi.baseUrl}/eta/${trainNumber}`,
       { params, timeout: 20000 }   // curvature integration over ~1,200 vertices
@@ -127,6 +127,20 @@ export const getModelGeometry = async (req, res) => {
     const upstream = await axios.get(
       `${config.modelApi.baseUrl}/geometry/${trainNumber}`,
       { params, timeout: 15000 }
+    );
+    res.json({ success: true, data: upstream.data });
+  } catch (error) {
+    sendModelError(res, error, 'train');
+  }
+};
+
+/** GET /api/model/historical/:trainNumber — empirical delay distributions & training corpus audit. */
+export const getModelHistorical = async (req, res) => {
+  try {
+    const { trainNumber } = req.params;
+    const upstream = await axios.get(
+      `${config.modelApi.baseUrl}/historical/${trainNumber}`,
+      { timeout: 15000 }
     );
     res.json({ success: true, data: upstream.data });
   } catch (error) {

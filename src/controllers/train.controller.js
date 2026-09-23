@@ -380,7 +380,12 @@ export const getTrainLiveStatus = async (req, res, next) => {
       const fastApiUrl = `${config.modelApi.baseUrl}/eta/${trainNumber}`;
       try {
         const fastApiRes = await axios.get(fastApiUrl, {
-          params: { date: startDate, weather: req.query.weather || 'live', ...hazardParam(req) },
+          params: {
+            date: startDate,
+            weather: req.query.weather || 'live',
+            quantile: req.query.quantile || 'mean',
+            ...hazardParam(req),
+          },
           timeout: 2500,
         });
         if (fastApiRes.data) {
@@ -698,7 +703,12 @@ export const getTrainLiveStatus = async (req, res, next) => {
       try {
         const fastApiUrl = `${config.modelApi.baseUrl}/eta/${trainNumber}`;
         const fastApiRes = await axios.get(fastApiUrl, {
-          params: { date: startDate, weather: req.query.weather || 'live', ...hazardParam(req) },
+          params: {
+            date: startDate,
+            weather: req.query.weather || 'live',
+            quantile: req.query.quantile || 'mean',
+            ...hazardParam(req),
+          },
           timeout: 2500,
         });
         if (fastApiRes.data) {

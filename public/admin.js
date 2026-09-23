@@ -306,6 +306,7 @@
     if (!lastQuery) { meta.textContent = 'not run'; return; }
 
     const bits = [lastQuery.mode];
+    if (lastQuery.quantile && lastQuery.quantile !== 'mean') bits.push(lastQuery.quantile);
     if (lastQuery.weather && lastQuery.weather !== 'clear') bits.push(lastQuery.weather);
     if (lastQuery.date) bits.push(lastQuery.date);
 
@@ -313,7 +314,8 @@
       ($('qTrain')?.value || '').trim() !== lastQuery.train ||
       ($('qDate')?.value || '') !== lastQuery.date ||
       ($('qWeather')?.value || 'clear') !== lastQuery.weather ||
-      ($('qMode')?.value || 'vertex') !== lastQuery.mode;
+      ($('qMode')?.value || 'vertex') !== lastQuery.mode ||
+      ($('qQuantile')?.value || 'mean') !== (lastQuery.quantile || 'mean');
 
     meta.textContent = `${bits.join(' · ')}${drifted ? ' · stale' : ''}`;
     meta.title = drifted
@@ -394,8 +396,24 @@
     const cl = d.conflict_layer || {};
     const asm = cl.assumptions || {};
 
-    // ── Observed band ─────────────────────────────────────────────────────────
+    // ── Observed band & Calibrated Confidence Bands ──────────────────────────
     let bandHtml;
+    const cb = t.confidence_bands || {};
+    const cbInfo = cb.available ? `
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);font-size:0.8rem">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span><strong>80% Operational Band:</strong> ${fmt(cb.confidence_interval_80_eta[0])}–${fmt(cb.confidence_interval_80_eta[1])} min</span>
+          <span class="is-good" style="font-weight:600">±${fmt(cb.uncertainty_min_80)}m</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span><strong>95% Worst-Case Stress:</strong> ${fmt(cb.confidence_interval_95_eta[0])}–${fmt(cb.confidence_interval_95_eta[1])} min</span>
+          <span class="is-bad" style="font-weight:600">±${fmt(cb.uncertainty_min_95)}m</span>
+        </div>
+        <div style="color:#94a3b8;font-size:0.75rem">
+          Empirical quantiles (n=${cb.sample_count}): p50=${fmt(cb.p50_eta_min)}m &middot; mean=${fmt(cb.mean_eta_min)}m &middot; p80=${fmt(cb.p80_eta_min)}m &middot; p95=${fmt(cb.p95_eta_min)}m
+        </div>
+      </div>` : '';
+
     if (band.available && typeof band.band_low_min === 'number') {
       const lo = band.band_low_min;
       const hi = band.band_high_min;
@@ -418,10 +436,9 @@
             &nbsp;·&nbsp; <strong>n=${band.sample_count}</strong> observed runs,
             spread ${fmt(band.observed_spread_min, 0)} min about a mean of
             ${fmt(band.observed_mean_min)}.
-            <br/><em>Not a confidence interval</em> — n is far too small for a
-            meaningful sigma. The width is the measured spread; the centre is the
-            model's own prediction, so the band does not re-centre the evidence on
-            the model.
+            <br/><em>Empirical spread</em> — width is observed dated-run spread; centre is
+            model prediction (${esc(d.quantile || 'mean')} quantile).
+            ${cbInfo}
           </div>
         </div>`;
     } else {
@@ -472,6 +489,7 @@
 
     const chips = [
       d.curvature_mode ? `mode <strong>${esc(d.curvature_mode)}</strong>` : null,
+      d.quantile ? `quantile <strong>${esc(d.quantile)}</strong>` : null,
       d.geometry_basis ? `geometry <strong>${esc(d.geometry_basis)}</strong>` : null,
       `weather <strong>${esc(weather)}</strong>`,
       asm.loopDataIsOfficial === false ? 'loop data <strong>assumed</strong>' : null,
@@ -597,14 +615,16 @@
     const date = opts.date ?? ($('qDate')?.value || '');
     const weather = opts.weather ?? ($('qWeather')?.value || 'live');
     const mode = opts.mode ?? ($('qMode')?.value || 'vertex');
+    const quantile = opts.quantile ?? ($('qQuantile')?.value || 'mean');
     if (date) params.set('date', date);
     if (weather) params.set('weather', weather);
     if (mode) params.set('mode', mode);
+    if (quantile && quantile !== 'mean') params.set('quantile', quantile);
 
     // Record what this run was actually computed WITH, so the ladder below can
     // never be misread as belonging to different parameters — a 718.2 under
     // heavy_rain and a 612.8 under clear are both correct and look alike.
-    lastQuery = { train: String(trainNumber), date, weather, mode };
+    lastQuery = { train: String(trainNumber), date, weather, mode, quantile };
     syncQueryMeta();
 
     try {
@@ -644,7 +664,7 @@
     syncWxWarn();
 
     // Any selector moving makes the on-screen ladder stale until Run is pressed.
-    ['qTrain', 'qDate', 'qWeather', 'qMode'].forEach((id) => {
+    ['qTrain', 'qDate', 'qWeather', 'qMode', 'qQuantile'].forEach((id) => {
       const el = $(id);
       if (!el) return;
       el.addEventListener('change', syncQueryMeta);

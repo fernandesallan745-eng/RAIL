@@ -194,6 +194,25 @@ def geometry(
     }
 
 
+def _audit_historical_signal(train):
+    runs_by_date = eta_model.list_dated_runs(train)
+    runs, real, echo, modes = [], [], [], {}
+    for d, j in runs_by_date.items():
+        runs.append(d)
+        modes[d] = j.get("trackingMode")
+        halts = [s for s in j.get("route", []) if s.get("isHalt")]
+        if len(halts) >= 2 and halts[-1].get("delayArrival") is not None:
+            real.append(d)
+        else:
+            echo.append(d)
+    return {
+        "cached_dated_runs": runs,
+        "dates_with_real_delay_signal": real,
+        "zero_echo_dates": echo,
+        "tracking_mode_by_date": modes,
+    }
+
+
 @app.get("/health")
 def health(train: str = eta_model.DEFAULT_TRAIN):
     """Which dates are available in the local cache for `train`, and whether they
@@ -216,16 +235,11 @@ def health(train: str = eta_model.DEFAULT_TRAIN):
     misdiagnosed as down.  `cached_trains` is returned alongside so a caller can
     see which trains exist at all instead of inferring it from a date list.
     """
-    runs_by_date = eta_model.list_dated_runs(train)
-    runs, real, echo, modes = [], [], [], {}
-    for d, j in runs_by_date.items():
-        runs.append(d)
-        modes[d] = j.get("trackingMode")
-        halts = [s for s in j.get("route", []) if s.get("isHalt")]
-        if len(halts) >= 2 and halts[-1].get("delayArrival") is not None:
-            real.append(d)
-        else:
-            echo.append(d)
+    audit = _audit_historical_signal(train)
+    runs = audit["cached_dated_runs"]
+    real = audit["dates_with_real_delay_signal"]
+    echo = audit["zero_echo_dates"]
+    modes = audit["tracking_mode_by_date"]
 
     # Every train with any cached live snapshot, dated or not — the set /eta can serve.
     cached_trains = sorted({
@@ -334,7 +348,7 @@ def health(train: str = eta_model.DEFAULT_TRAIN):
     }
 
 
-def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=False):
+def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=False, quantile="mean"):
     """
     Build the full ETA payload.  Shared by GET /eta and the WebSocket push so the two
     can never drift apart — a dashboard that renders one shape over REST and a different
@@ -347,40 +361,18 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=Fals
     res = eta_model.compute_eta(train_number, date=date, weather=weather,
                                 max_speed=max_speed,
                                 conflicts=True, conflict_delay_min=0.0,
-                                hazards=hazards)
+                                hazards=hazards, quantile=quantile)
     t = res["totals"]
 
     # 'vertex' mode swaps the physics layer for per-vertex integration.
-    #
-    # Geometry is resolved PER BLOCK, not per train (a train can hold the shared
-    # corridor polyline for its northern blocks and nothing for its southern
-    # ones), so `vertex_curve_running_min` is None on exactly the blocks that
-    # have no alignment.  Fall back to `running_min` per segment rather than
-    # per train: summing a list containing None raises, and switching the whole
-    # train to block mode because one block is unresolved would throw away real
-    # curvature on the blocks that do resolve.
     has_geometry = res.get("curvature_available", False)
     if mode == "vertex" and has_geometry:
-        # Hazard restrictions were charged against the BLOCK-mode speed inside
-        # compute_eta.  Vertex mode runs each block slightly faster (only the
-        # sub-segments that actually curve are capped), and a train that is going
-        # faster loses MORE minutes to a speed restriction, not fewer.  So the
-        # penalty is re-charged here against the speed this mode actually reports.
-        # Under clear weather the two differ by ~0.001 min; under heavy_rain the
-        # modes diverge by 13 min (§6 table) and the difference is real.  Mixing a
-        # block-derived penalty into a vertex total is exactly the like-for-like
-        # error VERIFIED #27 had to untangle.
         hz_spans = (res.get("hazard_layer") or {}).get("spans") or []
         for s in res["segments"]:
             applied = s["vertex_curve_running_min"]
             if applied is None:
                 applied = s["running_min"]
             s["running_min_applied"] = applied
-            # `effective_speed_kmh` is the BLOCK-mode speed: the block's sharpest
-            # radius applied to its whole length.  In vertex mode only the sub-segments
-            # that actually curve are capped, so the block's mean speed is higher.
-            # Publish that mean too, or distance/running_min_applied won't reconcile
-            # with the speed field and the breakdown looks self-contradictory.
             s["effective_speed_applied_kmh"] = (
                 round(s["distance_km"] / (applied / 60.0), 1) if applied > 0 else None
             )
@@ -407,6 +399,16 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=Fals
         t["gap_vs_schedule_min"] = (
             round(total - t["scheduled_duration_min"], 1) if t["scheduled_duration_min"] else None
         )
+
+        cb = t.get("confidence_bands") or {}
+        if cb.get("available"):
+            base_v = vrun + t["dwell_min"] + t["conflict_hold_min"] + vhaz
+            cb["p50_eta_min"] = round(base_v + cb["p50_delay_min"], 1)
+            cb["mean_eta_min"] = round(base_v + cb["mean_delay_min"], 1)
+            cb["p80_eta_min"] = round(base_v + cb["p80_delay_min"], 1)
+            cb["p95_eta_min"] = round(base_v + cb["p95_delay_min"], 1)
+            cb["confidence_interval_80_eta"] = [cb["p50_eta_min"], cb["p80_eta_min"]]
+            cb["confidence_interval_95_eta"] = [cb["p50_eta_min"], cb["p95_eta_min"]]
     else:
         for s in res["segments"]:
             s["running_min_applied"] = s["running_min"]
@@ -490,13 +492,28 @@ def get_eta(
     mode: str = Query("vertex", description="curvature application: 'vertex' (physically precise, default) or 'block' (conservative upper bound)"),
     max_speed: float = Query(eta_model.MAX_SPEED_KMH, description="max operating speed km/h"),
     hazards: bool = Query(False, description="apply speed restrictions from HUMAN-CONFIRMED crowdsourced hazard reports (off by default; false reproduces the documented §4b numbers exactly)"),
+    quantile: str = Query("mean", description="historical delay quantile: 'mean' (default expected), 'p50' / 'median', 'p80' (conservative buffer), 'p95' (stress/worst-case buffer)"),
 ):
     """Per-segment breakdown and total predicted ETA."""
-    if date:
+    if date and isinstance(date, str):
         try:
             datetime.strptime(date, "%Y-%m-%d")
         except ValueError:
             raise HTTPException(422, detail=f"date must be YYYY-MM-DD, got {date!r}")
+    else:
+        date = None
+
+    if not isinstance(weather, str):
+        weather = "clear"
+    if not isinstance(mode, str):
+        mode = "vertex"
+    if not isinstance(max_speed, (int, float)):
+        max_speed = eta_model.MAX_SPEED_KMH
+    if not isinstance(hazards, bool):
+        hazards = False
+    if not isinstance(quantile, str):
+        quantile = "mean"
+
     valid_weather = list(curvature.WEATHER_SPEED_FACTOR) + ["live"]
     if weather not in valid_weather:
         raise HTTPException(
@@ -506,8 +523,15 @@ def get_eta(
     if mode not in ("block", "vertex"):
         raise HTTPException(422, detail="mode must be 'block' or 'vertex'")
 
+    valid_quantiles = ("mean", "p50", "median", "p80", "p95")
+    if quantile not in valid_quantiles:
+        raise HTTPException(
+            422,
+            detail=f"quantile must be one of {valid_quantiles}, got {quantile!r}",
+        )
+
     try:
-        res = _eta_payload(train_number, date, weather, mode, max_speed, hazards)
+        res = _eta_payload(train_number, date, weather, mode, max_speed, hazards, quantile=quantile)
     except FileNotFoundError as e:
         raise HTTPException(
             404,
@@ -517,6 +541,27 @@ def get_eta(
             ),
         )
     return JSONResponse(res, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/historical/{train_number}")
+def get_historical_delay_corpus(train_number: str):
+    """
+    Empirical segment delay distributions and training corpus audit.
+    Returns sample count N, valid dated runs, zero-echo dates, and per-segment
+    delay distribution percentiles (mean, p50, p80, p95, sigma).
+    """
+    audit = _audit_historical_signal(train_number)
+    distributions = eta_model.segment_delay_distributions(train_number)
+    return JSONResponse({
+        "train_number": train_number,
+        "sample_count": len(audit["dates_with_real_delay_signal"]),
+        "dated_runs_total": len(audit["cached_dated_runs"]),
+        "dates_with_real_delay_signal": audit["dates_with_real_delay_signal"],
+        "zero_echo_dates": audit["zero_echo_dates"],
+        "segment_distributions": distributions,
+        "quantiles_supported": ["mean", "p50", "median", "p80", "p95"],
+        "methodology": "Empirical dated runs differenced per halt segment; rank-linear quantile interpolation",
+    }, headers={"Cache-Control": "no-store"})
 
 
 @app.get("/conflicts/{train_number}")

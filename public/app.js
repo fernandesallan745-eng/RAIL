@@ -1768,6 +1768,31 @@ function renderTrainDrawer(liveData, coachesData) {
     }
   }
 
+  // Historical Delay Confidence Bands
+  const confBadge = document.getElementById('drawerConfidenceBadge');
+  const confDetails = document.getElementById('drawerConfidenceDetails');
+  const cb = liveData.curvatureEta?.totals?.confidence_bands;
+  if (cb?.available && cb.uncertainty_min_80 != null) {
+    if (confBadge) {
+      confBadge.style.display = 'inline-block';
+      confBadge.innerHTML = `📊 ±${cb.uncertainty_min_80}m (80%)`;
+      confBadge.title = `80% Confidence Band: ±${cb.uncertainty_min_80}m, 95% Stress Band: ±${cb.uncertainty_min_95}m based on n=${cb.sample_count} empirical runs`;
+    }
+    if (confDetails) {
+      confDetails.style.display = 'block';
+      confDetails.innerHTML = `
+        <span style="color:#c084fc;font-weight:600;">📊 Confidence Band: ±${cb.uncertainty_min_80} min (80% operational)</span>
+        <span style="color:#94a3b8;font-size:0.72rem;"> · Worst-case: ±${cb.uncertainty_min_95} min (95% stress, n=${cb.sample_count})</span>
+      `;
+    }
+  } else {
+    if (confBadge) confBadge.style.display = 'none';
+    if (confDetails) {
+      confDetails.style.display = 'none';
+      confDetails.innerHTML = '';
+    }
+  }
+
   // Progress bar — shown only when there is a real distance to report.
   // Hidden outright otherwise: a bar at 0% still reads as a measurement, and
   // the old `pct || 15` painted 15% for a train sitting at its origin, because

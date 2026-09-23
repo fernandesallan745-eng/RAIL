@@ -389,6 +389,14 @@
             <option value="vertex" selected>vertex (default, per-vertex)</option>
             <option value="block">block (conservative bound)</option>
           </select>
+
+          <label for="qQuantile">Distribution</label>
+          <select id="qQuantile" class="admin-input">
+            <option value="mean" selected>mean (expected)</option>
+            <option value="p50">p50 (median)</option>
+            <option value="p80">p80 (conservative buffer)</option>
+            <option value="p95">p95 (worst-case stress)</option>
+          </select>
         </div>
         <button id="qRun" class="admin-btn admin-btn-primary" type="button">
           Run model

@@ -20,6 +20,7 @@ import {
   getModelHealth,
   getModelGeometry,
   getModelRunState,
+  getModelHistorical,
   flushGatewayCache,
 } from '../controllers/admin.controller.js';
 import {
@@ -82,6 +83,7 @@ router.get('/lookup/categories', cacheMiddleware(86400), getTrainCategories);
 router.get('/model/health', cacheMiddleware(60), getModelHealth);
 router.get('/model/eta/:trainNumber', cacheMiddleware(300), getModelEta);
 router.get('/model/geometry/:trainNumber', cacheMiddleware(config.cache.staticTtl), getModelGeometry);
+router.get('/model/historical/:trainNumber', cacheMiddleware(300), getModelHistorical);
 // Run-day calendar for one train on one date. Deliberately a SHORT TTL, not the
 // 24 h static one: the answer is date-specific, and a day-long cache would keep
 // serving yesterday's "runs today" across midnight — the same staleness the

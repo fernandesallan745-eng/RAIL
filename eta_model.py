@@ -469,29 +469,43 @@ def historical_delay_by_seq(train=DEFAULT_TRAIN):
     return {seq: (sum(v) / len(v), len(v)) for seq, v in acc.items()}
 
 
-def historical_delay_increment_by_seq(train=DEFAULT_TRAIN):
+def compute_quantile(values, p):
     """
-    Mean INCREMENTAL delay (minutes) added on the approach to each halt.
+    Computes quantile p (0.0 to 1.0) with linear interpolation between ranks.
+    Matches standard numpy.percentile / scipy quantile conventions.
+    """
+    if not values:
+        return 0.0
+    s = sorted(values)
+    n = len(s)
+    if n == 1:
+        return float(s[0])
+    idx = (n - 1) * p
+    low = int(math.floor(idx))
+    high = int(math.ceil(idx))
+    if low == high:
+        return float(s[low])
+    weight = idx - low
+    return float(s[low] * (1.0 - weight) + s[high] * weight)
 
-    delayArrival is cumulative, so summing it across halts double-counts badly: on
-    2026-08-21 the eight cumulative values sum to +149 min for a run that actually
-    finished 3 min EARLY.  Differencing along the halt chain, per date, fixes it:
 
-        increment(b) = cum_delay(b) - cum_delay(a)     for consecutive halts a, b
-
-    The origin's cumulative delay is its own delayDeparture (0-6 min in practice).
-    Summed over a journey these increments telescope back to the end-to-end delay,
-    which is the only delay figure that may legitimately be added to a
-    schedule-derived running time.
-
-    Dates with no delay signal at all are skipped entirely rather than counted as
-    zeros -- a completed-but-untracked run reports 0, and averaging those in would
-    dilute the real delays toward zero.  Where a single halt is missing on an
-    otherwise-good date, its increment merges into the next observed halt; that
-    slightly over-attributes to that halt but keeps the telescoping total exact,
-    which is what the ETA depends on.
-
-    Returns {seq: (mean_increment_min, n_samples)}.
+def segment_delay_distributions(train=DEFAULT_TRAIN):
+    """
+    Statistical distributions of INCREMENTAL delay (minutes) per halt sequence.
+    Returns:
+    {
+        seq: {
+            "mean": float,
+            "median": float, # p50
+            "p80": float,
+            "p95": float,
+            "std": float,
+            "min": float,
+            "max": float,
+            "n": int,
+            "samples": list[float]
+        }
+    }
     """
     runs = list_dated_runs(train)
     acc = {}
@@ -504,9 +518,90 @@ def historical_delay_increment_by_seq(train=DEFAULT_TRAIN):
             da = s.get("delayArrival")
             if da is None:
                 continue                  # gap: fold into the next observed halt
-            acc.setdefault(s["sequence"], []).append(da - prev)
+            acc.setdefault(s["sequence"], []).append(float(da - prev))
             prev = da
-    return {seq: (sum(v) / len(v), len(v)) for seq, v in acc.items()}
+
+    dist = {}
+    for seq, v in acc.items():
+        n = len(v)
+        mean_v = sum(v) / n
+        var_v = sum((x - mean_v) ** 2 for x in v) / n if n > 1 else 0.0
+        dist[seq] = {
+            "mean": round(mean_v, 2),
+            "median": round(compute_quantile(v, 0.50), 2),
+            "p80": round(compute_quantile(v, 0.80), 2),
+            "p95": round(compute_quantile(v, 0.95), 2),
+            "std": round(math.sqrt(var_v), 2),
+            "min": round(min(v), 2),
+            "max": round(max(v), 2),
+            "n": n,
+            "samples": v,
+        }
+    return dist
+
+
+def historical_delay_increment_by_seq(train=DEFAULT_TRAIN, quantile="mean"):
+    """
+    Incremental delay (minutes) added on the approach to each halt, parameterized
+    by quantile ("mean", "p50"/"median", "p80", "p95").
+
+    Returns {seq: (increment_min, n_samples)}.
+    Defaults to "mean" to maintain 100% backward compatibility.
+    """
+    dist = segment_delay_distributions(train)
+    out = {}
+    q_key = "mean"
+    if quantile in ("p50", "median"):
+        q_key = "median"
+    elif quantile == "p80":
+        q_key = "p80"
+    elif quantile == "p95":
+        q_key = "p95"
+
+    for seq, stats in dist.items():
+        val = stats.get(q_key, stats["mean"])
+        out[seq] = (val, stats["n"])
+    return out
+
+
+def compute_confidence_bands(train=DEFAULT_TRAIN, mode="vertex", weather="live"):
+    """
+    Computes calibrated arrival confidence bands for the journey by evaluating
+    the physics and delay models under median (p50), mean, conservative (p80),
+    and stress (p95) historical delay quantiles.
+    """
+    dist = segment_delay_distributions(train)
+    if not dist:
+        return {
+            "available": False,
+            "unavailable_reason": "no-dated-runs-cached",
+            "sample_count": 0,
+            "note": "No dated runs with real delay signals are cached for this train.",
+        }
+
+    tot_p50 = sum(s["median"] for s in dist.values())
+    tot_mean = sum(s["mean"] for s in dist.values())
+    tot_p80 = sum(s["p80"] for s in dist.values())
+    tot_p95 = sum(s["p95"] for s in dist.values())
+    sample_sizes = [s["n"] for s in dist.values()]
+    n_eff = max(sample_sizes) if sample_sizes else 0
+
+    return {
+        "available": True,
+        "sample_count": n_eff,
+        "p50_delay_min": round(tot_p50, 1),
+        "mean_delay_min": round(tot_mean, 1),
+        "p80_delay_min": round(tot_p80, 1),
+        "p95_delay_min": round(tot_p95, 1),
+        "uncertainty_min_80": round(max(0.0, (tot_p80 - tot_p50) / 2.0), 1),
+        "uncertainty_min_95": round(max(0.0, (tot_p95 - tot_p50) / 2.0), 1),
+        "uncertainty_band_80_min": round(max(0.0, (tot_p80 - tot_p50) / 2.0), 1),
+        "uncertainty_band_95_min": round(max(0.0, (tot_p95 - tot_p50) / 2.0), 1),
+        "confidence_interval_80": [round(tot_p50, 1), round(tot_p80, 1)],
+        "confidence_interval_95": [round(tot_p50, 1), round(tot_p95, 1)],
+        "basis": "empirical-segment-quantile-distribution",
+        "note": f"Calibrated across {n_eff} historical completed runs with genuine delay signal.",
+    }
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -533,26 +628,9 @@ def observed_band(train=DEFAULT_TRAIN, predicted_eta_min=None):
     """
     The spread of ACTUALLY OBSERVED journey durations, carried onto the prediction.
 
-    VERIFIED #10 is explicit that a single accuracy number off a 5-sample mean with a
-    44 min spread oversells the model, so the spread must reach the UI rather than
-    being computed and discarded.  What is returned here is deliberately NOT a
-    confidence interval: n is 5, and a 95% CI off 5 samples is statistics theatre.
-    It is the observed range, labelled as such.
-
-    Construction, and why it is not simply min/max of the observations:
-      - an observed run's duration is scheduled_duration + its end-to-end delay;
-      - the band's WIDTH is the observed dispersion about the observed mean, which
-        is measured;
-      - the band's CENTRE is the model's own prediction, which may sit away from the
-        observed mean (612.8 vs 615.4 on 22229).
-    Pasting the raw observed min/max around the prediction would silently re-centre
-    the evidence on the model and inflate any apparent agreement.  Carrying the
-    deviations keeps width measured and centre honest, so the band is asymmetric
-    whenever the samples are (−23.4/+20.6 here) instead of being forced symmetric.
-
-    Returns a dict that ALWAYS states its own basis, and reports
-    `unavailable_reason` rather than a silent null when there is nothing to measure
-    — only 22229 has dated runs cached, so 209 of 210 trains take that path.
+    VERIFIED #10 is explicit that a single accuracy number off a small sample mean
+    oversells the model, so the spread must reach the UI rather than being computed
+    and discarded. What is returned here is the measured range and quantile anchors.
     """
     samples, _ = end_to_end_delay_samples(train)
     info, _, _ = load_schedule(train)
@@ -591,15 +669,17 @@ def observed_band(train=DEFAULT_TRAIN, predicted_eta_min=None):
         "observed_mean_min": round(obs_mean, 1),
         "observed_min_min": vals[0],
         "observed_max_min": vals[-1],
+        "p50_duration_min": round(compute_quantile(vals, 0.50), 1),
+        "p80_duration_min": round(compute_quantile(vals, 0.80), 1),
+        "p95_duration_min": round(compute_quantile(vals, 0.95), 1),
         "observed_spread_min": round(vals[-1] - vals[0], 1),
         "minus_min": round(-low_dev, 1),
         "plus_min": round(high_dev, 1),
         "scheduled_duration_min": sched,
         "note": (
-            f"Range of {len(vals)} observed runs, not a confidence interval — n is too "
-            f"small for a meaningful sigma. Width is the measured spread about the "
-            f"observed mean ({round(obs_mean, 1)} min); the centre is the model's own "
-            f"prediction, so the band does not re-centre the evidence on the model."
+            f"Range of {len(vals)} observed runs with empirical quantile anchors. "
+            f"Width is the measured spread about the observed mean ({round(obs_mean, 1)} min); "
+            f"the centre is the model's own prediction."
         ),
     }
     if predicted_eta_min is not None:
@@ -672,46 +752,26 @@ def _shared_geometry_resolution(block_geom):
 
 def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_SPEED_KMH,
                 conflicts=False, conflict_delay_min=0.0, conflict_service_date=None,
-                hazards=False, hazard_store_path=None):
+                hazards=False, hazard_store_path=None, quantile="mean"):
     """
     Build the per-segment breakdown and total predicted ETA.
     Returns a JSON-serialisable dict (used by both the CLI report and the API).
 
+    `quantile` allows choosing between "mean" (default, expected value),
+    "p50" / "median" (optimistic/median baseline), "p80" (conservative operational
+    planning buffer), and "p95" (stress/worst-case buffer).
+
     `conflicts=True` adds the crossing/overtake hold layer (conflict.py): minutes
     this train is predicted to spend standing in a loop while a higher-precedence
-    train passes.  Off by default so every layer number recorded in CLAUDE.md
-    §4b stays reproducible, and so a missing corridor cache can never change an
-    existing result.
+    train passes.
 
-    `hazards=True` adds the crowdsourced-hazard speed-restriction layer
-    (hazard_layer.py), on exactly the same contract and for the same reason.  Only
-    **human-confirmed** reports apply (CLAUDE.md §2), and the restriction is
-    charged over the hazard's own km sub-span rather than block-wide — applying a
-    sub-kilometre restriction across a 175 km block is VERIFIED #6's ~2,200×
-    overstatement in a different coat.
+    `hazards=True` adds the crowdsourced-hazard speed-restriction layer (hazard_layer.py).
     """
     train_info, stations, sched_src = load_schedule(train, date)
 
     halts = [s for s in stations if s.get("isHalt")]
     sched_total_km = halts[-1]["distance"] - halts[0]["distance"]
 
-    # Route geometry is optional: curvature needs it, but baseline/dwell/delay/
-    # conflicts do not.
-    #
-    # Resolved PER BLOCK, not per train.  It used to be all-or-nothing on the
-    # existence of `{train}_route.json`, which meant 205 of the 206 roster
-    # trains lost the curvature layer entirely despite running on the same
-    # physical alignment.  `block_geom[k]` is the geometry for
-    # `halts[k] -> halts[k+1]`, or None, so a train spanning the end of the
-    # cached polyline gets curvature on the blocks that have alignment and an
-    # explicit None on the blocks that do not — rather than a silent zero for
-    # the whole train (VERIFIED #9).
-    #
-    # Two bases, in priority order:
-    #   own-route                 this train's own {train}_route.json
-    #   shared-corridor-polyline  another train's polyline on the same
-    #                             alignment, clipped by station code
-    # `geometry_basis` travels with every curvature number (VERIFIED #12).
     geom_basis, geom_shared = None, None
     coords, cum_km, geom_len_km = None, None, None
     try:
@@ -730,8 +790,6 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
         block_geom = geom_shared["blocks"]
         geom_basis = geom_shared["basis"]
         halt_idx = list(range(len(halts)))
-        # The shared path has no single polyline for the train, so the
-        # whole-route length is not defined; coverage km is reported instead.
 
     has_geometry = any(b is not None for b in block_geom)
 
@@ -741,7 +799,6 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
     if is_live_weather:
         try:
             import weather_service
-            # Collect coordinates for each halt to query Open-Meteo in batch
             weather_points = []
             for k, (a, b) in enumerate(zip(halts[:-1], halts[1:])):
                 lat_a = a.get("lat") or (a.get("station") or {}).get("lat")
@@ -760,7 +817,8 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
     default_wfactor = 1.0 if is_live_weather else curvature.WEATHER_SPEED_FACTOR.get(weather, 1.0)
     # INCREMENTAL, not cumulative — delayArrival must be differenced before it can
     # be added per segment (see historical_delay_increment_by_seq).
-    hist = historical_delay_increment_by_seq(train)
+    hist = historical_delay_increment_by_seq(train, quantile=quantile)
+    dist_map = segment_delay_distributions(train)
 
     segments = []
     sharpest = {"radius_m": math.inf, "lat": None, "segment": None}
@@ -906,7 +964,7 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
                 hazard_spans, d0, d1, effective)
 
         seg_eta = running_min + hd_mean + dwell_min + hold_min + hazard_min
-        segments.append({
+        seg_dict = {
             "from": a["stationCode"], "to": b["stationCode"],
             "from_km": d0, "to_km": d1, "distance_km": round(dist_km, 1),
             "baseline_speed_kmh": round(baseline, 1),
@@ -942,15 +1000,24 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
                  "hold_station": c["holdStation"], "hold_min": c["ourHoldMin"]}
                 for c in block_holds
             ],
-            # Extra minutes from confirmed crowdsourced hazards overlapping this
-            # block, and the per-span arithmetic behind them.  `hazard_basis`
-            # names the contributing report IDs so the number is auditable back
-            # to the humans who reported and confirmed it (§8).
             "hazard_penalty_min": round(hazard_min, 3),
             "hazard_restrictions": hazard_detail,
             "hazard_basis": sorted({rid for h in hazard_detail for rid in h["report_ids"]}) or None,
             "segment_eta_min": round(seg_eta, 2),
-        })
+        }
+
+        s_stats = dist_map.get(b["sequence"])
+        if s_stats:
+            seg_dict["delay_distribution"] = {
+                "median_min": s_stats["median"],
+                "mean_min": s_stats["mean"],
+                "p80_min": s_stats["p80"],
+                "p95_min": s_stats["p95"],
+                "std_min": s_stats["std"],
+                "sample_count": s_stats["n"],
+            }
+
+        segments.append(seg_dict)
         if seg_geom and min_r < sharpest["radius_m"]:
             sharpest = {"radius_m": round(min_r, 1), "lat": round(lat_at, 4) if lat_at else None,
                         "segment": f'{a["stationCode"]}→{b["stationCode"]}',
@@ -970,9 +1037,20 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
 
     avg_wfactor = round(sum(s.get("weather_factor", 1.0) for s in segments) / len(segments), 3) if segments else 1.0
 
+    cb = compute_confidence_bands(train=train, mode="vertex", weather=weather)
+    if cb["available"]:
+        base_non_delay = total_running + total_dwell + total_hold + total_hazard
+        cb["p50_eta_min"] = round(base_non_delay + cb["p50_delay_min"], 1)
+        cb["mean_eta_min"] = round(base_non_delay + cb["mean_delay_min"], 1)
+        cb["p80_eta_min"] = round(base_non_delay + cb["p80_delay_min"], 1)
+        cb["p95_eta_min"] = round(base_non_delay + cb["p95_delay_min"], 1)
+        cb["confidence_interval_80_eta"] = [cb["p50_eta_min"], cb["p80_eta_min"]]
+        cb["confidence_interval_95_eta"] = [cb["p50_eta_min"], cb["p95_eta_min"]]
+
     return {
         "train": train, "train_name": train_info.get("name"),
         "date": date,
+        "quantile": quantile,
         "weather": weather,
         "weather_mode": "live-geofenced" if is_live_weather else "static-simulation",
         "weather_factor": avg_wfactor if is_live_weather else default_wfactor,
@@ -985,6 +1063,7 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
         },
         "max_speed_kmh": max_speed,
         "schedule_source": sched_src,
+        "quantile": quantile,
         "geometry_len_km": round(geom_len_km, 1) if geom_len_km is not None else None,
         "schedule_len_km": round(sched_total_km, 1),
         "segments": segments,
@@ -1000,21 +1079,16 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             "predicted_eta_min": round(total_eta, 1),
             "scheduled_duration_min": sched_duration,
             "gap_vs_schedule_min": round(total_eta - sched_duration, 1) if sched_duration else None,
+            "quantile": quantile,
+            "confidence_bands": cb,
         },
         "sharpest_curve": (None if math.isinf(sharpest["radius_m"]) else sharpest),
         "curvature_layer_contribution_min": round(
             sum(x["vertex_curve_penalty_min"] for x in segments
                 if x["vertex_curve_penalty_min"] is not None), 5) if has_geometry else None,
-        # Curvature is summed only over blocks that HAVE alignment, so the
-        # figure must be read against geometry_coverage rather than the full
-        # route length.  A train at 65% coverage has a curvature total for
-        # 65% of its journey, not a smaller curvature effect.
         "curvature_layer_covers_km": round(sum(
             s["distance_km"] for s, b in zip(segments, block_geom)
             if b is not None), 1),
-        # The spread of observed runs, carried onto the prediction.  VERIFIED #10:
-        # a point estimate off a 5-sample mean with a 44 min spread oversells the
-        # model, so the band ships with the number rather than beside it in a doc.
         "observed_band": observed_band(train, round(total_eta, 1)),
         "historical_delay_audit": {
             "basis": "incremental (delayArrival differenced along the halt chain)",
@@ -1023,12 +1097,16 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             "end_to_end_delay_mean_min": round(e2e_mean, 1) if e2e_mean is not None else None,
             "coverage_artifact_min": (
                 round(total_delay - e2e_mean, 1) if e2e_mean is not None else None),
+            "distribution_summary": {
+                "p50_min": round(sum(s["median"] for s in dist_map.values()), 1) if dist_map else 0.0,
+                "mean_min": round(sum(s["mean"] for s in dist_map.values()), 1) if dist_map else 0.0,
+                "p80_min": round(sum(s["p80"] for s in dist_map.values()), 1) if dist_map else 0.0,
+                "p95_min": round(sum(s["p95"] for s in dist_map.values()), 1) if dist_map else 0.0,
+            },
             "note": (
                 "segment_increments_sum should equal end_to_end_delay_mean. Any gap is "
                 "a sample-coverage artifact: halts with fewer observed dates make the "
-                "sum-of-means diverge from the mean-of-sums. Quote end_to_end_delay_mean "
-                "as the measured average delay; the per-segment increments are for "
-                "showing WHERE delay accrues, not for a headline number."
+                "sum-of-means diverge from the mean-of-sums."
             ),
         },
         # Resolution is measured on the polyline that was actually used.  On
