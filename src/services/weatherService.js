@@ -78,7 +78,10 @@ class WeatherService {
           current: 'temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m,visibility',
           timezone: 'auto',
         },
-        timeout: 2500,
+        headers: {
+          'User-Agent': 'RailSync-GATI/1.0 (https://rail-33j3.onrender.com)',
+        },
+        timeout: 5000,
       });
 
       if (resp.status === 200 && resp.data?.current) {
@@ -125,11 +128,12 @@ class WeatherService {
         return data;
       }
     } catch (err) {
-      // Gracefully fall back without breaking the train live status call
+      console.warn(`[WeatherService] Open-Meteo query failed (${lat}, ${lng}): ${err.message}`);
     }
 
     const fb = this.fallback('unreachable');
-    this.cache.set(key, { timestamp: Date.now(), data: fb });
+    // Short failure cache (15 seconds) so transient hiccups don't freeze fallback for 15 minutes
+    this.cache.set(key, { timestamp: Date.now() - CACHE_TTL_MS + 15000, data: fb });
     return fb;
   }
 }

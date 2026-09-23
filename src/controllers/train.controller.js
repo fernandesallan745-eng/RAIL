@@ -356,8 +356,8 @@ export const getTrainLiveStatus = async (req, res, next) => {
     // 2.1 Calculate instantaneous GPS velocity, Kalman smoothing & horizon speed blending
     const curLoc = liveData.currentLocation || {};
     const curCoords = curLoc.coordinates || {};
-    const curLat = Number(curCoords.lat ?? curLoc.lat);
-    const curLng = Number(curCoords.lng ?? curLoc.lng);
+    const curLat = Number(liveData.lat ?? curCoords.lat ?? curLoc.lat);
+    const curLng = Number(liveData.lng ?? curCoords.lng ?? curLoc.lng);
     const curTime = liveData.lastUpdatedAt || curLoc.lastUpdatedAt || new Date().toISOString();
     const schedSpeed = Number(curLoc.speedToNextStationKmph || curLoc.speedKmh || liveData.train?.avgSpeed || 0) || null;
     const nxtHalt = liveData.nextHalt || {};
@@ -673,7 +673,17 @@ export const getTrainLiveStatus = async (req, res, next) => {
         trainNumber,
         liveData.currentLocation?.speedToNextStationKmph || liveData.currentLocation?.speedKmh || liveData.train?.avgSpeed || null
       );
-      enhancedData.weather = weatherService.fallback('cached-run');
+      const fbLat = Number(liveData.lat ?? liveData.currentLocation?.coordinates?.lat ?? liveData.currentLocation?.lat);
+      const fbLng = Number(liveData.lng ?? liveData.currentLocation?.coordinates?.lng ?? liveData.currentLocation?.lng);
+      if (Number.isFinite(fbLat) && Number.isFinite(fbLng)) {
+        try {
+          enhancedData.weather = await weatherService.getPointWeather(fbLat, fbLng);
+        } catch {
+          enhancedData.weather = weatherService.fallback('cached-run');
+        }
+      } else {
+        enhancedData.weather = weatherService.fallback('cached-run');
+      }
 
       // Attach curvature ETA model if available
       const startDate = liveData.startDate || new Date().toISOString().split('T')[0];
