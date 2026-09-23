@@ -5,6 +5,7 @@ import { railRadarService } from '../services/railradar.js';
 import { config } from '../config/env.js';
 import { cache } from '../middleware/cache.js';
 import { enhanceLiveData, getTunnelZones } from '../services/deadReckoning.js';
+import { liveVelocityTracker } from '../services/liveVelocityTracker.js';
 import { hazardHealth } from './hazard.controller.js';
 
 const FALLBACK_DIR = path.join(process.cwd(), '.cache');
@@ -351,6 +352,24 @@ export const getTrainLiveStatus = async (req, res, next) => {
     // 2. Augment live status with Dead Reckoning tunnel/stale-signal tracking
     const enhancedData = enhanceLiveData(liveData, routeGeoJson);
 
+    // 2.1 Calculate instantaneous GPS velocity, Kalman smoothing & horizon speed blending
+    const curLoc = liveData.currentLocation || {};
+    const curCoords = curLoc.coordinates || {};
+    const curLat = Number(curCoords.lat ?? curLoc.lat);
+    const curLng = Number(curCoords.lng ?? curLoc.lng);
+    const curTime = liveData.lastUpdatedAt || curLoc.lastUpdatedAt || new Date().toISOString();
+    const schedSpeed = Number(curLoc.speedToNextStationKmph || curLoc.speedKmh || liveData.train?.avgSpeed || 0) || null;
+    const nxtHalt = liveData.nextHalt || {};
+    const distToNextHalt = Number(nxtHalt.distance ?? curLoc.distanceToNextStationKm) || null;
+
+    enhancedData.liveVelocity = liveVelocityTracker.recordPing(
+      trainNumber,
+      { lat: curLat, lng: curLng, distanceFromOriginKm: curLoc.distanceFromOriginKm },
+      curTime,
+      schedSpeed,
+      distToNextHalt
+    );
+
     // 3. Request curvature/delay-aware ETA from FastAPI server (Port 8000)
     let startDate = liveData.startDate || new Date().toISOString().split('T')[0];
     try {
@@ -646,6 +665,10 @@ export const getTrainLiveStatus = async (req, res, next) => {
       enhancedData.is_cached_fallback = true;
       enhancedData.recovered_from_disk = true;
       enhancedData.rate_limit_active = (error.status === 429 || error.response?.status === 429);
+      enhancedData.liveVelocity = liveVelocityTracker.fallbackVelocity(
+        trainNumber,
+        liveData.currentLocation?.speedToNextStationKmph || liveData.currentLocation?.speedKmh || liveData.train?.avgSpeed || null
+      );
 
       // Attach curvature ETA model if available
       const startDate = liveData.startDate || new Date().toISOString().split('T')[0];

@@ -414,11 +414,15 @@ function renderFleetMarkers(trains) {
       ? `<span style="color: #fbbf24;">+${train.delayMinutes} min</span>`
       : '<span style="color: #34d399;">On Time</span>');
 
-    // '—' when the source gave us no speed. The old `|| 60` resurrected exactly
-    // the invented 60 km/h that railradar.js:819 refuses to produce.
+    // Speed representation: if dynamic GPS velocity is available and live, show live GPS velocity;
+    // otherwise show scheduled block speed with clear honesty.
     const speedText = Number.isFinite(Number(train.speed))
       ? `${Math.round(Number(train.speed))} km/h`
       : '—';
+    const hasLiveVel = Boolean(train.liveVelocity?.isLive);
+    const speedHtml = hasLiveVel
+      ? `<span title="${escapeHtml(train.liveVelocity.basisLabel || 'Live GPS delta')}"><strong style="color: #38bdf8;">⚡ ${train.liveVelocity.liveSpeedKmph} km/h</strong> (${escapeHtml(train.liveVelocity.phase)})</span>`
+      : `<span title="Schedule-derived block speed (speedToNextStationKmph) — not a live GPS reading">Speed (sched): ${speedText}</span>`;
     const nextRun = rsState === 'not-running-today' && train.runState?.nextRunDate
       ? `<div style="font-size: 0.7rem; color: #fbbf24; margin-top: 3px;">Next service: ${train.runState.nextRunDate}</div>`
       : '';
@@ -428,7 +432,7 @@ function renderFleetMarkers(trains) {
         <div class="popup-train-num">#${train.number}${train.type ? ` &bull; ${train.type}` : ''}</div>
         <div class="popup-train-name">${train.name}</div>
         <div class="popup-stats-row">
-          <span title="Schedule-derived block speed (speedToNextStationKmph) — not a live GPS reading">Speed (sched): ${speedText}</span>
+          ${speedHtml}
           <span>Status: ${statusText}</span>
         </div>
         ${nextRun}
@@ -1690,6 +1694,44 @@ function renderTrainDrawer(liveData, coachesData) {
     document.getElementById('drawerNextHalt').innerText = `Destination: ${trainInfo.destination.name}`;
   } else {
     document.getElementById('drawerNextHalt').innerText = '';
+  }
+
+  // Dynamic GPS Velocity & Horizon Blending Telemetry
+  const velBadge = document.getElementById('drawerVelocityBadge');
+  const speedRow = document.getElementById('drawerSpeedTelemetry');
+  const liveVel = liveData.liveVelocity;
+
+  if (liveVel?.isLive) {
+    if (velBadge) {
+      velBadge.style.display = 'inline-block';
+      velBadge.title = liveVel.basisLabel || 'Real-time GPS velocity';
+    }
+    if (speedRow) {
+      speedRow.style.display = 'block';
+      let etaAdjustmentHtml = '';
+      if (liveVel.deltaEtaNextHaltMin != null && Math.abs(liveVel.deltaEtaNextHaltMin) >= 0.2) {
+        const sign = liveVel.deltaEtaNextHaltMin > 0 ? '+' : '';
+        const color = liveVel.deltaEtaNextHaltMin > 0 ? '#fbbf24' : '#34d399';
+        etaAdjustmentHtml = ` · Next halt ETA blended: <span style="color:${color};font-weight:600;">${sign}${liveVel.deltaEtaNextHaltMin}m</span> (eff. ${liveVel.blendedSpeedNextHaltKmph} km/h)`;
+      }
+      speedRow.innerHTML = `
+        <span style="color:#38bdf8;font-weight:600;">⚡ Speed: ${liveVel.liveSpeedKmph} km/h</span>
+        <span style="color:#94a3b8;font-size:0.72rem;">(${escapeHtml(liveVel.phase)}${liveVel.instantKmph != null ? `, instant: ${liveVel.instantKmph} km/h` : ''})</span>
+        ${etaAdjustmentHtml}
+      `;
+    }
+  } else {
+    if (velBadge) velBadge.style.display = 'none';
+    if (speedRow) {
+      const schedSpeed = currentLoc.speedToNextStationKmph || currentLoc.speedKmh || trainInfo.avgSpeed;
+      if (Number.isFinite(Number(schedSpeed))) {
+        speedRow.style.display = 'block';
+        speedRow.innerHTML = `<span style="color:#94a3b8;" title="Schedule-derived block speed — not a live GPS reading">Speed (sched): ${Math.round(Number(schedSpeed))} km/h</span>`;
+      } else {
+        speedRow.style.display = 'none';
+        speedRow.innerHTML = '';
+      }
+    }
   }
 
   // Progress bar — shown only when there is a real distance to report.

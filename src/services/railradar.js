@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { config } from '../config/env.js';
+import { liveVelocityTracker } from './liveVelocityTracker.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -825,6 +826,12 @@ class RailRadarService {
           // Falls back to null rather than an invented 60 km/h — a made-up number
           // presented next to real ones is the kind of thing that loses a pitch.
           speed: currentLoc.speedToNextStationKmph || trainInfo.avgSpeed || null,
+          liveVelocity: liveVelocityTracker.recordPing(
+            num,
+            { lat, lng, distanceFromOriginKm: currentLoc.distanceFromOriginKm },
+            liveData.lastUpdatedAt || new Date().toISOString(),
+            currentLoc.speedToNextStationKmph || trainInfo.avgSpeed || null
+          ),
           lastUpdated: liveData.lastUpdatedAt || new Date().toISOString(),
           // Raw upstream tracking mode. 'real-time' means an actual GPS-backed
           // feed; 'none' means the run is in the zero-echo tier (VERIFIED #4) and
