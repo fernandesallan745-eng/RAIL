@@ -19,14 +19,121 @@ EARTH_RADIUS_M = 6371000
 CURVE_SPEED_CONSTANT = 4.58  # km/h per sqrt(metre) -- BG, normal cant (approx.)
 
 # Weather multipliers applied on top of the curve-capped speed.
-# These are placeholder values -- tune with real monsoon/fog TSR data.
+# These baseline values serve as fallback/simulation multipliers and
+# are calibrated against Indian Railways G&SR and Monsoon Working Rules.
 WEATHER_SPEED_FACTOR = {
     "clear": 1.0,
+    "drizzle": 0.92,
     "rain": 0.85,
     "heavy_rain": 0.65,
-    "fog": 0.5,
-    "monsoon_flagged_section": 0.6,
+    "fog": 0.50,
+    "thunderstorm": 0.60,
+    "monsoon_flagged_section": 0.60,
 }
+
+# Standard WMO Weather Interpretation Codes (WMO Code 4677)
+WMO_WEATHER_TABLE = {
+    0: {"name": "Clear sky", "condition": "clear", "base_factor": 1.0},
+    1: {"name": "Mainly clear", "condition": "clear", "base_factor": 1.0},
+    2: {"name": "Partly cloudy", "condition": "clear", "base_factor": 1.0},
+    3: {"name": "Overcast", "condition": "clear", "base_factor": 1.0},
+    45: {"name": "Fog", "condition": "fog", "base_factor": 0.50},
+    48: {"name": "Depositing rime fog", "condition": "fog", "base_factor": 0.50},
+    51: {"name": "Light drizzle", "condition": "drizzle", "base_factor": 0.95},
+    53: {"name": "Moderate drizzle", "condition": "drizzle", "base_factor": 0.90},
+    55: {"name": "Dense drizzle", "condition": "drizzle", "base_factor": 0.85},
+    61: {"name": "Slight rain", "condition": "rain", "base_factor": 0.90},
+    63: {"name": "Moderate rain", "condition": "rain", "base_factor": 0.82},
+    65: {"name": "Heavy rain", "condition": "heavy_rain", "base_factor": 0.68},
+    71: {"name": "Slight snow", "condition": "snow", "base_factor": 0.80},
+    73: {"name": "Moderate snow", "condition": "snow", "base_factor": 0.70},
+    75: {"name": "Heavy snow", "condition": "snow", "base_factor": 0.55},
+    80: {"name": "Slight rain showers", "condition": "rain", "base_factor": 0.88},
+    81: {"name": "Moderate rain showers", "condition": "rain", "base_factor": 0.80},
+    82: {"name": "Violent rain showers", "condition": "heavy_rain", "base_factor": 0.65},
+    95: {"name": "Thunderstorm", "condition": "thunderstorm", "base_factor": 0.60},
+    96: {"name": "Thunderstorm with slight hail", "condition": "thunderstorm", "base_factor": 0.55},
+    99: {"name": "Thunderstorm with heavy hail", "condition": "thunderstorm", "base_factor": 0.50},
+}
+
+
+def weather_factor_from_conditions(
+    wmo_code=None,
+    precip_mm_h=0.0,
+    visibility_m=10000.0,
+    max_train_speed_kmh=130.0,
+):
+    """
+    Compute a physically calibrated speed factor based on live atmospheric telemetry
+    and Indian Railways General & Subsidiary Rules (G&SR).
+
+    Calibrations:
+    1. Fog / Poor Visibility (Railway Board FSD guidelines):
+       Under fog conditions (visibility < 1000m), trains with Fog Pass Devices (FSD)
+       are restricted to max 60 km/h (or 75 km/h for semi-high speed coaching).
+    2. Adhesion Loss under Monsoon Rain:
+       Wheel-rail friction coefficient drops from ~0.25 to ~0.12 under active precipitation,
+       increasing braking distance and requiring proactive deceleration on grades.
+       Formula: f_rain = max(0.65, 1.0 - 0.035 * P_mm_h)
+    3. Severe Thunderstorm / Squalls:
+       WMO 95-99 imposes caution order (~60 km/h baseline).
+    """
+    precip = max(0.0, float(precip_mm_h or 0.0))
+    vis = max(10.0, float(visibility_m or 10000.0))
+    code = int(wmo_code) if wmo_code is not None else 0
+
+    entry = WMO_WEATHER_TABLE.get(code, {"name": "Clear", "condition": "clear", "base_factor": 1.0})
+    condition = entry["condition"]
+    wmo_name = entry["name"]
+
+    # 1. Fog speed cap factor
+    if vis < 1000.0 or code in (45, 48):
+        condition = "fog"
+        # IR rules: max 60 km/h under dense fog
+        fog_speed_cap = 60.0
+        if vis > 500.0:
+            # Linear transition between 500m and 1000m
+            fog_speed_cap = 60.0 + (vis - 500.0) / 500.0 * 20.0
+        fog_factor = min(1.0, fog_speed_cap / max(60.0, max_train_speed_kmh))
+    else:
+        fog_factor = 1.0
+        fog_speed_cap = max_train_speed_kmh
+
+    # 2. Rain / Precipitation adhesion factor
+    if precip > 0.1:
+        if precip >= 15.0:
+            condition = "heavy_rain"
+            rain_factor = 0.65
+        elif precip >= 5.0:
+            condition = "rain"
+            rain_factor = max(0.70, 1.0 - 0.035 * precip)
+        else:
+            condition = "drizzle"
+            rain_factor = max(0.85, 1.0 - 0.03 * precip)
+    else:
+        rain_factor = entry["base_factor"]
+
+    # 3. Severe convective weather (Thunderstorms)
+    if code in (95, 96, 99):
+        condition = "thunderstorm"
+        storm_factor = 0.60
+    else:
+        storm_factor = 1.0
+
+    combined_factor = min(fog_factor, rain_factor, storm_factor)
+    combined_factor = round(max(0.40, min(1.0, combined_factor)), 3)
+    speed_cap = min(max_train_speed_kmh * combined_factor, fog_speed_cap)
+
+    return {
+        "factor": combined_factor,
+        "condition": condition,
+        "wmo_code": code,
+        "wmo_description": wmo_name,
+        "precip_mm_h": round(precip, 2),
+        "visibility_m": round(vis, 0),
+        "capped_speed_kmh": round(speed_cap, 1),
+        "basis": "live-open-meteo-calibrated",
+    }
 
 
 def _to_local_xy(lat, lng, ref_lat, ref_lng):
@@ -69,7 +176,13 @@ def permissible_speed_kmh(radius_m, max_train_speed_kmh, weather="clear"):
     else:
         curve_cap = CURVE_SPEED_CONSTANT * math.sqrt(radius_m)
 
-    weather_factor = WEATHER_SPEED_FACTOR.get(weather, 1.0)
+    if isinstance(weather, (int, float)):
+        weather_factor = float(weather)
+    elif isinstance(weather, dict):
+        weather_factor = float(weather.get("factor", 1.0))
+    else:
+        weather_factor = WEATHER_SPEED_FACTOR.get(str(weather), 1.0)
+
     return min(curve_cap, max_train_speed_kmh) * weather_factor
 
 

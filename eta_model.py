@@ -735,7 +735,29 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
 
     has_geometry = any(b is not None for b in block_geom)
 
-    wfactor = curvature.WEATHER_SPEED_FACTOR.get(weather, 1.0)
+    is_live_weather = (weather == "live")
+    route_weather_data = {}
+
+    if is_live_weather:
+        try:
+            import weather_service
+            # Collect coordinates for each halt to query Open-Meteo in batch
+            weather_points = []
+            for k, (a, b) in enumerate(zip(halts[:-1], halts[1:])):
+                lat_a = a.get("lat") or (a.get("station") or {}).get("lat")
+                lng_a = a.get("lng") or (a.get("station") or {}).get("lng")
+                lat_b = b.get("lat") or (b.get("station") or {}).get("lat")
+                lng_b = b.get("lng") or (b.get("station") or {}).get("lng")
+                if lat_a and lng_a:
+                    weather_points.append((float(lat_a), float(lng_a)))
+                if lat_b and lng_b:
+                    weather_points.append((float(lat_b), float(lng_b)))
+            if weather_points:
+                route_weather_data = weather_service.get_batch_weather(weather_points, max_train_speed_kmh=max_speed)
+        except Exception:
+            route_weather_data = {}
+
+    default_wfactor = 1.0 if is_live_weather else curvature.WEATHER_SPEED_FACTOR.get(weather, 1.0)
     # INCREMENTAL, not cumulative — delayArrival must be differenced before it can
     # be added per segment (see historical_delay_increment_by_seq).
     hist = historical_delay_increment_by_seq(train)
@@ -798,6 +820,38 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
         dist_km = d1 - d0
         baseline = a.get("speedToNextStationKmph") or max_speed
 
+        # Block-specific weather resolution
+        if is_live_weather:
+            import weather_service
+            lat_a = a.get("lat") or (a.get("station") or {}).get("lat")
+            lng_a = a.get("lng") or (a.get("station") or {}).get("lng")
+            lat_b = b.get("lat") or (b.get("station") or {}).get("lat")
+            lng_b = b.get("lng") or (b.get("station") or {}).get("lng")
+            target_pt = (float(lat_b), float(lng_b)) if (lat_b and lng_b) else ((float(lat_a), float(lng_a)) if (lat_a and lng_a) else None)
+
+            block_wx = None
+            if target_pt and target_pt in route_weather_data:
+                block_wx = route_weather_data[target_pt]
+            elif target_pt:
+                block_wx = weather_service.get_point_weather(target_pt[0], target_pt[1], max_train_speed_kmh=max_speed)
+            if not block_wx:
+                block_wx = weather_service.fallback_weather("block-default")
+
+            wfactor = block_wx["factor"]
+            block_weather_info = block_wx
+        else:
+            wfactor = default_wfactor
+            block_weather_info = {
+                "factor": wfactor,
+                "condition": weather,
+                "precip_mm_h": 0.0,
+                "temp_c": None,
+                "visibility_m": 10000.0,
+                "wmo_code": 0,
+                "wmo_description": weather,
+                "basis": "static-simulation",
+            }
+
         bg = block_geom[k]
         seg_geom = bg is not None
         if seg_geom:
@@ -858,7 +912,10 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             "baseline_speed_kmh": round(baseline, 1),
             "min_radius_m": None if math.isinf(min_r) else round(min_r, 1),
             "curve_capped_speed_kmh": round(curve_cap, 1),
-            "weather": weather, "weather_capped_speed_kmh": round(weather_cap, 1),
+            "weather": block_weather_info["condition"],
+            "weather_factor": round(wfactor, 3),
+            "weather_telemetry": block_weather_info,
+            "weather_capped_speed_kmh": round(weather_cap, 1),
             "effective_speed_kmh": round(effective, 1),
             "running_min": round(running_min, 2),
             "vertex_curve_running_min": round(vrun_min, 2) if seg_geom else None,
@@ -911,9 +968,21 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
     sched_duration = train_info.get("duration")
     e2e_samples, e2e_mean = end_to_end_delay_samples(train)
 
+    avg_wfactor = round(sum(s.get("weather_factor", 1.0) for s in segments) / len(segments), 3) if segments else 1.0
+
     return {
         "train": train, "train_name": train_info.get("name"),
-        "date": date, "weather": weather, "weather_factor": wfactor,
+        "date": date,
+        "weather": weather,
+        "weather_mode": "live-geofenced" if is_live_weather else "static-simulation",
+        "weather_factor": avg_wfactor if is_live_weather else default_wfactor,
+        "weather_summary": {
+            "mode": "live-geofenced" if is_live_weather else "static-simulation",
+            "adverse_blocks": sum(1 for s in segments if s.get("weather_factor", 1.0) < 0.99),
+            "min_factor": min((s.get("weather_factor", 1.0) for s in segments), default=1.0),
+            "max_precip_mm_h": max((s.get("weather_telemetry", {}).get("precip_mm_h", 0.0) for s in segments), default=0.0),
+            "conditions": sorted(list({s.get("weather") for s in segments})),
+        },
         "max_speed_kmh": max_speed,
         "schedule_source": sched_src,
         "geometry_len_km": round(geom_len_km, 1) if geom_len_km is not None else None,

@@ -6,6 +6,7 @@ import { config } from '../config/env.js';
 import { cache } from '../middleware/cache.js';
 import { enhanceLiveData, getTunnelZones } from '../services/deadReckoning.js';
 import { liveVelocityTracker } from '../services/liveVelocityTracker.js';
+import { weatherService } from '../services/weatherService.js';
 import { hazardHealth } from './hazard.controller.js';
 
 const FALLBACK_DIR = path.join(process.cwd(), '.cache');
@@ -370,14 +371,17 @@ export const getTrainLiveStatus = async (req, res, next) => {
       distToNextHalt
     );
 
+    // 2.2 Query real-time atmospheric conditions along current train coordinates
+    enhancedData.weather = await weatherService.getPointWeather(curLat, curLng);
+
     // 3. Request curvature/delay-aware ETA from FastAPI server (Port 8000)
     let startDate = liveData.startDate || new Date().toISOString().split('T')[0];
     try {
       const fastApiUrl = `${config.modelApi.baseUrl}/eta/${trainNumber}`;
       try {
         const fastApiRes = await axios.get(fastApiUrl, {
-          params: { date: startDate, weather: req.query.weather || 'clear', ...hazardParam(req) },
-          timeout: 1500,
+          params: { date: startDate, weather: req.query.weather || 'live', ...hazardParam(req) },
+          timeout: 2500,
         });
         if (fastApiRes.data) {
           enhancedData.curvatureEta = fastApiRes.data;
@@ -669,6 +673,7 @@ export const getTrainLiveStatus = async (req, res, next) => {
         trainNumber,
         liveData.currentLocation?.speedToNextStationKmph || liveData.currentLocation?.speedKmh || liveData.train?.avgSpeed || null
       );
+      enhancedData.weather = weatherService.fallback('cached-run');
 
       // Attach curvature ETA model if available
       const startDate = liveData.startDate || new Date().toISOString().split('T')[0];
@@ -683,8 +688,8 @@ export const getTrainLiveStatus = async (req, res, next) => {
       try {
         const fastApiUrl = `${config.modelApi.baseUrl}/eta/${trainNumber}`;
         const fastApiRes = await axios.get(fastApiUrl, {
-          params: { date: startDate, weather: req.query.weather || 'clear', ...hazardParam(req) },
-          timeout: 1500,
+          params: { date: startDate, weather: req.query.weather || 'live', ...hazardParam(req) },
+          timeout: 2500,
         });
         if (fastApiRes.data) {
           enhancedData.curvatureEta = fastApiRes.data;

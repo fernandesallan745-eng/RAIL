@@ -595,7 +595,7 @@
 
     const params = new URLSearchParams();
     const date = opts.date ?? ($('qDate')?.value || '');
-    const weather = opts.weather ?? ($('qWeather')?.value || 'clear');
+    const weather = opts.weather ?? ($('qWeather')?.value || 'live');
     const mode = opts.mode ?? ($('qMode')?.value || 'vertex');
     if (date) params.set('date', date);
     if (weather) params.set('weather', weather);
@@ -639,7 +639,7 @@
     // actually in play. Required Phase 8 honesty wiring.
     const wx = $('qWeather');
     const warn = $('qWeatherWarn');
-    const syncWxWarn = () => { if (warn) warn.hidden = !wx || wx.value === 'clear'; };
+    const syncWxWarn = () => { if (warn) warn.hidden = !wx || wx.value === 'clear' || wx.value === 'live'; };
     if (wx) wx.addEventListener('change', syncWxWarn);
     syncWxWarn();
 

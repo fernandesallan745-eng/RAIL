@@ -1734,6 +1734,40 @@ function renderTrainDrawer(liveData, coachesData) {
     }
   }
 
+  // Live Meteorological Telemetry
+  const wxBadge = document.getElementById('drawerWeatherBadge');
+  const wxDetails = document.getElementById('drawerWeatherDetails');
+  const wx = liveData.weather;
+
+  if (wx?.available) {
+    if (wxBadge) {
+      wxBadge.style.display = 'inline-block';
+      const tempStr = wx.tempC != null ? ` ${wx.tempC}°C` : '';
+      wxBadge.innerHTML = `${wx.icon || '🌤️'} ${escapeHtml(wx.label || 'Weather')}${tempStr}`;
+      wxBadge.title = `Atmospheric condition: ${wx.label}, Visibility: ${wx.visibilityM}m, Precip: ${wx.precipMmH} mm/h (source: Open-Meteo)`;
+    }
+    if (wxDetails) {
+      if (wx.factor < 0.99 || wx.precipMmH > 0 || wx.visibilityM < 2000) {
+        wxDetails.style.display = 'block';
+        const impactLabel = wx.factor < 0.99
+          ? `<strong style="color:#fbbf24;">Weather caution: speed factor ${wx.factor}</strong> · `
+          : '';
+        wxDetails.innerHTML = `
+          <span>${wx.icon || ''} ${impactLabel}Rain: ${wx.precipMmH} mm/h · Visibility: ${(wx.visibilityM / 1000).toFixed(1)} km · Wind: ${wx.windSpeedKmh} km/h</span>
+        `;
+      } else {
+        wxDetails.style.display = 'none';
+        wxDetails.innerHTML = '';
+      }
+    }
+  } else {
+    if (wxBadge) wxBadge.style.display = 'none';
+    if (wxDetails) {
+      wxDetails.style.display = 'none';
+      wxDetails.innerHTML = '';
+    }
+  }
+
   // Progress bar — shown only when there is a real distance to report.
   // Hidden outright otherwise: a bar at 0% still reads as a measurement, and
   // the old `pct || 15` painted 15% for a train sitting at its origin, because

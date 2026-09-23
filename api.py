@@ -486,7 +486,7 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=Fals
 def get_eta(
     train_number: str,
     date: str = Query(None, description="Run date, YYYY-MM-DD"),
-    weather: str = Query("clear", description=f"one of {list(curvature.WEATHER_SPEED_FACTOR)}"),
+    weather: str = Query("clear", description=f"one of {list(curvature.WEATHER_SPEED_FACTOR) + ['live']}"),
     mode: str = Query("vertex", description="curvature application: 'vertex' (physically precise, default) or 'block' (conservative upper bound)"),
     max_speed: float = Query(eta_model.MAX_SPEED_KMH, description="max operating speed km/h"),
     hazards: bool = Query(False, description="apply speed restrictions from HUMAN-CONFIRMED crowdsourced hazard reports (off by default; false reproduces the documented §4b numbers exactly)"),
@@ -497,10 +497,11 @@ def get_eta(
             datetime.strptime(date, "%Y-%m-%d")
         except ValueError:
             raise HTTPException(422, detail=f"date must be YYYY-MM-DD, got {date!r}")
-    if weather not in curvature.WEATHER_SPEED_FACTOR:
+    valid_weather = list(curvature.WEATHER_SPEED_FACTOR) + ["live"]
+    if weather not in valid_weather:
         raise HTTPException(
             422,
-            detail=f"weather must be one of {list(curvature.WEATHER_SPEED_FACTOR)}, got {weather!r}",
+            detail=f"weather must be one of {valid_weather}, got {weather!r}",
         )
     if mode not in ("block", "vertex"):
         raise HTTPException(422, detail="mode must be 'block' or 'vertex'")
@@ -747,3 +748,45 @@ def get_curvature(
             "true_curvature_penalty_sec": round(weta - wnaive, 2),
         },
     }
+
+
+@app.get("/weather/{train_number}")
+def get_route_weather(train_number: str):
+    """Real-time meteorological conditions along the train's route."""
+    import weather_service
+    try:
+        stations, _ = eta_model.load_schedule(train_number)
+    except FileNotFoundError as e:
+        raise HTTPException(404, detail=f"No cached schedule for train {train_number}: {e}")
+
+    halts = [s for s in stations if s.get("isHalt")]
+    points = []
+    station_meta = []
+    for s in halts:
+        lat = s.get("lat") or (s.get("station") or {}).get("lat")
+        lng = s.get("lng") or (s.get("station") or {}).get("lng")
+        if lat and lng:
+            points.append((float(lat), float(lng)))
+            station_meta.append({
+                "code": s.get("stationCode"),
+                "name": s.get("stationName"),
+                "distance_km": s.get("distance"),
+                "lat": float(lat),
+                "lng": float(lng),
+            })
+
+    weather_map = weather_service.get_batch_weather(points)
+    telemetry = []
+    for meta in station_meta:
+        pt = (meta["lat"], meta["lng"])
+        wx = weather_map.get(pt) or weather_service.fallback_weather()
+        telemetry.append({**meta, **wx})
+
+    return {
+        "train_number": train_number,
+        "stations_count": len(telemetry),
+        "source": "Open-Meteo Weather API",
+        "calibration": "Indian Railways G&SR / Monsoon & Fog Rules",
+        "route_weather": telemetry,
+    }
+

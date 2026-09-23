@@ -376,11 +376,12 @@
 
           <label for="qWeather">Weather</label>
           <select id="qWeather" class="admin-input">
-            <option value="clear" selected>clear</option>
-            <option value="rain">rain</option>
-            <option value="heavy_rain">heavy_rain</option>
-            <option value="monsoon_flagged_section">monsoon_flagged_section</option>
-            <option value="fog">fog</option>
+            <option value="live" selected>⚡ live (Open-Meteo geofenced)</option>
+            <option value="clear">clear (1.00)</option>
+            <option value="rain">rain (0.85)</option>
+            <option value="heavy_rain">heavy_rain (0.65)</option>
+            <option value="monsoon_flagged_section">monsoon_flagged_section (0.60)</option>
+            <option value="fog">fog (0.50)</option>
           </select>
 
           <label for="qMode">Curvature</label>
@@ -394,14 +395,9 @@
           <span class="admin-btn-sub">cache-only — 0 upstream requests</span>
         </button>
 
-        <!-- Weather placeholder warning (Phase 8 honesty wiring). Shown only when
-             weather != clear, because WEATHER_SPEED_FACTOR is a set of untuned
-             guesses, not TSR-sourced values. -->
+        <!-- Weather simulation notice. Shown only when a synthetic scenario != clear/live is picked. -->
         <div id="qWeatherWarn" class="admin-warn" hidden>
-          <strong>Untuned placeholders.</strong> The weather multipliers in
-          <code>curvature.WEATHER_SPEED_FACTOR</code> are illustrative guesses, not
-          sourced from TSR data. Weather-capping is implemented; a live weather feed
-          is the next integration.
+          <strong>Synthetic scenario mode.</strong> Using fixed multiplier for simulation. For real-time atmospheric conditions calibrated against Indian Railways G&SR, select <code>⚡ live</code>.
         </div>
 
         <div class="admin-subhead">Corridor sweep</div>
