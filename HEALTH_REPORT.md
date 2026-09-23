@@ -67,13 +67,19 @@
 
 ---
 
-### 4. Direct `/admin/` URL Resolution
-- **Previous Error**: Accessing `/admin/` (with trailing slash) returned 404.
-- **Fix**: Added explicit 301 redirection in [src/server.js](file:///Users/fernandes/code/railsync/src/server.js):
+### 4. Admin Portal Infinite Redirect Loop Resolved
+- **Previous Error**: Accessing `/admin` failed with `ERR_TOO_MANY_REDIRECTS` (exit code 47) because Express's default `strict routing: false` caused `app.get('/admin/', ...)` to match `/admin` as well, self-redirecting endlessly.
+- **Fix**: Replaced the slash-redirect middleware with direct file dispatch for `/admin` while checking `endsWith('/')` to only redirect when a literal trailing slash is requested:
   ```javascript
-  app.get('/admin/', (req, res) => res.redirect(301, '/admin'));
+  app.get('/admin', (req, res) => {
+    if (req.originalUrl.split('?')[0].endsWith('/')) {
+      const query = req.originalUrl.includes('?') ? '?' + req.originalUrl.split('?')[1] : '';
+      return res.redirect(301, '/admin' + query);
+    }
+    res.sendFile(path.join(publicDir, 'admin.html'));
+  });
   ```
-- **Current Status**: **301 Moved Permanently $\rightarrow$ 200 OK**.
+- **Current Status**: **200 OK** directly on `/admin` and **301 $\rightarrow$ 200** on `/admin/`. Both direct and iframe access on `https://arkaa.online/gati/admin` work smoothly.
 
 ---
 
