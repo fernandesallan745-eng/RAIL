@@ -39,14 +39,17 @@ if (config.nodeEnv !== 'test') {
 }
 
 // Static Developer Dashboard UI
-// extensions:['html'] lets /admin resolve to public/admin.html without a redirect, so the
-// admin console and the user map are one origin. That matters beyond tidiness: the model
-// service binds 127.0.0.1 by default, so a page served from THERE is unreachable from the
-// phone — serving it here is what makes the admin surface work on the iOS demo.
-// Redirect trailing slash on /admin/ so it resolves to /admin -> admin.html
-app.get('/admin/', (req, res) => res.redirect(301, '/admin'));
-
+// Serve /admin explicitly so it resolves to public/admin.html
 const publicDir = path.join(__dirname, '../public');
+app.get('/admin', (req, res) => {
+  // If requested with a trailing slash (/admin/), redirect to /admin so relative paths resolve cleanly
+  if (req.originalUrl.split('?')[0].endsWith('/')) {
+    const query = req.originalUrl.includes('?') ? '?' + req.originalUrl.split('?')[1] : '';
+    return res.redirect(301, '/admin' + query);
+  }
+  res.sendFile(path.join(publicDir, 'admin.html'));
+});
+
 app.use(express.static(publicDir, { extensions: ['html'] }));
 
 // Rate Limiter applied to API routes
