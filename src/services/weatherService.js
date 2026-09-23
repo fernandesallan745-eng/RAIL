@@ -9,6 +9,7 @@
  */
 
 import axios from 'axios';
+import { config } from '../config/env.js';
 
 const OPEN_METEO_BASE = 'https://api.open-meteo.com/v1/forecast';
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
@@ -70,6 +71,37 @@ class WeatherService {
       return cached.data;
     }
 
+    // Strategy 1: Local FastAPI Python service on 127.0.0.1:8000 (shares cache, robust urllib)
+    try {
+      const fastApiUrl = `${config.modelApi.baseUrl}/weather/point`;
+      const localResp = await axios.get(fastApiUrl, {
+        params: { lat: Number(lat).toFixed(4), lng: Number(lng).toFixed(4) },
+        timeout: 2500,
+      });
+      if (localResp.status === 200 && localResp.data && localResp.data.basis) {
+        const d = localResp.data;
+        const wmoInfo = WMO_CONDITIONS[d.wmo_code] || { label: d.wmo_description || 'Clear', condition: d.condition || 'clear', icon: '🌤️' };
+        const data = {
+          available: true,
+          condition: d.condition || wmoInfo.condition,
+          label: d.wmo_description || wmoInfo.label,
+          icon: wmoInfo.icon,
+          tempC: d.temp_c,
+          precipMmH: d.precip_mm_h,
+          visibilityM: d.visibility_m,
+          wmoCode: d.wmo_code,
+          windSpeedKmh: d.wind_speed_kmh,
+          factor: d.factor,
+          basis: d.basis,
+        };
+        this.cache.set(key, { timestamp: Date.now(), data });
+        return data;
+      }
+    } catch {
+      // Local FastAPI failed or offline; fall through to direct Open-Meteo
+    }
+
+    // Strategy 2: Direct Open-Meteo query
     try {
       const resp = await axios.get(OPEN_METEO_BASE, {
         params: {

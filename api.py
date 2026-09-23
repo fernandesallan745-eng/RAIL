@@ -790,3 +790,10 @@ def get_route_weather(train_number: str):
         "route_weather": telemetry,
     }
 
+
+@app.get("/weather/point")
+def get_point_weather_endpoint(lat: float = Query(...), lng: float = Query(...)):
+    """Fetch real-time atmospheric conditions for a single coordinate point."""
+    import weather_service
+    return weather_service.get_point_weather(lat, lng)
+
