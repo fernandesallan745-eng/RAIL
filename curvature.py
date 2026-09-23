@@ -127,6 +127,15 @@ def naive_eta(total_distance_m, avg_speed_kmh):
     return (total_distance_m / 1000) / avg_speed_kmh * 3600
 
 
+def densify_coords(coords, max_step_m=100.0, use_spline=True):
+    """
+    Densify track polyline to a maximum vertex spacing (e.g. 100m).
+    Resolves previously curvature-blind long chords.
+    """
+    import track_geometry
+    return track_geometry.densify_track(coords, max_step_m=max_step_m, use_spline=use_spline)
+
+
 def _demo_hairpin_coords(radius_m=300, ref_lat=17.95, ref_lng=73.30, arc_deg=90, n=6):
     """Generates points on an exact circle -- lets us verify the capping math against
     a *known* radius, rather than eyeballing arbitrary lat/lng points."""

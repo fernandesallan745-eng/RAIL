@@ -39,8 +39,19 @@ def _load(path):
         return json.load(f)
 
 
-def load_route_coords(train=DEFAULT_TRAIN):
-    """[lng,lat] geometry from the /route endpoint cache (extra 'geojson' wrapper)."""
+def load_route_coords(train=DEFAULT_TRAIN, hires=False):
+    """[lng,lat] geometry from the /route endpoint cache (extra 'geojson' wrapper).
+    If hires=True, loads {train}_route_hires.json if present (spline-densified to <=100m).
+    """
+    if hires:
+        hpath = os.path.join(CACHE, f"{train}_route_hires.json")
+        if os.path.exists(hpath):
+            data = _load(hpath)
+            if "data" in data and "geojson" in data["data"]:
+                return data["data"]["geojson"]["geometry"]["coordinates"]
+            if "geojson" in data:
+                return data["geojson"]["geometry"]["coordinates"]
+
     path = os.path.join(CACHE, f"{train}_route.json")
     if not os.path.exists(path):
         raise FileNotFoundError(f"Missing route cache: {path}")

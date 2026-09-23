@@ -150,6 +150,7 @@ def geometry(
     train_number: str,
     max_points: int = Query(700, ge=50, le=5000,
                             description="decimate the polyline to at most this many points"),
+    hires: bool = Query(False, description="use high-resolution densified polyline if available"),
 ):
     """
     Route polyline + halt anchor positions, for drawing.
@@ -159,7 +160,7 @@ def geometry(
     would coarsen the radii); it always comes from the full polyline via /eta.
     """
     try:
-        coords = eta_model.load_route_coords(train_number)
+        coords = eta_model.load_route_coords(train_number, hires=hires)
         _, stations, _ = eta_model.load_schedule(train_number)
     except FileNotFoundError as e:
         raise HTTPException(404, detail=f"no cache for train {train_number}. ({e})")
@@ -678,10 +679,11 @@ def get_curvature(
     lat_min: float = Query(18.4, description="isolation window south bound"),
     lat_max: float = Query(18.6, description="isolation window north bound"),
     max_speed: float = Query(eta_model.MAX_SPEED_KMH),
+    hires: bool = Query(False, description="use high-resolution densified polyline if available"),
 ):
     """Curvature-only view: sharpest curves route-wide + a lat-window isolation."""
     try:
-        coords = eta_model.load_route_coords(train_number)
+        coords = eta_model.load_route_coords(train_number, hires=hires)
     except FileNotFoundError as e:
         raise HTTPException(404, detail=str(e))
 
