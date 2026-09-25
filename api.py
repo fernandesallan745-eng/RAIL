@@ -28,6 +28,7 @@ from fastapi.responses import JSONResponse
 import curvature
 import eta_model
 import hazard_layer
+import yard_operations
 
 app = FastAPI(
     title="Curvature & Delay-Aware ETA — Indian Railways",
@@ -59,6 +60,9 @@ def root():
             "caps over the km sub-span of a HUMAN-CONFIRMED crowdsourced hazard "
             "report. Off by default; machine-scored reports never reach it. Caps "
             "are our heuristic, not sourced TSR values.",
+            "8. yard & terminal operations: inbound rake turnaround (RSA buffer), "
+            "locomotive reversal 25m air-brake continuity floors, crew lobby handovers, "
+            "and platform clearance holding at terminal throats.",
         ],
         "formula": (
             "segment_eta = distance / min(baseline, curve_cap, weather_cap) "
@@ -515,6 +519,10 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=Fals
         if t["scheduled_duration_min"] else None,
         "model_error_min": t["gap_vs_schedule_min"],
     }
+    try:
+        res["terminal_operations"] = yard_operations.audit_terminal_operations(train_number, date=date)
+    except Exception:
+        res["terminal_operations"] = None
     return res
 
 
@@ -579,6 +587,33 @@ def get_eta(
                 f"prime .cache/ with {train_number}_route.json and {train_number}_live*.json. ({e})"
             ),
         )
+    return JSONResponse(res, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/yard/{train_number}")
+def get_yard_operations(
+    train_number: str,
+    date: str = Query(None, description="Run date, YYYY-MM-DD"),
+):
+    """
+    Yard, Rake Turnaround & Locomotive Operations Audit.
+    Evaluates:
+      1. Origin Inbound Rake Turnaround (RSA propagation & buffer).
+      2. Reversal Junctions (Locomotive run-around & 25m air brake continuity floor).
+      3. Divisional Crew Lobbies (Mandatory 8m sign-on/sign-off & caution order floor).
+      4. Terminal Platform Clearance (Single-capacity platform queueing & outer signal holds).
+    """
+    if date and isinstance(date, str):
+        try:
+            datetime.strptime(date, "%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(422, detail=f"date must be YYYY-MM-DD, got {date!r}")
+    else:
+        date = None
+
+    res = yard_operations.audit_terminal_operations(train_number, date=date)
+    if "error" in res:
+        raise HTTPException(404, detail=res["error"])
     return JSONResponse(res, headers={"Cache-Control": "no-store"})
 
 

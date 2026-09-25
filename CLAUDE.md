@@ -1442,6 +1442,13 @@ because clear/heavy_rain/fog totals all look alike out of context.
         (`speed-history.json` ships empty), so no observed-transit data yet.
 - [ ] **Phase 7:** Crowdsourced hazard reporting + confidence scoring
       (independent of live data — can be built in parallel anytime).
+- [x] **Phase 8:** Yard, Rake Turnaround & Locomotive Operations Engine.
+      - Grounded in `DATA_GAPS_AND_YARD_OPS.md` (audit of private COIS/ICMS/CMS/TMS vs. public proxies).
+      - Rake Sharing (RSA) parent linking & turnaround delay propagation (`MIN_TURNAROUND_QUICK_MIN = 45`, `MIN_TURNAROUND_EXPRESS_MIN = 90`).
+      - Locomotive run-around & reversal 25-minute physical brake-continuity floor (`MIN_LOCO_REVERSAL_MIN = 25`).
+      - Divisional crew change lobby dwell floor (`MIN_CREW_CHANGE_MIN = 8` at PNVL, RN, MAO).
+      - Terminal platform clearance & reception signal holding model (`INTERLOCKING_ROUTE_RELEASE_MIN = 4`).
+      - Verified by `verify_yard_operations.py`, implemented in `yard_operations.py`, and exposed via `GET /yard/{train}` and `/eta/{train}`.
 
 ---
 
