@@ -1181,21 +1181,21 @@ function renderConflictPanel(liveData) {
       const station = escapeHtml(r.holdStationName || r.holdStation || 'Loop station');
 
       html += `
-        <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.25); border-left:3px solid #f87171; border-radius:6px; padding:6px 9px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-weight:700; color:#fff; font-size:0.78rem; display:flex; align-items:center; gap:5px;">
+        <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.25); border-left:3px solid #f87171; border-radius:6px; padding:6px 9px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:700; color:#fff; font-size:0.78rem; display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
               <span>⏸</span>
-              <span>${station}</span>
-              <span style="color:#94a3b8; font-weight:normal; font-size:0.7rem;">~${escapeHtml(r.meetClock)}</span>
+              <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">${station}</span>
+              <span style="color:#94a3b8; font-weight:normal; font-size:0.7rem; white-space:nowrap;">~${escapeHtml(r.meetClock)}</span>
             </div>
-            <div style="color:#cbd5e1; font-size:0.7rem; margin-top:2px;">
+            <div style="color:#cbd5e1; font-size:0.7rem; margin-top:2px; word-break:break-word;">
               ${r.kind === 'overtake' ? 'Overtake' : 'Crossing'} vs <strong style="color:#fff">#${escapeHtml(r.otherTrain)}</strong>
               <span style="color:#94a3b8;">${escapeHtml(r.otherType)}</span>${shift}
               ${r.otherDelayMin > 0 ? `<span style="color:#fbbf24; font-size:0.64rem;"> (other +${r.otherDelayMin}m late)</span>` : ''}
               ${r.cascadingHoldUpstreamMin > 0 ? `<span style="color:#c084fc; font-size:0.64rem;"> ↻ +${r.cascadingHoldUpstreamMin}m upstream</span>` : ''}
             </div>
           </div>
-          <div style="text-align:right; margin-left:8px; flex-shrink:0;">
+          <div style="text-align:right; flex-shrink:0;">
             <span style="background:rgba(239,68,68,0.25); color:#fca5a5; font-weight:700; font-size:0.74rem; padding:2px 7px; border-radius:4px; white-space:nowrap; border:1px solid rgba(239,68,68,0.3);">
               ~${r.ourHoldMin} min
             </span>
@@ -1235,13 +1235,13 @@ function renderConflictPanel(liveData) {
           : '';
 
       html += `
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.69rem; color:#94a3b8; padding:2px 0; border-bottom:1px solid rgba(255,255,255,0.03);">
-          <span>
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.69rem; color:#94a3b8; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.03); gap:6px;">
+          <span style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
             <span style="color:#34d399;">✓</span> ~${escapeHtml(r.meetClock)} ·
             <strong style="color:#e2e8f0;">#${escapeHtml(r.otherTrain)}</strong>
             <span style="color:#64748b;">${escapeHtml(r.otherType)}</span>
           </span>
-          <span style="color:#64748b; font-size:0.65rem;">
+          <span style="color:#64748b; font-size:0.65rem; flex-shrink:0; white-space:nowrap;">
             km ${r.meetKm.toFixed(1)}${shift}
           </span>
         </div>
@@ -1918,6 +1918,15 @@ function renderTrainDrawer(liveData, coachesData) {
     }
   }
 
+  // Toggle telemetry card container only when at least one detail row is visible
+  const telemetryBox = document.getElementById('drawerTelemetryBox');
+  if (telemetryBox) {
+    const hasAnyTelemetry = (speedRow && speedRow.style.display !== 'none' && speedRow.innerHTML.trim() !== '') ||
+      (wxDetails && wxDetails.style.display !== 'none' && wxDetails.innerHTML.trim() !== '') ||
+      (confDetails && confDetails.style.display !== 'none' && confDetails.innerHTML.trim() !== '');
+    telemetryBox.style.display = hasAnyTelemetry ? 'flex' : 'none';
+  }
+
   // Progress bar — shown only when there is a real distance to report.
   // Hidden outright otherwise: a bar at 0% still reads as a measurement, and
   // the old `pct || 15` painted 15% for a train sitting at its origin, because
@@ -2172,20 +2181,20 @@ function renderTimeline(route, currentLoc, isLive = true, curvatureEta = null) {
         }
 
         const holdBadge = (gatiInfo.conflict_hold_min && gatiInfo.conflict_hold_min > 0)
-          ? `<div style="font-size: 0.65rem; color: #f59e0b; font-weight: 700; background: rgba(245, 158, 11, 0.15); padding: 1px 4px; border-radius: 4px; margin-top: 1px;">⚠️ +${gatiInfo.conflict_hold_min}m loop hold</div>`
+          ? `<div style="font-size: 0.63rem; color: #f59e0b; font-weight: 700; background: rgba(245, 158, 11, 0.15); padding: 1px 5px; border-radius: 4px; margin-top: 2px; white-space: nowrap;">⚠️ +${gatiInfo.conflict_hold_min}m loop hold</div>`
           : '';
 
         timeColHtml = `
-          <div style="display: flex; align-items: center; gap: 4px;">
-            <span style="font-size: 0.6rem; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.18); padding: 1px 4px; border-radius: 3px; letter-spacing: 0.4px;">GATI</span>
-            <span style="color: ${gatiColor}; font-weight: 800; font-size: 0.88rem;">${gatiTimeStr}</span>
-            <span style="color: ${gatiColor}; font-size: 0.72rem; font-weight: 700;">+${gatiDelay}m</span>
+          <div style="display: flex; align-items: center; justify-content: flex-end; gap: 4px; white-space: nowrap;">
+            <span style="font-size: 0.58rem; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.18); padding: 1px 4px; border-radius: 3px; letter-spacing: 0.4px;">GATI</span>
+            <span style="color: ${gatiColor}; font-weight: 800; font-size: 0.85rem;">${gatiTimeStr}</span>
+            <span style="color: ${gatiColor}; font-size: 0.70rem; font-weight: 700;">+${gatiDelay}m</span>
           </div>
           ${holdBadge}
-          <div style="font-size: 0.68rem; color: var(--text-dim); text-decoration: line-through; margin-top: 1px;">
+          <div style="font-size: 0.67rem; color: var(--text-dim); text-decoration: line-through; margin-top: 1px; white-space: nowrap;">
             ${timeStr} (Sched)
           </div>
-          <div style="font-size: 0.65rem; color: #64748b; margin-top: 1px;" title="ConfirmTkt repeats flat delay without physics or crossing loop holds">
+          <div style="font-size: 0.64rem; color: #64748b; margin-top: 1px; white-space: nowrap;" title="ConfirmTkt repeats flat delay without physics or crossing loop holds">
             ConfirmTkt: <span style="${ntesDelay !== gatiDelay ? 'text-decoration: line-through;' : ''}">${ntesTimeStr} (+${ntesDelay}m)</span>
           </div>
         `;
@@ -2203,20 +2212,20 @@ function renderTimeline(route, currentLoc, isLive = true, curvatureEta = null) {
               date.setMinutes(date.getMinutes() + ntesDelay);
               const expH = String(date.getHours()).padStart(2, '0');
               const expM = String(date.getMinutes()).padStart(2, '0');
-              expectedTimeHtml = `<div class="time-expected" style="color: #fbbf24; font-weight: 700; font-size: 0.85rem;">${expH}:${expM}</div>`;
+              expectedTimeHtml = `<div class="time-expected" style="color: #fbbf24; font-weight: 700; font-size: 0.85rem; white-space: nowrap;">${expH}:${expM}</div>`;
             }
           } catch (e) {}
         }
 
         const scheduledDisplayHtml = ntesDelay > 0
-          ? `<div class="time-scheduled-crossed" style="font-size: 0.72rem; color: var(--text-dim); text-decoration: line-through;">${timeStr}</div>`
-          : `<div class="time-scheduled" style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${timeStr}</div>`;
+          ? `<div class="time-scheduled-crossed" style="font-size: 0.72rem; color: var(--text-dim); text-decoration: line-through; white-space: nowrap;">${timeStr}</div>`
+          : `<div class="time-scheduled" style="font-weight: 700; font-size: 0.85rem; color: var(--text-main); white-space: nowrap;">${timeStr}</div>`;
 
         const delayHtml = ntesDelay > 0
-          ? `<div class="time-delay-tag" style="color: #fbbf24; font-size: 0.7rem; font-weight: 600;">+${ntesDelay}m</div>`
+          ? `<div class="time-delay-tag" style="color: #fbbf24; font-size: 0.7rem; font-weight: 600; white-space: nowrap;">+${ntesDelay}m</div>`
           : (timelineIsLive
-            ? '<div class="time-ontime-tag" style="color: #34d399; font-size: 0.7rem;">On Time</div>'
-            : '<div class="time-ontime-tag" style="color: #64748b; font-size: 0.7rem;">Scheduled</div>');
+            ? '<div class="time-ontime-tag" style="color: #34d399; font-size: 0.7rem; white-space: nowrap;">On Time</div>'
+            : '<div class="time-ontime-tag" style="color: #64748b; font-size: 0.7rem; white-space: nowrap;">Scheduled</div>');
 
         timeColHtml = `
           ${scheduledDisplayHtml}
@@ -2234,11 +2243,11 @@ function renderTimeline(route, currentLoc, isLive = true, curvatureEta = null) {
 
     item.innerHTML = `
       <div class="timeline-dot"></div>
-      <div>
-        <div class="station-title">${s.stationName || s.stationCode}</div>
+      <div style="flex: 1; min-width: 0; padding-right: 8px;">
+        <div class="station-title" title="${escapeHtml(s.stationName || s.stationCode)}">${escapeHtml(s.stationName || s.stationCode)}</div>
         <div class="station-meta-sub">${metaLine || '&nbsp;'}</div>
       </div>
-      <div class="station-time-col" style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
+      <div class="station-time-col" style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; flex-shrink: 0;">
         ${timeColHtml}
       </div>
     `;
