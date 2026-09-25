@@ -348,7 +348,7 @@ def health(train: str = eta_model.DEFAULT_TRAIN):
     }
 
 
-def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=False, quantile="mean"):
+def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=False, quantile="mean", delay=0.0):
     """
     Build the full ETA payload.  Shared by GET /eta and the WebSocket push so the two
     can never drift apart — a dashboard that renders one shape over REST and a different
@@ -360,7 +360,7 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=Fals
         max_speed = eta_model.MAX_SPEED_KMH
     res = eta_model.compute_eta(train_number, date=date, weather=weather,
                                 max_speed=max_speed,
-                                conflicts=True, conflict_delay_min=0.0,
+                                conflicts=True, conflict_delay_min=float(delay or 0.0),
                                 hazards=hazards, quantile=quantile)
     t = res["totals"]
 
@@ -443,6 +443,7 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=Fals
         date and res["schedule_source_date"] and date != res["schedule_source_date"]
     )
 
+    halts_eta = {}
     if dep_iso:
         dep_dt = datetime.fromisoformat(dep_iso)
         shift = timedelta(0)
@@ -455,6 +456,38 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=Fals
         arr_dt = dep_dt + timedelta(minutes=t["predicted_eta_min"])
         res["origin_departure"] = dep_dt.isoformat()
         res["predicted_arrival"] = arr_dt.isoformat()
+
+        # Build per-halt cumulative ETA and clock arrival for every intermediate station
+        cum_min = 0.0
+        for k, seg in enumerate(res["segments"]):
+            cum_min += seg["segment_eta_min"]
+            seg["cumulative_eta_min"] = round(cum_min, 1)
+            st_code = seg["to"]
+            halt_entry = {
+                "station_code": st_code,
+                "cumulative_eta_min": round(cum_min, 1),
+                "conflict_hold_min": seg.get("conflict_hold_min", 0.0),
+                "hist_delay_min": seg.get("hist_delay_min", 0.0),
+                "weather_factor": seg.get("weather_factor", 1.0),
+                "hazard_penalty_min": seg.get("hazard_penalty_min", 0.0),
+                "running_min": seg.get("running_min_applied", seg.get("running_min", 0.0)),
+                "dwell_min": seg.get("dwell_min", 0.0),
+            }
+            if k + 1 < len(halts):
+                dest_halt = halts[k + 1]
+                h_arr_dt = dep_dt + timedelta(minutes=cum_min)
+                seg["predicted_arrival"] = h_arr_dt.isoformat()
+                halt_entry["predicted_arrival"] = h_arr_dt.isoformat()
+                sched_h_arr = dest_halt.get("scheduledArrival")
+                if sched_h_arr:
+                    sched_h_arr_dt = datetime.fromisoformat(sched_h_arr) + shift
+                    seg["scheduled_arrival"] = sched_h_arr_dt.isoformat()
+                    halt_entry["scheduled_arrival"] = sched_h_arr_dt.isoformat()
+                    h_delay = round((h_arr_dt - sched_h_arr_dt).total_seconds() / 60.0, 1)
+                    seg["predicted_delay_min"] = h_delay
+                    halt_entry["predicted_delay_min"] = h_delay
+            halts_eta[st_code] = halt_entry
+
         # Same band, expressed on the clock. A judge reads "18:32–19:16" faster than
         # "612.8 −23.4/+20.6", and it is the identical measured spread either way.
         _band = res.get("observed_band") or {}
@@ -473,6 +506,7 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=Fals
         else:
             res["scheduled_arrival"] = sched_arr
 
+    res["halts_eta"] = halts_eta
     res["comparison"] = {
         "naive_flat_speed_min": t["naive_flat_speed_min"],
         "combined_model_min": t["predicted_eta_min"],
@@ -493,6 +527,7 @@ def get_eta(
     max_speed: float = Query(eta_model.MAX_SPEED_KMH, description="max operating speed km/h"),
     hazards: bool = Query(False, description="apply speed restrictions from HUMAN-CONFIRMED crowdsourced hazard reports (off by default; false reproduces the documented §4b numbers exactly)"),
     quantile: str = Query("mean", description="historical delay quantile: 'mean' (default expected), 'p50' / 'median', 'p80' (conservative buffer), 'p95' (stress/worst-case buffer)"),
+    delay: float = Query(0.0, description="current live delay in minutes to seed single-line conflict loop holds"),
 ):
     """Per-segment breakdown and total predicted ETA."""
     if date and isinstance(date, str):
@@ -513,6 +548,10 @@ def get_eta(
         hazards = False
     if not isinstance(quantile, str):
         quantile = "mean"
+    try:
+        delay = float(delay or 0.0)
+    except (ValueError, TypeError):
+        delay = 0.0
 
     valid_weather = list(curvature.WEATHER_SPEED_FACTOR) + ["live"]
     if weather not in valid_weather:
@@ -531,7 +570,7 @@ def get_eta(
         )
 
     try:
-        res = _eta_payload(train_number, date, weather, mode, max_speed, hazards, quantile=quantile)
+        res = _eta_payload(train_number, date, weather, mode, max_speed, hazards, quantile=quantile, delay=delay)
     except FileNotFoundError as e:
         raise HTTPException(
             404,

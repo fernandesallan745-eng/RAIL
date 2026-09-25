@@ -272,6 +272,33 @@
         <div id="drawerWeatherDetails" class="next-halt-text" style="display: none; margin-top: 4px; font-size: 0.74rem; color: #94a3b8; line-height: 1.4;"></div>
         <div id="drawerConfidenceDetails" class="next-halt-text" style="display: none; margin-top: 4px; font-size: 0.74rem; color: #c084fc; line-height: 1.4;"></div>
 
+        <!-- GATI Dynamic Multi-Layer Predictive ETA vs ConfirmTkt / NTES Static Broadcast -->
+        <div id="drawerGatiEtaComparison" style="display: none; margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(56, 189, 248, 0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-weight: 700; font-size: 0.82rem; color: #38bdf8; display: flex; align-items: center; gap: 6px;">
+              <span>⚡ GATI Physics &amp; Conflict Forecast</span>
+            </div>
+            <span id="gatiDivergencePill" style="font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; font-weight: 700; background: rgba(245, 158, 11, 0.2); color: #fbbf24;"></span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+            <div style="background: rgba(255, 255, 255, 0.03); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06);">
+              <div style="font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px;">ConfirmTkt / NTES</div>
+              <div id="gatiNtesEstTime" style="font-size: 1.05rem; font-weight: 800; color: #94a3b8; margin-top: 2px;">--:--</div>
+              <div id="gatiNtesDelay" style="font-size: 0.7rem; color: #64748b;">Flat static delay</div>
+            </div>
+
+            <div style="background: rgba(56, 189, 248, 0.08); padding: 8px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);">
+              <div style="font-size: 0.65rem; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">GATI Multi-Layer</div>
+              <div id="gatiPredEstTime" style="font-size: 1.05rem; font-weight: 800; color: #38bdf8; margin-top: 2px;">--:--</div>
+              <div id="gatiPredDelay" style="font-size: 0.7rem; color: #7dd3fc; font-weight: 600;">Physics + Conflicts</div>
+            </div>
+          </div>
+
+          <!-- Layer Contribution Breakdown -->
+          <div id="gatiLayerBreakdown" style="margin-top: 8px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 6px;"></div>
+        </div>
+
         <!-- Run state: running / awaiting departure / not running today / completed.
              Server-resolved (train.controller.js resolveRunState) so this page and
              /admin cannot disagree. Shown for every state EXCEPT plain running, where
@@ -407,8 +434,9 @@
 
       <!-- Journey Halts & Timeline -->
       <div>
-        <div class="section-heading">
-          <span>Journey Timeline & Halts</span>
+        <div class="section-heading" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Journey Timeline &amp; Halts</span>
+          <span style="font-size: 0.68rem; font-weight: 600; color: #38bdf8; text-transform: none; letter-spacing: normal;">⚡ GATI Predictive ETA</span>
         </div>
         <div id="timelineHaltsList" class="timeline-list"></div>
       </div>

@@ -1245,6 +1245,111 @@ function renderConflictPanel(liveData) {
   body.innerHTML = html;
 }
 
+// ── GATI Predictive ETA vs ConfirmTkt Static Broadcast Comparison ─────────
+function renderGatiEtaComparison(liveData) {
+  const panel = document.getElementById('drawerGatiEtaComparison');
+  if (!panel) return;
+
+  const eta = liveData.curvatureEta;
+  if (!eta || !eta.totals) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  const ntesDelay = liveData.delayMinutes ?? 0;
+  const route = liveData.route || [];
+  const destHalt = route.filter(s => s.isHalt).pop() || route[route.length - 1] || {};
+
+  // Scheduled arrival at destination
+  const schedArr = destHalt.scheduledArrival || destHalt.scheduledDeparture || eta.scheduled_arrival;
+  let ntesArrStr = '--:--';
+  if (schedArr) {
+    try {
+      const dt = new Date(schedArr.includes('T') ? schedArr : `1970-01-01T${schedArr}:00`);
+      if (!isNaN(dt.getTime())) {
+        dt.setMinutes(dt.getMinutes() + ntesDelay);
+        ntesArrStr = `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`;
+      }
+    } catch (e) {
+      ntesArrStr = '--:--';
+    }
+  }
+
+  // GATI arrival at destination
+  let gatiArrStr = '--:--';
+  if (eta.predicted_arrival) {
+    gatiArrStr = eta.predicted_arrival.includes('T') ? eta.predicted_arrival.split('T')[1].slice(0, 5) : eta.predicted_arrival;
+  }
+  const gatiDelay = Math.round(eta.arrival_delta_min ?? (eta.totals.predicted_eta_min - (eta.totals.scheduled_duration_min || 0)));
+
+  // Populate ConfirmTkt / NTES box
+  const ntesTimeEl = document.getElementById('gatiNtesEstTime');
+  const ntesDelayEl = document.getElementById('gatiNtesDelay');
+  if (ntesTimeEl) ntesTimeEl.innerText = ntesArrStr !== '--:--' ? ntesArrStr : `+${ntesDelay}m`;
+  if (ntesDelayEl) ntesDelayEl.innerText = ntesDelay > 0 ? `+${ntesDelay}m flat static` : 'On time static';
+
+  // Populate GATI box
+  const predTimeEl = document.getElementById('gatiPredEstTime');
+  const predDelayEl = document.getElementById('gatiPredDelay');
+  if (predTimeEl) predTimeEl.innerText = gatiArrStr !== '--:--' ? gatiArrStr : `+${gatiDelay}m`;
+  const gatiDelayColor = gatiDelay > 30 ? '#f87171' : (gatiDelay > 0 ? '#fbbf24' : '#34d399');
+  if (predDelayEl) predDelayEl.innerHTML = `<span style="color:${gatiDelayColor}; font-weight:700;">+${gatiDelay}m predicted</span>`;
+
+  // Divergence pill
+  const divPill = document.getElementById('gatiDivergencePill');
+  const divergence = gatiDelay - ntesDelay;
+  if (divPill) {
+    if (divergence !== 0) {
+      divPill.style.display = 'inline-block';
+      divPill.innerText = divergence > 0 ? `+${divergence}m vs ConfirmTkt` : `${divergence}m vs ConfirmTkt`;
+      divPill.title = `GATI forecasts ${Math.abs(divergence)} mins ${divergence > 0 ? 'more' : 'less'} delay than ConfirmTkt by accounting for physics and crossing bottlenecks`;
+    } else {
+      divPill.style.display = 'none';
+    }
+  }
+
+  // Layer breakdown bullets
+  const breakdownEl = document.getElementById('gatiLayerBreakdown');
+  if (breakdownEl) {
+    const items = [];
+
+    const conflictHold = eta.totals.conflict_hold_min || 0;
+    if (conflictHold > 0) {
+      const meetsCount = (eta.conflict_layer?.conflicts || []).filter(c => c.whoIsHeld === 'us').length;
+      items.push(`<span style="color:#f59e0b;font-weight:600;">⚠️ +${conflictHold}m loop holds</span> (${meetsCount} single-line crossing${meetsCount > 1 ? 's' : ''})`);
+    }
+
+    const histDelay = eta.totals.historical_delay_min || 0;
+    if (histDelay > 0) {
+      items.push(`<span style="color:#c084fc;">📊 +${histDelay}m historical corridor delay</span>`);
+    }
+
+    const curvMin = eta.curvature_layer_contribution_min;
+    if (curvMin && curvMin > 0.05) {
+      items.push(`<span style="color:#38bdf8;">🔄 +${curvMin.toFixed(1)}m curvature speed restrictions</span>`);
+    }
+
+    const wxFactor = eta.totals.weather_factor ?? eta.weather_factor;
+    if (wxFactor && wxFactor < 0.99) {
+      items.push(`<span style="color:#fbbf24;">🌧️ Weather friction factor: ${(wxFactor * 100).toFixed(0)}%</span>`);
+    }
+
+    const slack = eta.totals.schedule_slack_min || 0;
+    if (slack > 0) {
+      items.push(`<span style="color:#34d399;">⏱️ -${slack}m timetable slack buffer</span>`);
+    }
+
+    breakdownEl.innerHTML = `
+      <div style="color:var(--text-dim);margin-bottom:3px;font-size:0.67rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Why GATI differs from ConfirmTkt:</div>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        ${items.length > 0 ? items.map(it => `<div>&bull; ${it}</div>`).join('') : '<div>&bull; Standard schedule & alignment adherence</div>'}
+      </div>
+    `;
+  }
+
+  panel.style.display = 'block';
+}
+
 // Draw Track and Stations on Map
 function renderTrainOnMap(liveData, routeGeoJson, skipFlyTo = false) {
   activeRouteLayer.clearLayers();
@@ -1828,6 +1933,9 @@ function renderTrainDrawer(liveData, coachesData) {
     }
   }
 
+  // GATI Dynamic Multi-Layer Predictive ETA vs ConfirmTkt Naive Delay
+  renderGatiEtaComparison(liveData);
+
   // Render Coach Composition.
   // Both sources are passed: the structured payload carries class names and berth
   // counts, the string is the bare formation. Passing only `a || b` meant a
@@ -1835,7 +1943,7 @@ function renderTrainDrawer(liveData, coachesData) {
   renderCoaches(coachesData, trainInfo.coachPosition);
 
   // Render Halts Timeline
-  renderTimeline(route, currentLoc, isRunning || (liveData.runState?.state === 'completed'));
+  renderTimeline(route, currentLoc, isRunning || (liveData.runState?.state === 'completed'), liveData.curvatureEta);
 
   drawer.classList.add('open');
 }
@@ -1969,13 +2077,14 @@ function renderCoaches(coachesData, formationString) {
 // Render Journey Timeline Halts
 // `isLive` says whether this run is actually happening — it decides whether a
 // zero delay may be rendered as the claim "On Time" or only as "Scheduled".
-function renderTimeline(route, currentLoc, isLive = true) {
+function renderTimeline(route, currentLoc, isLive = true, curvatureEta = null) {
   const list = document.getElementById('timelineHaltsList');
   list.innerHTML = '';
   const timelineIsLive = isLive !== false;
 
   const halts = route.filter(s => s.isHalt);
   const displayList = halts.length > 0 ? halts : route.slice(0, 30);
+  const haltsEta = curvatureEta?.halts_eta || {};
 
   displayList.forEach((s) => {
     const isPassed = s.status === 'departed' || s.status === 'arrived';
@@ -1987,53 +2096,124 @@ function renderTimeline(route, currentLoc, isLive = true) {
     const scheduledTime = s.scheduledArrival || s.scheduledDeparture || '--:--';
     const timeStr = scheduledTime.includes('T') ? scheduledTime.split('T')[1].slice(0, 5) : scheduledTime;
 
-    const delay = s.delayDeparture ?? s.delayArrival ?? 0;
-    
-    // Calculate expected time based on delay
-    let expectedTimeHtml = '';
-    if (delay > 0 && scheduledTime !== '--:--') {
-      try {
-        let date;
-        if (scheduledTime.includes('T')) {
-          date = new Date(scheduledTime);
-        } else {
-          const [hh, mm] = scheduledTime.split(':').map(Number);
-          date = new Date();
-          date.setHours(hh, mm, 0, 0);
+    const ntesDelay = s.delayDeparture ?? s.delayArrival ?? 0;
+    const code = s.stationCode;
+    const gatiInfo = haltsEta[code];
+
+    let timeColHtml = '';
+
+    if (isPassed) {
+      // Historical/already passed halt: show recorded arrival/departure
+      const delayHtml = ntesDelay > 0
+        ? `<div class="time-delay-tag" style="color: #fbbf24; font-size: 0.7rem; font-weight: 600;">+${ntesDelay}m</div>`
+        : (timelineIsLive
+          ? '<div class="time-ontime-tag" style="color: #34d399; font-size: 0.7rem;">On Time</div>'
+          : '<div class="time-ontime-tag" style="color: #64748b; font-size: 0.7rem;">Scheduled</div>');
+
+      let actualTimeStr = timeStr;
+      if (ntesDelay > 0 && scheduledTime !== '--:--') {
+        try {
+          const date = scheduledTime.includes('T') ? new Date(scheduledTime) : new Date();
+          if (!scheduledTime.includes('T')) {
+            const [hh, mm] = scheduledTime.split(':').map(Number);
+            date.setHours(hh, mm, 0, 0);
+          }
+          if (!isNaN(date.getTime())) {
+            date.setMinutes(date.getMinutes() + ntesDelay);
+            actualTimeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+          }
+        } catch (e) {}
+      }
+
+      timeColHtml = `
+        <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${actualTimeStr}</div>
+        <div style="font-size: 0.7rem; color: var(--text-dim); ${ntesDelay > 0 ? 'text-decoration: line-through;' : ''}">${timeStr}</div>
+        ${delayHtml}
+      `;
+    } else {
+      // Upcoming or current station: Display GATI multi-layer forecast!
+      if (gatiInfo && gatiInfo.predicted_arrival) {
+        const gatiIso = gatiInfo.predicted_arrival;
+        const gatiTimeStr = gatiIso.includes('T') ? gatiIso.split('T')[1].slice(0, 5) : gatiIso;
+        const gatiDelay = Math.round(gatiInfo.predicted_delay_min);
+        const gatiColor = gatiDelay > 30 ? '#f87171' : (gatiDelay > 0 ? '#fbbf24' : '#34d399');
+
+        // ConfirmTkt naive flat comparison time
+        let ntesTimeStr = timeStr;
+        if (ntesDelay > 0 && scheduledTime !== '--:--') {
+          try {
+            const date = scheduledTime.includes('T') ? new Date(scheduledTime) : new Date();
+            if (!scheduledTime.includes('T')) {
+              const [hh, mm] = scheduledTime.split(':').map(Number);
+              date.setHours(hh, mm, 0, 0);
+            }
+            if (!isNaN(date.getTime())) {
+              date.setMinutes(date.getMinutes() + ntesDelay);
+              ntesTimeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+            }
+          } catch (e) {}
         }
-        if (!isNaN(date.getTime())) {
-          date.setMinutes(date.getMinutes() + delay);
-          const expH = String(date.getHours()).padStart(2, '0');
-          const expM = String(date.getMinutes()).padStart(2, '0');
-          expectedTimeHtml = `<div class="time-expected" style="color: #fbbf24; font-weight: 700; font-size: 0.85rem;">${expH}:${expM}</div>`;
+
+        const holdBadge = (gatiInfo.conflict_hold_min && gatiInfo.conflict_hold_min > 0)
+          ? `<div style="font-size: 0.65rem; color: #f59e0b; font-weight: 700; background: rgba(245, 158, 11, 0.15); padding: 1px 4px; border-radius: 4px; margin-top: 1px;">⚠️ +${gatiInfo.conflict_hold_min}m loop hold</div>`
+          : '';
+
+        timeColHtml = `
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span style="font-size: 0.6rem; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.18); padding: 1px 4px; border-radius: 3px; letter-spacing: 0.4px;">GATI</span>
+            <span style="color: ${gatiColor}; font-weight: 800; font-size: 0.88rem;">${gatiTimeStr}</span>
+            <span style="color: ${gatiColor}; font-size: 0.72rem; font-weight: 700;">+${gatiDelay}m</span>
+          </div>
+          ${holdBadge}
+          <div style="font-size: 0.68rem; color: var(--text-dim); text-decoration: line-through; margin-top: 1px;">
+            ${timeStr} (Sched)
+          </div>
+          <div style="font-size: 0.65rem; color: #64748b; margin-top: 1px;" title="ConfirmTkt repeats flat delay without physics or crossing loop holds">
+            ConfirmTkt: <span style="${ntesDelay !== gatiDelay ? 'text-decoration: line-through;' : ''}">${ntesTimeStr} (+${ntesDelay}m)</span>
+          </div>
+        `;
+      } else {
+        // Fallback when GATI model cache is absent: show standard scheduled + ntes
+        let expectedTimeHtml = '';
+        if (ntesDelay > 0 && scheduledTime !== '--:--') {
+          try {
+            const date = scheduledTime.includes('T') ? new Date(scheduledTime) : new Date();
+            if (!scheduledTime.includes('T')) {
+              const [hh, mm] = scheduledTime.split(':').map(Number);
+              date.setHours(hh, mm, 0, 0);
+            }
+            if (!isNaN(date.getTime())) {
+              date.setMinutes(date.getMinutes() + ntesDelay);
+              const expH = String(date.getHours()).padStart(2, '0');
+              const expM = String(date.getMinutes()).padStart(2, '0');
+              expectedTimeHtml = `<div class="time-expected" style="color: #fbbf24; font-weight: 700; font-size: 0.85rem;">${expH}:${expM}</div>`;
+            }
+          } catch (e) {}
         }
-      } catch (e) {
-        console.error('Failed to parse expected time:', e);
+
+        const scheduledDisplayHtml = ntesDelay > 0
+          ? `<div class="time-scheduled-crossed" style="font-size: 0.72rem; color: var(--text-dim); text-decoration: line-through;">${timeStr}</div>`
+          : `<div class="time-scheduled" style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${timeStr}</div>`;
+
+        const delayHtml = ntesDelay > 0
+          ? `<div class="time-delay-tag" style="color: #fbbf24; font-size: 0.7rem; font-weight: 600;">+${ntesDelay}m</div>`
+          : (timelineIsLive
+            ? '<div class="time-ontime-tag" style="color: #34d399; font-size: 0.7rem;">On Time</div>'
+            : '<div class="time-ontime-tag" style="color: #64748b; font-size: 0.7rem;">Scheduled</div>');
+
+        timeColHtml = `
+          ${scheduledDisplayHtml}
+          ${expectedTimeHtml}
+          ${delayHtml}
+        `;
       }
     }
 
-    const scheduledDisplayHtml = delay > 0 
-      ? `<div class="time-scheduled-crossed" style="font-size: 0.72rem; color: var(--text-dim); text-decoration: line-through;">${timeStr}</div>`
-      : `<div class="time-scheduled" style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${timeStr}</div>`;
-
-    // Platform is populated for booked halts only in this source (§5e), so it is
-    // omitted when absent rather than defaulted to "Platform 1" — a platform
-    // number is the single most actionable thing on a station row and a wrong one
-    // sends a passenger to the wrong side of the tracks.
     const platformHtml = (s.platform !== null && s.platform !== undefined && s.platform !== '')
       ? `Platform ${s.platform} &bull; `
       : '';
     const distHtml = Number.isFinite(Number(s.distance)) ? `${Number(s.distance)} km` : '';
     const metaLine = `${platformHtml}${distHtml}`.replace(/ &bull; $/, '');
-
-    // "On Time" here is an assertion about a run that is happening. Suppressed
-    // for a train that is not running: the timetable echoing a 0 delay is not an
-    // observation (VERIFIED #4, the zero-echo tier).
-    const delayHtml = delay > 0
-      ? `<div class="time-delay-tag" style="color: #fbbf24; font-size: 0.7rem; font-weight: 600;">+${delay}m</div>`
-      : (timelineIsLive
-        ? '<div class="time-ontime-tag" style="color: #34d399; font-size: 0.7rem;">On Time</div>'
-        : '<div class="time-ontime-tag" style="color: #64748b; font-size: 0.7rem;">Scheduled</div>');
 
     item.innerHTML = `
       <div class="timeline-dot"></div>
@@ -2042,9 +2222,7 @@ function renderTimeline(route, currentLoc, isLive = true) {
         <div class="station-meta-sub">${metaLine || '&nbsp;'}</div>
       </div>
       <div class="station-time-col" style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
-        ${scheduledDisplayHtml}
-        ${expectedTimeHtml}
-        ${delayHtml}
+        ${timeColHtml}
       </div>
     `;
 
@@ -2078,6 +2256,8 @@ function openDrawerLoading(num) {
   document.getElementById('deadReckoningPanel').style.display = 'none';
   document.getElementById('conflictPanel').style.display = 'none';
   document.getElementById('conflictUnavailable').style.display = 'none';
+  const gatiComp = document.getElementById('drawerGatiEtaComparison');
+  if (gatiComp) gatiComp.style.display = 'none';
   
   // Reset progress bar
   document.getElementById('drawerProgressFill').style.width = '0%';
