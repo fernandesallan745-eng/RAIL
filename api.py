@@ -570,6 +570,8 @@ def get_conflicts(
     delay: float = Query(0.0, description="our train's current delay in minutes (carried forward, no recovery assumed)"),
     offsets: str = Query("0,-1,-2", description="departure-day offsets to scan for other trains' instances"),
     date: str = Query("today", description="service date YYYY-MM-DD (run_days filter); 'today' for the current date, 'all' to count every roster train"),
+    live_delays: bool = Query(False, description="shift counterpart timelines by their cached empirical delay"),
+    feedback: bool = Query(False, description="enable forward-cascading hold accumulation (dynamic feedback loop)"),
 ):
     """
     Crossing & overtake prediction: where this train meets others on single line,
@@ -611,7 +613,9 @@ def get_conflicts(
     try:
         import conflict as conflict_mod
         res = conflict_mod.find_conflicts(train_number, delay, offs,
-                                          service_date=service_date)
+                                          service_date=service_date,
+                                          use_live_delays=live_delays,
+                                          dynamic_feedback=feedback)
     except FileNotFoundError as e:
         raise HTTPException(
             404,
@@ -676,6 +680,8 @@ def get_corridor_conflicts(
     at: str = Query(None, description="keep only meets within ±window of this wall clock, e.g. 14:30"),
     window: int = Query(60, ge=1, le=720, description="half-width in minutes for 'at'"),
     limit: int = Query(0, ge=0, description="cap the returned meets (0 = all); counts in the header are always for the full sweep"),
+    live_delays: bool = Query(False, description="shift counterpart timelines by their cached empirical delay"),
+    feedback: bool = Query(False, description="enable forward-cascading hold accumulation (dynamic feedback loop)"),
 ):
     """
     Every predicted crossing on the whole Konkan corridor for one service date.
@@ -707,7 +713,8 @@ def get_corridor_conflicts(
 
     import conflict as conflict_mod
     res = conflict_mod.corridor_conflicts(
-        service_date=service_date, delay_min=delay, at_clock=at, window_min=window)
+        service_date=service_date, delay_min=delay, at_clock=at, window_min=window,
+        use_live_delays=live_delays, dynamic_feedback=feedback)
 
     if limit and len(res["meets"]) > limit:
         # Copy rather than mutate: `corridor_conflicts` memoises its result, so

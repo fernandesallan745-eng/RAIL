@@ -1139,6 +1139,7 @@ function renderConflictPanel(liveData) {
       <span style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.25); padding:2px 8px; border-radius:10px; font-size:0.68rem; color:#fbbf24;">
         ${delayBadgeText}
       </span>
+      ${info.totalCascadingHoldMin > 0 ? `<span style="background:rgba(168,85,247,0.14); border:1px solid rgba(168,85,247,0.3); padding:2px 8px; border-radius:10px; font-size:0.68rem; color:#c084fc; font-weight:600;">↻ +${Math.round(info.totalCascadingHoldMin)}m cascade</span>` : ''}
     </div>
   `;
 
@@ -1173,6 +1174,8 @@ function renderConflictPanel(liveData) {
             <div style="color:#cbd5e1; font-size:0.7rem; margin-top:2px;">
               ${r.kind === 'overtake' ? 'Overtake' : 'Crossing'} vs <strong style="color:#fff">#${escapeHtml(r.otherTrain)}</strong>
               <span style="color:#94a3b8;">${escapeHtml(r.otherType)}</span>${shift}
+              ${r.otherDelayMin > 0 ? `<span style="color:#fbbf24; font-size:0.64rem;"> (other +${r.otherDelayMin}m late)</span>` : ''}
+              ${r.cascadingHoldUpstreamMin > 0 ? `<span style="color:#c084fc; font-size:0.64rem;"> ↻ +${r.cascadingHoldUpstreamMin}m upstream</span>` : ''}
             </div>
           </div>
           <div style="text-align:right; margin-left:8px; flex-shrink:0;">

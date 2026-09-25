@@ -587,12 +587,18 @@
           ${cl.error ? `Layer error: <code>${esc(cl.error)}</code>` : `
             Hold total <strong>${fmt(cl.total_hold_min)} min</strong> at a
             ${fmt(cl.delay_min_applied)} min applied delay.
+            ${cl.dynamic_feedback ? `<br/><strong>Dynamic feedback</strong> active —
+              cascading hold: <strong>${fmt(cl.total_cascading_hold_min)} min</strong>,
+              ripple delay on opposing trains: <strong>${fmt(cl.total_ripple_delay_min)} min</strong>.` : ''}
+            ${cl.use_live_delays ? `<br/>Live delays applied to <strong>${cl.cross_train_delays_applied}</strong> counterpart train(s).` : ''}
             ${esc(cl.note || '')}
             <br/>Loop locations are <strong>assumed</strong> at every timetable station on
             the single-line section (<code>${esc(asm.loopBasis || 'n/a')}</code>); this
             source carries no track-count data. Precedence is a heuristic over train type,
             not Indian Railways rules — the real call is a Section Controller's.
-            Other trains' times are <strong>scheduled</strong>; only our delay is live.
+            ${cl.use_live_delays
+              ? 'Counterpart trains\' times include <strong>cached empirical delays</strong>.'
+              : 'Other trains\' times are <strong>scheduled</strong>; only our delay is live.'}
             Re-acceleration constant <code>${fmt(asm.reaccelMin)} min</code>.
             Prediction only — nothing is dispatched.`}
         </div>

@@ -275,6 +275,45 @@ def adapt_full_dataset_train(record):
     }
 
 
+def get_train_delay(train_number, service_date=None):
+    """
+    Look up the empirical or live delay for a train on the corridor.
+    Checks:
+    1. Canonical dated run for `service_date` if provided (.cache/{train}_live_{service_date}.json)
+    2. Latest live snapshot (.cache/{train}_live.json or .cache/train_{train}_live_fallback.json)
+    3. Any dated runs in .cache/{train}_live_*.json
+
+    Returns (delay_min, basis, date_or_None).
+    If no valid signal is found, returns (0.0, 'scheduled-on-time', None).
+    """
+    tr = str(train_number)
+    candidates = []
+    if service_date:
+        sd_str = service_date.strftime("%Y-%m-%d") if isinstance(service_date, (datetime.date, datetime.datetime)) else str(service_date)
+        candidates.append(os.path.join(CACHE, f"{tr}_live_{sd_str}.json"))
+    candidates.append(os.path.join(CACHE, f"{tr}_live.json"))
+    candidates.append(os.path.join(CACHE, f"train_{tr}_live_fallback.json"))
+    candidates.extend(sorted(glob.glob(os.path.join(CACHE, f"{tr}_live_*.json")), reverse=True))
+
+    for path in candidates:
+        if not os.path.exists(path):
+            continue
+        try:
+            with open(path) as f:
+                d = json.load(f)
+            halts = [s for s in d.get("route", []) if s.get("isHalt")]
+            if len(halts) >= 2 and halts[-1].get("delayArrival") is not None:
+                delay = float(halts[-1]["delayArrival"])
+                date_found = d.get("startDate") or os.path.basename(path).split("_live_")[-1].replace(".json", "")
+                return delay, "cached-dated-run", date_found
+            elif d.get("trackingMode") == "real-time" and d.get("delayMinutes") is not None:
+                delay = float(d.get("delayMinutes"))
+                return delay, "cached-live-snapshot", d.get("startDate")
+        except Exception:
+            continue
+    return 0.0, "scheduled-on-time", None
+
+
 def load_corridor_train(number):
     """Load one train's schedule in the format the conflict model expects.
 
@@ -675,7 +714,9 @@ def _offset_window(our_days, their_days, margin=OFFSET_MARGIN_DAYS):
 
 
 def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
-                   others=None, service_date=None, _with_baseline=True):
+                   others=None, service_date=None, _with_baseline=True,
+                   other_delays=None, use_live_delays=False,
+                   dynamic_feedback=False):
     """Predict every crossing / overtake for one run of `our_number`.
 
     `delay_min` is applied uniformly to our whole journey — i.e. the delay is
@@ -722,6 +763,8 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
 
     conflicts, considered = [], []
 
+    other_delays_applied = {}   # {train_number: {delay, basis, date}}
+
     for other_number in candidates:
         if str(other_number) == str(our_number):
             continue
@@ -729,6 +772,24 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
             them = load_corridor_train(other_number)
         except FileNotFoundError:
             continue
+
+        # --- opposing-train delay lookup ---
+        their_delay_min = 0.0
+        their_delay_basis = "scheduled-on-time"
+        their_delay_date = None
+        if use_live_delays:
+            if other_delays and str(other_number) in other_delays:
+                their_delay_min = float(other_delays[str(other_number)])
+                their_delay_basis = "caller-provided"
+            else:
+                their_delay_min, their_delay_basis, their_delay_date = (
+                    get_train_delay(other_number, service_date))
+        if their_delay_min:
+            other_delays_applied[str(other_number)] = {
+                "delayMin": round(their_delay_min, 1),
+                "basis": their_delay_basis,
+                "date": their_delay_date,
+            }
 
         their_st = {s["code"]: s for s in them["stations"]}
         shared_codes = [c for c in our_st if c in their_st]
@@ -821,7 +882,8 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
                 skipped_not_running += 1
                 continue
             shift = off * 1440
-            gaps = [(station_time(s) + delay_min) - (t + shift)
+            their_total_shift = shift + their_delay_min
+            gaps = [(station_time(s) + delay_min) - (t + their_total_shift)
                     for s, t in zip(nodes, their_time_at)]
 
             for i in range(len(nodes) - 1):
@@ -846,9 +908,9 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
 
                 # Who yields.
                 our_t_a = station_time(a) + delay_min
-                their_t_a = their_time_at[i] + shift
+                their_t_a = their_time_at[i] + their_total_shift
                 our_t_b = station_time(b) + delay_min
-                their_t_b = their_time_at[i + 1] + shift
+                their_t_b = their_time_at[i + 1] + their_total_shift
 
                 overtaker = None
                 precedence_note = None
@@ -1022,6 +1084,15 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
                         "charged — the booked timetable already contains the "
                         "planned crossing — plus REACCEL_MIN"
                     ),
+                    # Opposing-train live delay applied to their timeline.
+                    "otherDelayMin": round(their_delay_min, 1),
+                    "otherDelayBasis": their_delay_basis,
+                    # Occupancy windows for dynamic-feedback recomputation.
+                    # Prefixed with _ — stripped before return.
+                    "_ourIn": our_in,
+                    "_ourOut": our_out,
+                    "_theirIn": their_in,
+                    "_theirOut": their_out,
                 })
 
     conflicts.sort(key=lambda c: c["meetKm"])
@@ -1039,7 +1110,10 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
     # is no upstream request behind it.
     if delay_min and _with_baseline:
         base = find_conflicts(our_number, 0.0, offsets, others,
-                              service_date=service_date, _with_baseline=False)
+                              service_date=service_date, _with_baseline=False,
+                              other_delays=other_delays,
+                              use_live_delays=use_live_delays,
+                              dynamic_feedback=False)
         by_key = {(c["otherTrain"], c["instanceOffsetDays"]): c
                   for c in base["conflicts"]}
         for c in conflicts:
@@ -1096,6 +1170,50 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
             f"This is NOT a prediction of zero crossings — none could be "
             f"computed."
         )
+    # --- Dynamic feedback loop: cascading hold accumulation -----------------
+    # A hold at station K shifts our arrival at every downstream station K'>K
+    # by +hold minutes.  Because a train travels monotonically in one spatial
+    # direction, there are zero circular dependencies and a single forward
+    # sweep resolves the entire cascade in O(N).  The sweep runs AFTER the
+    # baseline pass so it uses the already-netted `ourHoldMin` values.
+    total_cascading = 0.0
+    total_ripple = 0.0
+    if dynamic_feedback and conflicts:
+        cascading = 0.0
+        for c in conflicts:                     # sorted by meetKm
+            c["cascadingHoldUpstreamMin"] = round(cascading, 1)
+            if cascading > 0:
+                # Recompute raw_wait with shifted our-occupancy window.
+                new_our_in = c["_ourIn"] + cascading
+                new_our_out = c["_ourOut"] + cascading
+                new_raw = max(0.0, min(new_our_out, c["_theirOut"])
+                              - max(new_our_in, c["_theirIn"]))
+                c["rawWaitMin"] = round(new_raw, 1)
+                # Recharge hold with the updated raw_wait.
+                scheduled = c.get("scheduledWaitMin", 0.0)
+                _charge_hold(c, new_raw - scheduled)
+
+            if c["whoIsHeld"] == "us" and c["ourHoldMin"] > 0:
+                cascading += c["ourHoldMin"]
+
+            # Ripple: when the opposing train yields, their hold is a delay
+            # penalty visible to dispatch.
+            c["rippleDelayMin"] = (
+                round(c["theirHoldMin"], 1)
+                if c["whoIsHeld"] == "them" and c["theirHoldMin"] > 0
+                else 0.0
+            )
+            c["totalCascadingMin"] = round(cascading, 1)
+
+        total_cascading = round(cascading, 1)
+        total_ripple = round(
+            sum(c["rippleDelayMin"] for c in conflicts), 1)
+
+    # Strip internal occupancy fields — they served the feedback sweep and
+    # must not leak into the API contract.
+    for c in conflicts:
+        for k in ("_ourIn", "_ourOut", "_theirIn", "_theirOut"):
+            c.pop(k, None)
 
     our_total = round(sum(c["ourHoldMin"] for c in conflicts), 1)
     by_conf = {k: sum(1 for c in conflicts if c["locationConfidence"] == k)
@@ -1110,6 +1228,8 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
         "delayMinApplied": delay_min,
         "conflicts": conflicts,
         "totalHoldMin": our_total,
+        "totalCascadingHoldMin": total_cascading,
+        "totalRippleDelayMin": total_ripple,
         "heldCount": sum(1 for c in conflicts if c["whoIsHeld"] == "us"),
         "precedenceCount": sum(1 for c in conflicts if c["whoIsHeld"] == "them"),
         "mappableCount": mappable,
@@ -1199,11 +1319,19 @@ def find_conflicts(our_number, delay_min=0.0, offsets=DEFAULT_OFFSETS,
             "reaccelMin": REACCEL_MIN,
             "reaccelNote": "Assumed restart cost from a dead stand in a loop; not measured.",
             "delayModel": "carried-forward (our delay applied uniformly, no recovery assumed)",
-            "otherTrainsAreScheduled": True,
+            "otherTrainsAreScheduled": not bool(other_delays_applied),
             "otherTrainsNote": (
                 "Other trains' times are SCHEDULED, not live. Only our own delay "
                 "is live. No upstream request is made for any other train."
+                if not other_delays_applied else
+                f"Live delays applied to {len(other_delays_applied)} counterpart "
+                f"train(s) from cached dated runs. Remaining trains are scheduled."
             ),
+            "dynamicFeedback": bool(dynamic_feedback),
+            "useLiveDelays": bool(use_live_delays),
+            "otherDelaysApplied": other_delays_applied or None,
+            "totalCascadingHoldMin": total_cascading,
+            "totalRippleDelayMin": total_ripple,
             "offsetsScanned": sorted(offsets_seen),
             "offsetsBasis": "derived-per-pair" if offsets_auto else "explicit",
             "ourCorridorDays": (list(our_corridor_days)
@@ -1248,7 +1376,8 @@ _corridor_sweep_cache = {}
 
 
 def corridor_conflicts(service_date=None, delay_min=0.0, roster=None,
-                       at_clock=None, window_min=60, use_cache=True):
+                       at_clock=None, window_min=60, use_cache=True,
+                       use_live_delays=False, dynamic_feedback=False):
     """Every predicted meet on the corridor for one service date, deduplicated.
 
     `delay_min` is applied to EVERY train, so the default 0.0 is the booked
@@ -1267,7 +1396,8 @@ def corridor_conflicts(service_date=None, delay_min=0.0, roster=None,
     # which the CLI never hit because argparse hands it a string.
     service_date = _parse_date(service_date)
     key = (service_date, delay_min, at_clock, window_min,
-           tuple(roster) if roster else None)
+           tuple(roster) if roster else None,
+           use_live_delays, dynamic_feedback)
     if use_cache and key in _corridor_sweep_cache:
         return _corridor_sweep_cache[key]
 
@@ -1277,7 +1407,9 @@ def corridor_conflicts(service_date=None, delay_min=0.0, roster=None,
     dup_hits = no_axis = 0
     for n in trains:
         try:
-            r = find_conflicts(n, delay_min, service_date=service_date)
+            r = find_conflicts(n, delay_min, service_date=service_date,
+                              use_live_delays=use_live_delays,
+                              dynamic_feedback=dynamic_feedback)
         except Exception as e:                                   # noqa: BLE001
             failed.append({"train": str(n), "error": f"{type(e).__name__}: {e}"})
             continue

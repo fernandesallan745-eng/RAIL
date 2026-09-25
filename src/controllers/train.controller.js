@@ -456,7 +456,7 @@ export const getTrainLiveStatus = async (req, res, next) => {
     try {
       const conflictRes = await axios.get(
         `${config.modelApi.baseUrl}/conflicts/${trainNumber}`,
-        { params: { delay: liveDelayMin }, timeout: 1500 }
+        { params: { delay: liveDelayMin, live_delays: true, feedback: true }, timeout: 1500 }
       );
       if (conflictRes.data) {
         enhancedData.conflicts = conflictRes.data;
@@ -758,7 +758,7 @@ export const getTrainLiveStatus = async (req, res, next) => {
       try {
         const conflictRes = await axios.get(
           `${config.modelApi.baseUrl}/conflicts/${trainNumber}`,
-          { params: { delay: cachedDelayMin }, timeout: 1500 }
+          { params: { delay: cachedDelayMin, live_delays: true, feedback: true }, timeout: 1500 }
         );
         if (conflictRes.data) {
           enhancedData.conflicts = conflictRes.data;
@@ -823,9 +823,9 @@ export const getCorridorConflicts = async (req, res) => {
     // timetables (VERIFIED #15). That is what makes a corridor-wide layer
     // affordable at all — polling 206 trains would be impossible against a
     // 10 req/min ceiling.
-    const { date, at, window, limit, delay } = req.query;
+    const { date, at, window, limit, delay, live_delays, feedback } = req.query;
     const params = {};
-    for (const [k, v] of Object.entries({ date, at, window, limit, delay })) {
+    for (const [k, v] of Object.entries({ date, at, window, limit, delay, live_delays, feedback })) {
       if (v !== undefined && v !== '') params[k] = v;
     }
     const upstream = await axios.get(

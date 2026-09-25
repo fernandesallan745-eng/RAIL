@@ -840,7 +840,8 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             # charged a crossing with a Thursday-only special.
             conflict_result = conflict_mod.find_conflicts(
                 train, conflict_delay_min,
-                service_date=conflict_service_date if conflict_service_date is not None else date)
+                service_date=conflict_service_date if conflict_service_date is not None else date,
+                use_live_delays=True, dynamic_feedback=True)
             for c in conflict_result["conflicts"]:
                 if c["whoIsHeld"] != "us" or c["ourHoldMin"] <= 0:
                     continue
@@ -1148,13 +1149,19 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
             "error": conflict_error,
             "delay_min_applied": conflict_delay_min,
             "total_hold_min": round(total_hold, 1),
+            "total_cascading_hold_min": (conflict_result or {}).get("totalCascadingHoldMin", 0.0),
+            "total_ripple_delay_min": (conflict_result or {}).get("totalRippleDelayMin", 0.0),
+            "dynamic_feedback": (conflict_result or {}).get("_meta", {}).get("dynamicFeedback", False),
+            "use_live_delays": (conflict_result or {}).get("_meta", {}).get("useLiveDelays", False),
+            "cross_train_delays_applied": len(
+                (conflict_result or {}).get("_meta", {}).get("otherDelaysApplied", None) or {}),
             "held_count": (conflict_result or {}).get("heldCount", 0),
             "precedence_count": (conflict_result or {}).get("precedenceCount", 0),
             "conflict_count": len((conflict_result or {}).get("conflicts", [])),
             "note": (
                 "Minutes this train is predicted to stand in a loop while a "
                 "higher-precedence train passes. 0.0 for a Vande Bharat or "
-                "Shatabdi is the CORRECT result, not a wiring failure — they "
+                "Shatabdi is the CORRECT result, not a wiring failure \u2014 they "
                 "take precedence over everything else on this corridor."
             ),
             "assumptions": None if not conflict_result else {
@@ -1163,6 +1170,7 @@ def compute_eta(train=DEFAULT_TRAIN, date=None, weather="clear", max_speed=MAX_S
                     "priorityIsOfficial", "reaccelMin", "delayModel",
                     "otherTrainsAreScheduled", "decisionSupportOnly",
                     "singleLineSectionKm", "singleLineBasis",
+                    "dynamicFeedback", "useLiveDelays",
                 )
             },
         },
