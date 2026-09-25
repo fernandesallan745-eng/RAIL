@@ -8,6 +8,8 @@ const clientCache = {
   trainCoaches: new Map(),
   searches: new Map(),
   runState: new Map(),           // train number → run-state block (model API)
+  lastGoodConflicts: new Map(),  // train number → last valid crossing prediction (prevents UI flicker on timeout)
+  lastGoodCurvatureEta: new Map(), // train number → last valid curvature ETA
 };
 
 const NATIVE_API_STORAGE_KEY = 'gati.native-api-base';
@@ -517,6 +519,21 @@ async function selectTrain(trainNumber, forceRefresh = false, forceServerRefresh
     }
 
     if (liveData) {
+      // Continuity guard: if auto-refresh hit a momentary model timeout, retain last known good model results
+      if (liveData.conflicts) {
+        clientCache.lastGoodConflicts.set(trainNumber, liveData.conflicts);
+      } else if (liveData.conflictsUnavailable?.reason === 'model-unreachable' && clientCache.lastGoodConflicts.has(trainNumber)) {
+        liveData.conflicts = clientCache.lastGoodConflicts.get(trainNumber);
+        liveData.conflictsTransient = true;
+      }
+
+      if (liveData.curvatureEta) {
+        clientCache.lastGoodCurvatureEta.set(trainNumber, liveData.curvatureEta);
+      } else if (liveData.curvatureEtaUnavailable?.reason === 'model-unreachable' && clientCache.lastGoodCurvatureEta.has(trainNumber)) {
+        liveData.curvatureEta = clientCache.lastGoodCurvatureEta.get(trainNumber);
+        liveData.curvatureEtaTransient = true;
+      }
+
       renderTrainOnMap(liveData, routeGeoJson, forceRefresh);
       renderTrainDrawer(liveData, coachesData);
       if (forceRefresh) {

@@ -275,6 +275,9 @@ def adapt_full_dataset_train(record):
     }
 
 
+_CORRIDOR_TRAIN_CACHE = {}
+_EMPIRICAL_DELAY_CACHE = {}
+
 def get_train_delay(train_number, service_date=None):
     """
     Look up the empirical or live delay for a train on the corridor.
@@ -287,14 +290,19 @@ def get_train_delay(train_number, service_date=None):
     If no valid signal is found, returns (0.0, 'scheduled-on-time', None).
     """
     tr = str(train_number)
+    sd_str = service_date.strftime("%Y-%m-%d") if isinstance(service_date, (datetime.date, datetime.datetime)) else str(service_date)
+    cache_key = (tr, sd_str)
+    if cache_key in _EMPIRICAL_DELAY_CACHE:
+        return _EMPIRICAL_DELAY_CACHE[cache_key]
+
     candidates = []
     if service_date:
-        sd_str = service_date.strftime("%Y-%m-%d") if isinstance(service_date, (datetime.date, datetime.datetime)) else str(service_date)
         candidates.append(os.path.join(CACHE, f"{tr}_live_{sd_str}.json"))
     candidates.append(os.path.join(CACHE, f"{tr}_live.json"))
     candidates.append(os.path.join(CACHE, f"train_{tr}_live_fallback.json"))
     candidates.extend(sorted(glob.glob(os.path.join(CACHE, f"{tr}_live_*.json")), reverse=True))
 
+    res = (0.0, "scheduled-on-time", None)
     for path in candidates:
         if not os.path.exists(path):
             continue
@@ -305,13 +313,17 @@ def get_train_delay(train_number, service_date=None):
             if len(halts) >= 2 and halts[-1].get("delayArrival") is not None:
                 delay = float(halts[-1]["delayArrival"])
                 date_found = d.get("startDate") or os.path.basename(path).split("_live_")[-1].replace(".json", "")
-                return delay, "cached-dated-run", date_found
+                res = (delay, "cached-dated-run", date_found)
+                break
             elif d.get("trackingMode") == "real-time" and d.get("delayMinutes") is not None:
                 delay = float(d.get("delayMinutes"))
-                return delay, "cached-live-snapshot", d.get("startDate")
+                res = (delay, "cached-live-snapshot", d.get("startDate"))
+                break
         except Exception:
             continue
-    return 0.0, "scheduled-on-time", None
+
+    _EMPIRICAL_DELAY_CACHE[cache_key] = res
+    return res
 
 
 def load_corridor_train(number):
@@ -324,6 +336,10 @@ def load_corridor_train(number):
        by fetch_konkan_corridor + build_konkan_dataset.  Halt stations only, no
        lat/lng, but covers 189 trains the corridor cache does not have.
     """
+    k = str(number)
+    if k in _CORRIDOR_TRAIN_CACHE:
+        return _CORRIDOR_TRAIN_CACHE[k]
+
     path = os.path.join(CORRIDOR, f"{number}.json")
     if os.path.exists(path):
         with open(path) as f:
@@ -338,12 +354,16 @@ def load_corridor_train(number):
             if record and record.get("run_days"):
                 train["run_days"] = record["run_days"]
                 train["run_days_source"] = "full-dataset-backfill"
-        return axis.annotate(train)
+        annotated = axis.annotate(train)
+        _CORRIDOR_TRAIN_CACHE[k] = annotated
+        return annotated
 
     full = _load_full_dataset()
     record = full.get(str(number))
     if record is not None:
-        return axis.annotate(adapt_full_dataset_train(record))
+        annotated = axis.annotate(adapt_full_dataset_train(record))
+        _CORRIDOR_TRAIN_CACHE[k] = annotated
+        return annotated
 
     raise FileNotFoundError(
         f"Train {number} not found in corridor cache ({CORRIDOR}) "

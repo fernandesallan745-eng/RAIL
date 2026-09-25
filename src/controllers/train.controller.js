@@ -92,7 +92,7 @@ export const resolveRunState = async (trainNumber, liveData, serviceDate) => {
   try {
     const rs = await axios.get(
       `${config.modelApi.baseUrl}/run-state/${trainNumber}`,
-      { params: { date }, timeout: 1500 }
+      { params: { date }, timeout: config.modelApi.requestTimeoutMs || 8000 }
     );
     calendar = rs.data || null;
   } catch (err) {
@@ -199,6 +199,238 @@ export const resolveRunState = async (trainNumber, liveData, serviceDate) => {
 const hazardParam = (req) => (
   req?.query?.hazards === 'true' ? { hazards: 'true' } : {}
 );
+
+// Model layer in-memory cache for fast repeated polling on live deployment
+// Key: trainNumber:serviceDate:delayMin:weather:quantile:hazards
+// TTL: 45 seconds
+const modelLayerCache = new Map();
+const lastKnownGoodModels = new Map(); // trainNumber -> { curvatureEta, conflicts, runState, timestamp }
+
+const getModelCacheKey = (trainNumber, date, delayMin, weather, quantile, hazards) => {
+  return `${trainNumber}:${date}:${delayMin}:${weather}:${quantile}:${hazards ? '1' : '0'}`;
+};
+
+/**
+ * Concurrently attach weather, curvature ETA, single-line conflict prediction,
+ * and run-state to a train data payload with in-memory caching and fallback continuity.
+ */
+async function attachModelLayers(trainNumber, liveData, req, isFallback = false) {
+  const curLoc = liveData.currentLocation || {};
+  const curLat = Number(liveData.lat ?? curLoc.lat ?? curLoc.coordinates?.lat ?? liveData.previousHalt?.lat ?? 18.9);
+  const curLng = Number(liveData.lng ?? curLoc.lng ?? curLoc.coordinates?.lng ?? liveData.previousHalt?.lng ?? 73.0);
+
+  const startDate = liveData.startDate
+    ? String(liveData.startDate).slice(0, 10)
+    : localDateStr();
+  const delayMin = Number.isFinite(Number(liveData.delayMinutes))
+    ? Number(liveData.delayMinutes)
+    : 0;
+
+  const weatherParam = req?.query?.weather || 'live';
+  const quantileParam = req?.query?.quantile || 'mean';
+  const hazardParams = hazardParam(req);
+  const timeoutMs = config.modelApi.requestTimeoutMs || 8000;
+
+  // 1. Check in-memory cache for rapid 30s auto-refresh cycles
+  const cacheKey = getModelCacheKey(
+    trainNumber,
+    startDate,
+    delayMin,
+    weatherParam,
+    quantileParam,
+    Boolean(hazardParams.hazards)
+  );
+
+  const cached = modelLayerCache.get(cacheKey);
+  const now = Date.now();
+  if (cached && (now - cached.timestamp < 45000)) {
+    return {
+      weather: cached.weather,
+      curvatureEta: cached.curvatureEta,
+      curvatureEtaUnavailable: cached.curvatureEtaUnavailable,
+      conflicts: cached.conflicts,
+      conflictsUnavailable: cached.conflictsUnavailable,
+      runState: cached.runState,
+    };
+  }
+
+  // 2. Build concurrent promises
+  // 2.1 Weather
+  const weatherPromise = (async () => {
+    try {
+      if (Number.isFinite(curLat) && Number.isFinite(curLng) && weatherParam === 'live') {
+        return await weatherService.getPointWeather(curLat, curLng);
+      }
+      return weatherService.fallback(isFallback ? 'cached-run' : 'clear-sky');
+    } catch {
+      return weatherService.fallback(isFallback ? 'cached-run' : 'clear-sky');
+    }
+  })();
+
+  // 2.2 Curvature ETA
+  const etaPromise = (async () => {
+    try {
+      const fastApiUrl = `${config.modelApi.baseUrl}/eta/${trainNumber}`;
+      const fastApiRes = await axios.get(fastApiUrl, {
+        params: {
+          date: startDate,
+          weather: weatherParam,
+          quantile: quantileParam,
+          delay: delayMin,
+          ...hazardParams,
+        },
+        timeout: timeoutMs,
+      });
+      if (fastApiRes.data) {
+        const eta = fastApiRes.data;
+        if (eta.schedule_date_substituted) {
+          eta.is_fallback_date = true;
+        }
+        return { curvatureEta: eta };
+      }
+      return {};
+    } catch (err) {
+      const is404 = err.response && err.response.status === 404;
+      const detail = err.response?.data?.detail;
+      if (is404) {
+        console.log(
+          `[FastAPI integration] No ETA model cache for train ${trainNumber} — ` +
+          `serving live tracking without curvature/delay ETA.` +
+          (detail ? ` Model said: ${detail}` : '')
+        );
+      } else {
+        console.warn(`[FastAPI integration] Curvature ETA model offline or failed: ${err.message}`);
+      }
+      return {
+        curvatureEtaUnavailable: {
+          reason: is404 ? 'not-in-model-cache' : 'model-unreachable',
+          train: trainNumber,
+          detail: (is404 ? detail : err.message) || null,
+          modelReachable: Boolean(is404),
+        },
+      };
+    }
+  })();
+
+  // 2.3 Single-line Conflicts
+  const conflictPromise = (async () => {
+    try {
+      const conflictRes = await axios.get(
+        `${config.modelApi.baseUrl}/conflicts/${trainNumber}`,
+        {
+          params: { delay: delayMin, live_delays: true, feedback: true },
+          timeout: timeoutMs,
+        }
+      );
+      if (conflictRes.data) {
+        const cData = conflictRes.data;
+        cData.delayBasis = isFallback ? 'cached' : 'live';
+        return { conflicts: cData };
+      }
+      return {};
+    } catch (err) {
+      const is404 = err.response && err.response.status === 404;
+      const detail = err.response?.data?.detail;
+      const reason = is404 ? 'not-in-corridor-cache' : 'model-unreachable';
+      console.warn(
+        `[Conflict layer] Unavailable for ${trainNumber} (${reason})` +
+        (is404 ? ' — run: python3 scripts/build_corridor.py' : `: ${err.message}`)
+      );
+      return {
+        conflictsUnavailable: {
+          reason,
+          train: trainNumber,
+          detail: (is404 ? detail : err.message) || null,
+          modelReachable: Boolean(is404),
+        },
+      };
+    }
+  })();
+
+  // 2.4 Run state
+  const runStatePromise = (async () => {
+    try {
+      return await resolveRunState(trainNumber, liveData);
+    } catch (err) {
+      console.warn(`[Run state] Unresolved for ${trainNumber}: ${err.message}`);
+      return {
+        train: String(trainNumber),
+        state: 'unknown',
+        basis: 'unresolved',
+        isMoving: null,
+        note: isFallback ? 'Run-state could not be resolved from the cached snapshot.' : 'Run-state could not be resolved.',
+        detail: err.message,
+      };
+    }
+  })();
+
+  // Execute all 4 in parallel
+  const [weatherSettled, etaSettled, conflictSettled, runStateSettled] =
+    await Promise.allSettled([
+      weatherPromise,
+      etaPromise,
+      conflictPromise,
+      runStatePromise,
+    ]);
+
+  const weather = weatherSettled.status === 'fulfilled'
+    ? weatherSettled.value
+    : weatherService.fallback(isFallback ? 'cached-run' : 'clear-sky');
+  const etaResult = etaSettled.status === 'fulfilled' ? etaSettled.value : {};
+  const conflictResult = conflictSettled.status === 'fulfilled' ? conflictSettled.value : {};
+  const runState = runStateSettled.status === 'fulfilled' ? runStateSettled.value : {
+    train: String(trainNumber),
+    state: 'unknown',
+    basis: 'unresolved',
+    isMoving: null,
+    note: 'Run-state could not be resolved.',
+  };
+
+  let curvatureEta = etaResult.curvatureEta;
+  let curvatureEtaUnavailable = etaResult.curvatureEtaUnavailable;
+  let conflicts = conflictResult.conflicts;
+  let conflictsUnavailable = conflictResult.conflictsUnavailable;
+
+  // 3. Continuity Guard: If transient timeout/unreachable occurs, fall back to last-known-good
+  const lastGood = lastKnownGoodModels.get(trainNumber);
+  if (!conflicts && conflictsUnavailable?.reason === 'model-unreachable' && lastGood?.conflicts) {
+    conflicts = { ...lastGood.conflicts, transientFallback: true };
+    conflictsUnavailable = undefined;
+    console.warn(`[Conflict layer] Transient timeout for ${trainNumber} — serving last known good prediction to prevent UI flicker.`);
+  }
+
+  if (!curvatureEta && curvatureEtaUnavailable?.reason === 'model-unreachable' && lastGood?.curvatureEta) {
+    curvatureEta = { ...lastGood.curvatureEta, transientFallback: true };
+    curvatureEtaUnavailable = undefined;
+    console.warn(`[Curvature ETA] Transient timeout for ${trainNumber} — serving last known good prediction to prevent UI flicker.`);
+  }
+
+  // 4. Update last known good if valid
+  if (conflicts || curvatureEta || runState) {
+    lastKnownGoodModels.set(trainNumber, {
+      conflicts: conflicts || lastGood?.conflicts,
+      curvatureEta: curvatureEta || lastGood?.curvatureEta,
+      runState: runState || lastGood?.runState,
+      timestamp: now,
+    });
+  }
+
+  const payload = {
+    weather,
+    curvatureEta,
+    curvatureEtaUnavailable,
+    conflicts,
+    conflictsUnavailable,
+    runState,
+    timestamp: now,
+  };
+
+  // Cache in-memory for 45 seconds
+  modelLayerCache.set(cacheKey, payload);
+
+  return payload;
+}
+
 
 /**
  * Attach `runState` to every entry of a fleet array, in place.
@@ -371,134 +603,14 @@ export const getTrainLiveStatus = async (req, res, next) => {
       distToNextHalt
     );
 
-    // 2.2 Query real-time atmospheric conditions along current train coordinates
-    enhancedData.weather = await weatherService.getPointWeather(curLat, curLng);
-
-    // 3. Request curvature/delay-aware ETA from FastAPI server (Port 8000)
-    let startDate = liveData.startDate || new Date().toISOString().split('T')[0];
-    try {
-      const fastApiUrl = `${config.modelApi.baseUrl}/eta/${trainNumber}`;
-      try {
-        const fastApiRes = await axios.get(fastApiUrl, {
-          params: {
-            date: startDate,
-            weather: req.query.weather || 'live',
-            quantile: req.query.quantile || 'mean',
-            delay: Number(liveData.delayMinutes) || 0,
-            ...hazardParam(req),
-          },
-          timeout: 2500,
-        });
-        if (fastApiRes.data) {
-          enhancedData.curvatureEta = fastApiRes.data;
-          // When this date has no cache file, FastAPI substitutes another cached
-          // run's timings and returns 200 (not 404) with schedule_date_substituted
-          // set. Read the flag from the payload — the 404 branch below only fires
-          // for an unknown TRAIN, so it never caught an uncached date.
-          if (fastApiRes.data.schedule_date_substituted) {
-            enhancedData.curvatureEta.is_fallback_date = true;
-          }
-        }
-      } catch (err) {
-        if (err.response && err.response.status === 404) {
-          // A 404 from /eta means the MODEL HAS NO CACHE FOR THIS TRAIN AT ALL —
-          // not that this particular date is missing. `eta_model.load_schedule`
-          // already substitutes any other cached date on its own, so a date retry
-          // cannot turn a 404 into a 200.
-          //
-          // This branch used to retry using /health's `cached_dated_runs`, but that
-          // list was 22229's (see the `train` param added to /health): asking for
-          // 12051 on 22229's dates produced a SECOND 404, thrown from inside this
-          // catch, which escaped to the outer handler and printed "ETA model offline
-          // or failed" for a model that was up and answering. Report the real cause.
-          const detail = err.response.data?.detail;
-          console.log(
-            `[FastAPI integration] No ETA model cache for train ${trainNumber} — ` +
-            `serving live tracking without the curvature/delay ETA. ` +
-            `Prime it with .cache/${trainNumber}_route.json and ${trainNumber}_live*.json.` +
-            (detail ? ` Model said: ${detail}` : '')
-          );
-          enhancedData.curvatureEtaUnavailable = {
-            reason: 'not-in-model-cache',
-            train: trainNumber,
-            detail: detail || null,
-            // The gateway is fine and the model is fine; only this train is absent.
-            // Named explicitly so the UI never renders "model offline" for this case.
-            modelReachable: true,
-          };
-        } else {
-          throw err;
-        }
-      }
-    } catch (err) {
-      console.warn(`[FastAPI integration] Curvature ETA model offline or failed: ${err.message}`);
-      enhancedData.curvatureEtaUnavailable = {
-        reason: 'model-unreachable',
-        train: trainNumber,
-        detail: err.message,
-        modelReachable: false,
-      };
-    }
-
-    // 4. Crossing / overtake conflict prediction (Phase 5).
-    //
-    // Kept as a SEPARATE call from /eta rather than folded into it, because the two
-    // have different inputs and different failure modes: /eta needs this train's
-    // route geometry, /conflicts needs only cached timetables. A train can be
-    // servable by one and not the other (12051 today is exactly that case), so
-    // bundling them would let a missing polyline suppress a working conflict layer.
-    //
-    // The live delay is what makes this predictive — the same crossing happens at a
-    // different place, against a different train, once we are running late. Other
-    // trains' times are SCHEDULED and cached, so this costs no upstream request.
-    const liveDelayMin = Number.isFinite(Number(liveData.delayMinutes))
-      ? Number(liveData.delayMinutes)
-      : 0;
-    try {
-      const conflictRes = await axios.get(
-        `${config.modelApi.baseUrl}/conflicts/${trainNumber}`,
-        { params: { delay: liveDelayMin, live_delays: true, feedback: true }, timeout: 1500 }
-      );
-      if (conflictRes.data) {
-        enhancedData.conflicts = conflictRes.data;
-        enhancedData.conflicts.delayBasis = 'live';
-      }
-    } catch (err) {
-      // Never fatal: this layer is additive. Report WHY it is missing so the UI can
-      // say so, instead of silently rendering an empty conflict panel that looks
-      // identical to "no crossings predicted" — those two mean opposite things.
-      const is404 = err.response && err.response.status === 404;
-      enhancedData.conflictsUnavailable = {
-        reason: is404 ? 'not-in-corridor-cache' : 'model-unreachable',
-        train: trainNumber,
-        detail: is404 ? (err.response.data?.detail || null) : err.message,
-        modelReachable: Boolean(is404),
-      };
-      console.warn(
-        `[Conflict layer] Unavailable for ${trainNumber} ` +
-        `(${enhancedData.conflictsUnavailable.reason})` +
-        (is404 ? ' — run: python3 scripts/build_corridor.py' : `: ${err.message}`)
-      );
-    }
-
-    // 5. Run-state (running / awaiting-departure / not-running-today / completed).
-    //
-    // Resolved server-side so the map and the admin console cannot disagree, and
-    // so the run-day calendar lives only in conflict.py. Costs no upstream
-    // request. Never fatal — an unresolved run-state must not blank the drawer.
-    try {
-      enhancedData.runState = await resolveRunState(trainNumber, liveData);
-    } catch (err) {
-      enhancedData.runState = {
-        train: String(trainNumber),
-        state: 'unknown',
-        basis: 'unresolved',
-        isMoving: null,
-        note: 'Run-state could not be resolved.',
-        detail: err.message,
-      };
-      console.warn(`[Run state] Unresolved for ${trainNumber}: ${err.message}`);
-    }
+    // 2.2 Concurrently attach weather, curvature ETA, conflict prediction, and run-state
+    const modelLayers = await attachModelLayers(trainNumber, liveData, req, false);
+    enhancedData.weather = modelLayers.weather;
+    if (modelLayers.curvatureEta) enhancedData.curvatureEta = modelLayers.curvatureEta;
+    if (modelLayers.curvatureEtaUnavailable) enhancedData.curvatureEtaUnavailable = modelLayers.curvatureEtaUnavailable;
+    if (modelLayers.conflicts) enhancedData.conflicts = modelLayers.conflicts;
+    if (modelLayers.conflictsUnavailable) enhancedData.conflictsUnavailable = modelLayers.conflictsUnavailable;
+    enhancedData.runState = modelLayers.runState;
 
     // Success path: Persist a copy of the enhanced train status to disk cache
     if (enhancedData) {
@@ -679,128 +791,19 @@ export const getTrainLiveStatus = async (req, res, next) => {
         trainNumber,
         liveData.currentLocation?.speedToNextStationKmph || liveData.currentLocation?.speedKmh || liveData.train?.avgSpeed || null
       );
-      const fbLat = Number(liveData.lat ?? liveData.currentLocation?.coordinates?.lat ?? liveData.currentLocation?.lat);
-      const fbLng = Number(liveData.lng ?? liveData.currentLocation?.coordinates?.lng ?? liveData.currentLocation?.lng);
-      if (Number.isFinite(fbLat) && Number.isFinite(fbLng)) {
-        try {
-          enhancedData.weather = await weatherService.getPointWeather(fbLat, fbLng);
-        } catch {
-          enhancedData.weather = weatherService.fallback('cached-run');
-        }
-      } else {
-        enhancedData.weather = weatherService.fallback('cached-run');
-      }
-
-      // Attach curvature ETA model if available
-      const startDate = liveData.startDate || new Date().toISOString().split('T')[0];
-      // Drop whatever the file carried BEFORE recomputing, for the same reason the
-      // conflict block below does it: `enhanceLiveData` spreads the fallback object
-      // through, so a persisted `curvatureEta` — or the `stripped-hazard-derived`
-      // notice the persist block writes in its place — would survive a *failed*
-      // recompute and be rendered as if it were this run's answer. A stale ETA that
-      // looks current is the VERIFIED #21 hazard; an explicit "unavailable" is not.
       delete enhancedData.curvatureEta;
       delete enhancedData.curvatureEtaUnavailable;
-      try {
-        const fastApiUrl = `${config.modelApi.baseUrl}/eta/${trainNumber}`;
-        const fastApiRes = await axios.get(fastApiUrl, {
-          params: {
-            date: startDate,
-            weather: req.query.weather || 'live',
-            quantile: req.query.quantile || 'mean',
-            delay: Number(liveData.delayMinutes) || 0,
-            ...hazardParam(req),
-          },
-          timeout: 2500,
-        });
-        if (fastApiRes.data) {
-          enhancedData.curvatureEta = fastApiRes.data;
-          // Same substitution flag as the live path above.
-          if (fastApiRes.data.schedule_date_substituted) {
-            enhancedData.curvatureEta.is_fallback_date = true;
-          }
-        }
-      } catch (err) {
-        // Same reasoning as the live path above: a 404 means this train has no
-        // model cache at all, and /health's date list belongs to whatever train it
-        // was asked about — so retrying on "a known-good date" cannot help. The old
-        // retry here also ended in `catch (subErr) {}`, which swallowed the second
-        // 404 entirely, so this path failed with no log line at all.
-        const is404 = err.response && err.response.status === 404;
-        enhancedData.curvatureEtaUnavailable = {
-          reason: is404 ? 'not-in-model-cache' : 'model-unreachable',
-          train: trainNumber,
-          detail: (is404 ? err.response.data?.detail : err.message) || null,
-          modelReachable: Boolean(is404),
-        };
-        console.log(
-          `[FastAPI integration] Cached-fallback path: no curvature ETA for train ` +
-          `${trainNumber} (${enhancedData.curvatureEtaUnavailable.reason}).`
-        );
-      }
-
-      // Recompute the conflict layer here rather than trusting a persisted copy
-      // (there isn't one — see the persist block above). The corridor schedules
-      // this reads are static, so the crossings are as valid as ever; what is
-      // stale is the DELAY driving them, which came off a cached position. That
-      // distinction is the whole point of delayBasis: 'cached' — the UI must be
-      // able to say "predicted from a cached delay", not imply a live fix.
-      const cachedDelayMin = Number.isFinite(Number(enhancedData.delayMinutes))
-        ? Number(enhancedData.delayMinutes)
-        : 0;
-      // Drop anything a previously-persisted copy may carry BEFORE recomputing.
-      // Older cache files (written before the persist block started stripping
-      // this) do contain a conflicts block, and enhanceLiveData spreads the
-      // fallback object through. Without this delete, a failed recompute would
-      // leave the stale block in place, the panel would render it as current, and
-      // the conflictsUnavailable notice set below would be ignored — the panel
-      // only consults it when `conflicts` is absent.
       delete enhancedData.conflicts;
       delete enhancedData.conflictsUnavailable;
-      try {
-        const conflictRes = await axios.get(
-          `${config.modelApi.baseUrl}/conflicts/${trainNumber}`,
-          { params: { delay: cachedDelayMin, live_delays: true, feedback: true }, timeout: 1500 }
-        );
-        if (conflictRes.data) {
-          enhancedData.conflicts = conflictRes.data;
-          enhancedData.conflicts.delayBasis = 'cached';
-        }
-      } catch (err) {
-        const is404 = err.response && err.response.status === 404;
-        enhancedData.conflictsUnavailable = {
-          reason: is404 ? 'not-in-corridor-cache' : 'model-unreachable',
-          train: trainNumber,
-          detail: is404 ? (err.response.data?.detail || null) : err.message,
-          modelReachable: Boolean(is404),
-        };
-        console.log(
-          `[Conflict layer] Cached-fallback path: unavailable for ${trainNumber} ` +
-          `(${enhancedData.conflictsUnavailable.reason}).`
-        );
-      }
-
-      // Recompute run-state here for the same reason as the conflict block, and
-      // it matters MORE here: the persisted snapshot may have been written days
-      // ago, so its own `status`/`startDate` describe that day, not today.
-      // `resolveRunState` handles exactly that case (startDate < serviceDate ->
-      // defer to the roster calendar) rather than replaying a stale departure.
-      // Delete first: enhanceLiveData spreads the fallback object through, so an
-      // older cache file written before the strip above would otherwise keep a
-      // stale block alive through a FAILED recompute.
       delete enhancedData.runState;
-      try {
-        enhancedData.runState = await resolveRunState(trainNumber, enhancedData);
-      } catch (err) {
-        enhancedData.runState = {
-          train: String(trainNumber),
-          state: 'unknown',
-          basis: 'unresolved',
-          isMoving: null,
-          note: 'Run-state could not be resolved from the cached snapshot.',
-          detail: err.message,
-        };
-      }
+
+      const modelLayers = await attachModelLayers(trainNumber, liveData, req, true);
+      enhancedData.weather = modelLayers.weather;
+      if (modelLayers.curvatureEta) enhancedData.curvatureEta = modelLayers.curvatureEta;
+      if (modelLayers.curvatureEtaUnavailable) enhancedData.curvatureEtaUnavailable = modelLayers.curvatureEtaUnavailable;
+      if (modelLayers.conflicts) enhancedData.conflicts = modelLayers.conflicts;
+      if (modelLayers.conflictsUnavailable) enhancedData.conflictsUnavailable = modelLayers.conflictsUnavailable;
+      enhancedData.runState = modelLayers.runState;
 
       return res.json({
         success: true,

@@ -150,6 +150,7 @@ export const config = {
     // routinely takes 30–60 s, so the old 15 s timeout was too tight. 90 s is generous
     // headroom; tune it down once the instance is on a paid plan with dedicated CPU.
     corridorTimeoutMs: intEnv('CORRIDOR_TIMEOUT_MS', 90000, 1000),
+    requestTimeoutMs: intEnv('MODEL_REQUEST_TIMEOUT_MS', 8000, 1000),
   },
   railRadar: {
     apiKey: apiKeys[0] || '',
