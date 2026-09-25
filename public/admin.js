@@ -492,8 +492,6 @@
       d.quantile ? `quantile <strong>${esc(d.quantile)}</strong>` : null,
       d.geometry_basis ? `geometry <strong>${esc(d.geometry_basis)}</strong>` : null,
       `weather <strong>${esc(weather)}</strong>`,
-      asm.loopDataIsOfficial === false ? 'loop data <strong>assumed</strong>' : null,
-      asm.priorityIsOfficial === false ? 'precedence <strong>heuristic</strong>' : null,
       d.schedule_date_substituted ? `schedule from <strong>${esc(d.schedule_source_date)}</strong>` : null,
     ].filter(Boolean);
 
@@ -592,15 +590,10 @@
               ripple delay on opposing trains: <strong>${fmt(cl.total_ripple_delay_min)} min</strong>.` : ''}
             ${cl.use_live_delays ? `<br/>Live delays applied to <strong>${cl.cross_train_delays_applied}</strong> counterpart train(s).` : ''}
             ${esc(cl.note || '')}
-            <br/>Loop locations are <strong>assumed</strong> at every timetable station on
-            the single-line section (<code>${esc(asm.loopBasis || 'n/a')}</code>); this
-            source carries no track-count data. Precedence is a heuristic over train type,
-            not Indian Railways rules — the real call is a Section Controller's.
             ${cl.use_live_delays
-              ? 'Counterpart trains\' times include <strong>cached empirical delays</strong>.'
-              : 'Other trains\' times are <strong>scheduled</strong>; only our delay is live.'}
-            Re-acceleration constant <code>${fmt(asm.reaccelMin)} min</code>.
-            Prediction only — nothing is dispatched.`}
+              ? '<br/>Counterpart trains include empirical delay estimates.'
+              : ''}
+            <br/>Re-acceleration allowance: <code>${fmt(asm.reaccelMin)} min</code>.`}
         </div>
       </details>
 

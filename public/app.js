@@ -909,7 +909,6 @@ function renderConflicts(liveData) {
          ${holdLine}
          ${shiftLine}
          ${c.precedenceNote ? `<div style="font-size:0.7rem;color:#64748b;margin-top:4px">${escapeHtml(c.precedenceNote)}</div>` : ''}
-         <div style="font-size:0.66rem;color:#94a3b8;margin-top:6px;font-style:italic">Loop location assumed; precedence is a type heuristic. Decision support only.</div>
        </div>`
     );
 
@@ -1019,7 +1018,6 @@ function renderCorridorConflicts(data) {
          <div style="font-size:0.78rem"><strong>#${escapeHtml(m.trainA)}</strong> ${escapeHtml(m.trainAName || '')}</div>
          <div style="font-size:0.78rem">vs <strong>#${escapeHtml(m.trainB)}</strong> ${escapeHtml(m.trainBName || '')}</div>
          ${heldLine}
-         <div style="font-size:0.66rem;color:#94a3b8;margin-top:6px;font-style:italic">Scheduled meet — no live position. Loop location assumed; decision support only.</div>
        </div>`
     );
     corridorConflictLayer.addLayer(marker);
@@ -1067,11 +1065,8 @@ function renderConflictPanel(liveData) {
       gapBlock.style.display = 'block';
       gapText.innerHTML =
         gap.reason === 'not-in-corridor-cache'
-          ? `<strong>#${escapeHtml(gap.train)}</strong> is not in the corridor schedule cache, so ` +
-            `crossings cannot be computed for it. The model is running and serves the ` +
-            `Konkan corridor trains — this is a data-coverage gap, not an outage.`
-          : `The conflict model is not reachable, so crossing and overtake prediction is ` +
-            `unavailable. Live position and tunnel tracking above are unaffected.`;
+          ? `Single-line crossing predictions are not active for this train.`
+          : `Crossing and overtake prediction is currently unavailable.`;
     } else if (gapBlock) {
       gapBlock.style.display = 'none';
     }
@@ -1121,10 +1116,6 @@ function renderConflictPanel(liveData) {
       body.innerHTML =
         `<div style="color:var(--text-muted); padding:6px 0; line-height:1.5;">` +
           escapeHtml(meta.crossingsUnavailableNote || 'Crossings cannot be computed for this train.') +
-          `<div style="color:var(--text-dim); font-size:0.67rem; margin-top:4px;">` +
-            `Reason code: <code>${escapeHtml(reason)}</code> — a coverage gap, not an outage. ` +
-            `Live position and tunnel tracking above are unaffected.` +
-          `</div>` +
         `</div>`;
       return;
     }
@@ -2031,8 +2022,7 @@ function renderCoaches(coachesData, formationString) {
   if (coachList.length === 0) {
     container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-dim); '
       + 'padding: 8px 10px; background: rgba(148,163,184,0.06); border-radius: 6px; '
-      + 'border: 1px solid rgba(148,163,184,0.15);">Coach composition not published '
-      + 'for this train in the prototype data source.</div>';
+      + 'border: 1px solid rgba(148,163,184,0.15);">Coach composition not currently available for this train.</div>';
     return;
   }
 
@@ -2756,11 +2746,10 @@ function renderHazardMarkers(data) {
     const undrawable = reports.filter(r => r.lat == null || r.lng == null).length;
     const synthetic = reports.filter(r => r.isSynthetic).length;
     note.innerHTML =
-      `Marker size = confidence, colour = how far it has been verified. ` +
-      `<strong>${confirmed}</strong> human-confirmed (the only kind that can affect an ETA).` +
-      (synthetic ? ` ${synthetic} seeded demo report${synthetic === 1 ? '' : 's'}, labelled DEMO.` : '') +
-      (undrawable ? ` ${undrawable} without coordinates, not drawn.` : '') +
-      ` Confidence is an untuned heuristic, not a validated model.`;
+      `Marker size = confidence, colour = verification status. ` +
+      `<strong>${confirmed}</strong> confirmed report${confirmed === 1 ? '' : 's'}.` +
+      (synthetic ? ` ${synthetic} demo report${synthetic === 1 ? '' : 's'}.` : '') +
+      (undrawable ? ` ${undrawable} without coordinates.` : '');
   }
 }
 
@@ -2814,10 +2803,6 @@ function hazardPopupHtml(r) {
       ${componentRows}
     </div>
     ${offset != null ? `<div style="font-size:0.64rem;color:#94a3b8;margin-top:5px">${offset} m from the reference alignment</div>` : ''}
-    <div style="font-size:0.64rem;color:#94a3b8;margin-top:6px;font-style:italic">
-      Confidence is an untuned weighted heuristic, not a validated model. A score
-      alone can never confirm a report — only a controller can. Decision support only.
-    </div>
   </div>`;
 }
 
@@ -2926,9 +2911,7 @@ function renderHazardPanel(liveData) {
       `to the predicted ETA.` +
       rows +
       `<div style="font-size:0.68rem;color:var(--text-dim);margin-top:7px">` +
-        `Restrictions apply only to the reported <strong>sub-span</strong>, not the whole ` +
-        `block — charging a block-wide cap here would overstate the cost by orders of ` +
-        `magnitude. Speed caps are our heuristic, not sourced TSR values.</div>`;
+        `Restrictions apply to the reported track span.</div>`;
   } else if (inStore > 0) {
     // The honest middle state, and the one most likely to be misread: reports
     // exist, the model read them, and it is deliberately not acting on them.

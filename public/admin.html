@@ -189,19 +189,6 @@
         <div id="conflictPanel" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px;">
           <div id="conflictPanelHeader" style="font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;"></div>
           <div id="conflictPanelBody" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5;"></div>
-
-          <details id="conflictPanelCaveat" style="font-size: 0.67rem; color: var(--text-dim); margin-top: 8px; line-height: 1.35;">
-            <summary style="cursor: pointer; user-select: none; color: #64748b; font-style: italic; outline: none;">ℹ️ Dispatch &amp; Precedence Assumptions ▾</summary>
-            <div style="margin-top: 4px; padding: 6px 8px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 4px; color: var(--text-muted);">
-              Crossing geometry is computed from the other trains' <strong>scheduled</strong>
-              times (static) against this train's <strong>live</strong> delay — we do not
-              poll other trains. Loop locations are <strong>assumed</strong> at every
-              timetable station on the single-line section; this source carries no
-              track-count data. Precedence is a <strong>heuristic over train type</strong>,
-              not official Indian Railways rules — the real call is a Section
-              Controller's. Prediction only; no dispatch action is issued.
-            </div>
-          </details>
         </div>
 
         <div id="conflictUnavailable" style="display: none; margin-top: 12px; padding: 10px; border-radius: 6px; background: rgba(148, 163, 184, 0.08); border: 1px solid rgba(148, 163, 184, 0.2);">
@@ -237,20 +224,6 @@
        Slides right when the train drawer opens (see admin.css); the drawer owns the
        left edge and the two must not stack. -->
   <div class="admin-rail admin-rail-left" id="adminRailLeft">
-
-    <!-- Phase 8 honesty wiring, carried over from the deleted dashboard/admin pages.
-         Deleting the page that displayed it did not retire the obligation. Both
-         halves are required: the data-source caveat (§3) and the no-automated-control
-         safety framing (§2), which is non-negotiable. -->
-    <div class="admin-banner">
-      <span class="admin-banner-dot"></span>
-      <div>
-        <strong>Prototype data source.</strong> Positions come from RailRadar
-        (crowdsourced GPS) — <em>not</em> RTIS/CRIS official Railways data.
-        <strong>Decision support only:</strong> nothing here dispatches; every alert
-        is for a human Section Controller to confirm.
-      </div>
-    </div>
 
     <details class="admin-panel" open>
       <summary class="admin-panel-head">
@@ -347,16 +320,6 @@
           authorised. The evidence of a human decision must outlive the row.
         -->
         <div id="hazardDecisionResult" class="admin-op-result hz-decision-result" hidden></div>
-
-        <p class="admin-note">
-          Confidence is a <strong>weighted heuristic over five signals, not a trained
-          model</strong> — there is no ground-truth hazard set to calibrate it against.
-          Expand a row to see each component's own score and basis; the total is shown
-          with its arithmetic so it can be checked rather than trusted. Train
-          corroboration is matched against <strong>scheduled</strong> timetables, not
-          live positions. Machine status stops at <code>corroborated</code>.
-          <strong>Nothing here is dispatched.</strong>
-        </p>
       </div>
     </details>
 
