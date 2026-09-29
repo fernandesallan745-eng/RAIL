@@ -650,10 +650,17 @@
     }
   }
 
+  let adminEtaRetryTimer = null;
+
   async function loadEta(trainNumber, opts = {}) {
     const host = $('etaBody');
     const meta = $('etaMeta');
     if (!host || !trainNumber) return;
+
+    if (adminEtaRetryTimer) {
+      clearInterval(adminEtaRetryTimer);
+      adminEtaRetryTimer = null;
+    }
 
     host.innerHTML = '<div class="admin-empty">Running model…</div>';
     if (meta) meta.textContent = 'running…';
@@ -716,6 +723,36 @@
         // Each failure names itself. A 503 and an empty result look identical on
         // screen and mean opposite things.
         const reason = json.reason || `http-${res.status}`;
+
+        if (reason === 'model-unreachable' || res.status === 503 || json.reason === 'model-unreachable') {
+          host.innerHTML = `
+            <div class="admin-op-result is-bad" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; border-radius: 6px; padding: 12px;">
+              <div style="font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                <span class="pulsing-cyan-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fbbf24; box-shadow:0 0 8px #fbbf24;"></span>
+                GATI Physics Model is warming up on Render…
+              </div>
+              <div style="font-size: 0.78rem; margin-top: 6px; color: #cbd5e1; line-height: 1.4;">
+                Render cloud services spin down on idle. Cold starts take ~10–15s to load geometry cache and neural weights into memory.
+              </div>
+              <div style="font-size: 0.72rem; margin-top: 8px; color: #38bdf8;">
+                Auto-retrying in <span id="adminEtaRetryCount">4</span>s…
+              </div>
+            </div>`;
+          if (meta) meta.textContent = 'warming up…';
+          let sec = 4;
+          adminEtaRetryTimer = setInterval(() => {
+            sec--;
+            const countEl = $('adminEtaRetryCount');
+            if (countEl) countEl.innerText = sec;
+            if (sec <= 0) {
+              clearInterval(adminEtaRetryTimer);
+              adminEtaRetryTimer = null;
+              loadEta(trainNumber, opts);
+            }
+          }, 1000);
+          return;
+        }
+
         host.innerHTML = `
           <div class="admin-op-result is-bad">
             ${esc(reason)}

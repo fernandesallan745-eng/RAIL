@@ -454,6 +454,7 @@ function renderFleetMarkers(trains) {
 
 // Select and Inspect a Specific Train
 async function selectTrain(trainNumber, forceRefresh = false, forceServerRefresh = false) {
+  resetModelWarmupRetry();
   selectedTrainNumber = trainNumber;
   if (!forceRefresh) openDrawerLoading(trainNumber);
 
@@ -1254,108 +1255,260 @@ function renderConflictPanel(liveData) {
 }
 
 // ── GATI Predictive ETA vs ConfirmTkt Static Broadcast Comparison ─────────
-function renderGatiEtaComparison(liveData) {
-  const panel = document.getElementById('drawerGatiEtaComparison');
-  if (!panel) return;
+let modelWarmupRetryTimer = null;
+let modelWarmupCountdownTimer = null;
+let modelWarmupRetryCount = 0;
 
-  const eta = liveData.curvatureEta;
-  if (!eta || !eta.totals) {
-    panel.style.display = 'none';
+function clearModelWarmupRetry() {
+  if (modelWarmupRetryTimer) {
+    clearTimeout(modelWarmupRetryTimer);
+    modelWarmupRetryTimer = null;
+  }
+  if (modelWarmupCountdownTimer) {
+    clearInterval(modelWarmupCountdownTimer);
+    modelWarmupCountdownTimer = null;
+  }
+  const counterEl = document.getElementById('gatiRetryCounter');
+  if (counterEl) counterEl.innerText = '';
+}
+
+function resetModelWarmupRetry() {
+  clearModelWarmupRetry();
+  modelWarmupRetryCount = 0;
+}
+
+function scheduleModelWarmupRetry(trainNumber) {
+  clearModelWarmupRetry();
+  if (modelWarmupRetryCount >= 10) {
+    const counterEl = document.getElementById('gatiRetryCounter');
+    if (counterEl) counterEl.innerText = 'Model warming up in background';
     return;
   }
 
-  const ntesDelay = liveData.delayMinutes ?? 0;
-  const route = liveData.route || [];
-  const destHalt = route.filter(s => s.isHalt).pop() || route[route.length - 1] || {};
+  let secondsLeft = 4;
+  const counterEl = document.getElementById('gatiRetryCounter');
+  if (counterEl) counterEl.innerText = `Retrying in ${secondsLeft}s…`;
 
-  // Scheduled arrival at destination
-  const schedArr = destHalt.scheduledArrival || destHalt.scheduledDeparture || eta.scheduled_arrival;
-  let ntesArrStr = '--:--';
-  if (schedArr) {
-    try {
-      const dt = new Date(schedArr.includes('T') ? schedArr : `1970-01-01T${schedArr}:00`);
-      if (!isNaN(dt.getTime())) {
-        dt.setMinutes(dt.getMinutes() + ntesDelay);
-        ntesArrStr = `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`;
-      }
-    } catch (e) {
-      ntesArrStr = '--:--';
-    }
-  }
-
-  // GATI arrival at destination
-  let gatiArrStr = '--:--';
-  if (eta.predicted_arrival) {
-    gatiArrStr = eta.predicted_arrival.includes('T') ? eta.predicted_arrival.split('T')[1].slice(0, 5) : eta.predicted_arrival;
-  }
-  const gatiDelay = Math.round(eta.arrival_delta_min ?? (eta.totals.predicted_eta_min - (eta.totals.scheduled_duration_min || 0)));
-
-  // Populate ConfirmTkt / NTES box
-  const ntesTimeEl = document.getElementById('gatiNtesEstTime');
-  const ntesDelayEl = document.getElementById('gatiNtesDelay');
-  if (ntesTimeEl) ntesTimeEl.innerText = ntesArrStr !== '--:--' ? ntesArrStr : `+${ntesDelay}m`;
-  if (ntesDelayEl) ntesDelayEl.innerText = ntesDelay > 0 ? `+${ntesDelay}m flat static` : 'On time static';
-
-  // Populate GATI box
-  const predTimeEl = document.getElementById('gatiPredEstTime');
-  const predDelayEl = document.getElementById('gatiPredDelay');
-  if (predTimeEl) predTimeEl.innerText = gatiArrStr !== '--:--' ? gatiArrStr : `+${gatiDelay}m`;
-  const gatiDelayColor = gatiDelay > 30 ? '#f87171' : (gatiDelay > 0 ? '#fbbf24' : '#34d399');
-  if (predDelayEl) predDelayEl.innerHTML = `<span style="color:${gatiDelayColor}; font-weight:700;">+${gatiDelay}m predicted</span>`;
-
-  // Divergence pill
-  const divPill = document.getElementById('gatiDivergencePill');
-  const divergence = gatiDelay - ntesDelay;
-  if (divPill) {
-    if (divergence !== 0) {
-      divPill.style.display = 'inline-block';
-      divPill.innerText = divergence > 0 ? `+${divergence}m vs ConfirmTkt` : `${divergence}m vs ConfirmTkt`;
-      divPill.title = `GATI forecasts ${Math.abs(divergence)} mins ${divergence > 0 ? 'more' : 'less'} delay than ConfirmTkt by accounting for physics and crossing bottlenecks`;
+  modelWarmupCountdownTimer = setInterval(() => {
+    secondsLeft--;
+    if (secondsLeft > 0 && counterEl) {
+      counterEl.innerText = `Retrying in ${secondsLeft}s…`;
     } else {
-      divPill.style.display = 'none';
+      clearInterval(modelWarmupCountdownTimer);
+      modelWarmupCountdownTimer = null;
     }
+  }, 1000);
+
+  modelWarmupRetryTimer = setTimeout(async () => {
+    if (modelWarmupCountdownTimer) {
+      clearInterval(modelWarmupCountdownTimer);
+      modelWarmupCountdownTimer = null;
+    }
+    if (selectedTrainNumber !== trainNumber) return; // User switched trains
+    modelWarmupRetryCount++;
+    if (counterEl) counterEl.innerText = 'Checking model…';
+    try {
+      const url = apiUrl(`/api/trains/${trainNumber}/live?geometry=true&geometry_format=geojson&hazards=true`);
+      const res = await fetch(url);
+      const json = await res.json();
+      const freshLive = json.data?.data || json.data;
+      if (selectedTrainNumber === trainNumber && freshLive) {
+        if (freshLive.curvatureEta && freshLive.curvatureEta.totals) {
+          clientCache.trainLive.set(trainNumber, freshLive);
+          clientCache.lastGoodCurvatureEta.set(trainNumber, freshLive.curvatureEta);
+          if (freshLive.conflicts) clientCache.lastGoodConflicts.set(trainNumber, freshLive.conflicts);
+          resetModelWarmupRetry();
+          renderGatiEtaComparison(freshLive);
+          renderConflictPanel(freshLive);
+          renderTimeline(freshLive.route || [], freshLive.currentLocation || {}, true, freshLive.curvatureEta);
+          flashElement(document.getElementById('drawerGatiEtaComparison'));
+        } else if (freshLive.curvatureEtaUnavailable?.reason === 'model-unreachable' || (!freshLive.curvatureEta && !freshLive.curvatureEtaUnavailable)) {
+          scheduleModelWarmupRetry(trainNumber);
+        }
+      }
+    } catch (_) {
+      scheduleModelWarmupRetry(trainNumber);
+    }
+  }, 4000);
+}
+
+function renderGatiEtaComparison(liveData) {
+  const panel = document.getElementById('drawerGatiEtaComparison');
+  const activeContent = document.getElementById('gatiEtaActiveContent');
+  const loadingContent = document.getElementById('gatiEtaLoadingContent');
+  if (!panel) return;
+
+  const eta = liveData.curvatureEta;
+  const gap = liveData.curvatureEtaUnavailable;
+
+  // Case 1: Model data is ready and valid!
+  if (eta && eta.totals) {
+    clearModelWarmupRetry();
+    if (activeContent) activeContent.style.display = 'block';
+    if (loadingContent) loadingContent.style.display = 'none';
+    panel.style.display = 'block';
+
+    const ntesDelay = liveData.delayMinutes ?? 0;
+    const route = liveData.route || [];
+    const destHalt = route.filter(s => s.isHalt).pop() || route[route.length - 1] || {};
+
+    // Scheduled arrival at destination
+    const schedArr = destHalt.scheduledArrival || destHalt.scheduledDeparture || eta.scheduled_arrival;
+    let ntesArrStr = '--:--';
+    if (schedArr) {
+      try {
+        const dt = new Date(schedArr.includes('T') ? schedArr : `1970-01-01T${schedArr}:00`);
+        if (!isNaN(dt.getTime())) {
+          dt.setMinutes(dt.getMinutes() + ntesDelay);
+          ntesArrStr = `${String(dt.getHours()).padStart(2, '0')}:${String(dt.getMinutes()).padStart(2, '0')}`;
+        }
+      } catch (e) {
+        ntesArrStr = '--:--';
+      }
+    }
+
+    // GATI arrival at destination
+    let gatiArrStr = '--:--';
+    if (eta.predicted_arrival) {
+      gatiArrStr = eta.predicted_arrival.includes('T') ? eta.predicted_arrival.split('T')[1].slice(0, 5) : eta.predicted_arrival;
+    }
+    const gatiDelay = Math.round(eta.arrival_delta_min ?? (eta.totals.predicted_eta_min - (eta.totals.scheduled_duration_min || 0)));
+
+    // Populate ConfirmTkt / NTES box
+    const ntesTimeEl = document.getElementById('gatiNtesEstTime');
+    const ntesDelayEl = document.getElementById('gatiNtesDelay');
+    if (ntesTimeEl) ntesTimeEl.innerText = ntesArrStr !== '--:--' ? ntesArrStr : `+${ntesDelay}m`;
+    if (ntesDelayEl) ntesDelayEl.innerText = ntesDelay > 0 ? `+${ntesDelay}m flat static` : 'On time static';
+
+    // Populate GATI box
+    const predTimeEl = document.getElementById('gatiPredEstTime');
+    const predDelayEl = document.getElementById('gatiPredDelay');
+    if (predTimeEl) predTimeEl.innerText = gatiArrStr !== '--:--' ? gatiArrStr : `+${gatiDelay}m`;
+    const gatiDelayColor = gatiDelay > 30 ? '#f87171' : (gatiDelay > 0 ? '#fbbf24' : '#34d399');
+    if (predDelayEl) predDelayEl.innerHTML = `<span style="color:${gatiDelayColor}; font-weight:700;">+${gatiDelay}m predicted</span>`;
+
+    // Divergence pill
+    const divPill = document.getElementById('gatiDivergencePill');
+    const divergence = gatiDelay - ntesDelay;
+    if (divPill) {
+      if (divergence !== 0) {
+        divPill.style.display = 'inline-block';
+        divPill.innerText = divergence > 0 ? `+${divergence}m vs ConfirmTkt` : `${divergence}m vs ConfirmTkt`;
+        divPill.title = `GATI forecasts ${Math.abs(divergence)} mins ${divergence > 0 ? 'more' : 'less'} delay than ConfirmTkt by accounting for physics and crossing bottlenecks`;
+      } else {
+        divPill.style.display = 'none';
+      }
+    }
+
+    // Layer breakdown bullets
+    const breakdownEl = document.getElementById('gatiLayerBreakdown');
+    if (breakdownEl) {
+      const items = [];
+
+      const conflictHold = eta.totals.conflict_hold_min || 0;
+      if (conflictHold > 0) {
+        const meetsCount = (eta.conflict_layer?.conflicts || []).filter(c => c.whoIsHeld === 'us').length;
+        items.push(`<span style="color:#f59e0b;font-weight:600;">⚠️ +${conflictHold}m loop holds</span> (${meetsCount} single-line crossing${meetsCount > 1 ? 's' : ''})`);
+      }
+
+      const histDelay = eta.totals.historical_delay_min || 0;
+      if (histDelay > 0) {
+        items.push(`<span style="color:#c084fc;">📊 +${histDelay}m historical corridor delay</span>`);
+      }
+
+      const curvMin = eta.curvature_layer_contribution_min;
+      if (curvMin && curvMin > 0.05) {
+        items.push(`<span style="color:#38bdf8;">🔄 +${curvMin.toFixed(1)}m curvature speed restrictions</span>`);
+      }
+
+      const wxFactor = eta.totals.weather_factor ?? eta.weather_factor;
+      if (wxFactor && wxFactor < 0.99) {
+        items.push(`<span style="color:#fbbf24;">🌧️ Weather friction factor: ${(wxFactor * 100).toFixed(0)}%</span>`);
+      }
+
+      const slack = eta.totals.schedule_slack_min || 0;
+      if (slack > 0) {
+        items.push(`<span style="color:#34d399;">⏱️ -${slack}m timetable slack buffer</span>`);
+      }
+
+      breakdownEl.innerHTML = `
+        <div style="color:var(--text-dim);margin-bottom:3px;font-size:0.67rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Why GATI differs from ConfirmTkt:</div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          ${items.length > 0 ? items.map(it => `<div>&bull; ${it}</div>`).join('') : '<div>&bull; Standard schedule & alignment adherence</div>'}
+        </div>
+      `;
+    }
+    return;
   }
 
-  // Layer breakdown bullets
-  const breakdownEl = document.getElementById('gatiLayerBreakdown');
-  if (breakdownEl) {
-    const items = [];
-
-    const conflictHold = eta.totals.conflict_hold_min || 0;
-    if (conflictHold > 0) {
-      const meetsCount = (eta.conflict_layer?.conflicts || []).filter(c => c.whoIsHeld === 'us').length;
-      items.push(`<span style="color:#f59e0b;font-weight:600;">⚠️ +${conflictHold}m loop holds</span> (${meetsCount} single-line crossing${meetsCount > 1 ? 's' : ''})`);
+  // Case 2: Model is warming up on Render (cold-start / unreachable)
+  if (gap?.reason === 'model-unreachable' || (!eta && !gap)) {
+    panel.style.display = 'block';
+    if (activeContent) activeContent.style.display = 'none';
+    if (loadingContent) {
+      loadingContent.style.display = 'block';
+      const titleText = document.getElementById('gatiLoadingTitleText');
+      const badge = document.getElementById('gatiLoadingBadge');
+      const subtitle = document.getElementById('gatiLoadingSubtitle');
+      const dot = document.getElementById('gatiLoadingPulseDot');
+      const fill = document.getElementById('gatiLoadingBarFill');
+      if (titleText) titleText.innerText = '⚡ GATI Physics Model Starting Up';
+      if (badge) {
+        badge.innerText = 'Waking Up Model…';
+        badge.style.color = '#fbbf24';
+        badge.style.background = 'rgba(245, 158, 11, 0.15)';
+        badge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+      }
+      if (dot) {
+        dot.style.background = '#fbbf24';
+        dot.style.boxShadow = '0 0 8px #fbbf24';
+      }
+      if (fill) {
+        fill.style.display = 'block';
+        fill.className = 'gati-loading-bar-fill warmup';
+      }
+      if (subtitle) {
+        subtitle.innerHTML = 'Render instance is warming up the Python physics &amp; corridor crossing service. First request takes ~10–15s to load geometry cache.';
+      }
     }
-
-    const histDelay = eta.totals.historical_delay_min || 0;
-    if (histDelay > 0) {
-      items.push(`<span style="color:#c084fc;">📊 +${histDelay}m historical corridor delay</span>`);
-    }
-
-    const curvMin = eta.curvature_layer_contribution_min;
-    if (curvMin && curvMin > 0.05) {
-      items.push(`<span style="color:#38bdf8;">🔄 +${curvMin.toFixed(1)}m curvature speed restrictions</span>`);
-    }
-
-    const wxFactor = eta.totals.weather_factor ?? eta.weather_factor;
-    if (wxFactor && wxFactor < 0.99) {
-      items.push(`<span style="color:#fbbf24;">🌧️ Weather friction factor: ${(wxFactor * 100).toFixed(0)}%</span>`);
-    }
-
-    const slack = eta.totals.schedule_slack_min || 0;
-    if (slack > 0) {
-      items.push(`<span style="color:#34d399;">⏱️ -${slack}m timetable slack buffer</span>`);
-    }
-
-    breakdownEl.innerHTML = `
-      <div style="color:var(--text-dim);margin-bottom:3px;font-size:0.67rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Why GATI differs from ConfirmTkt:</div>
-      <div style="display:flex;flex-direction:column;gap:2px;">
-        ${items.length > 0 ? items.map(it => `<div>&bull; ${it}</div>`).join('') : '<div>&bull; Standard schedule & alignment adherence</div>'}
-      </div>
-    `;
+    scheduleModelWarmupRetry(liveData.trainNumber);
+    return;
   }
 
-  panel.style.display = 'block';
+  // Case 3: Specific train not in model cache (e.g. non-Konkan or unmapped route)
+  if (gap?.reason === 'not-in-model-cache') {
+    panel.style.display = 'block';
+    if (activeContent) activeContent.style.display = 'none';
+    if (loadingContent) {
+      loadingContent.style.display = 'block';
+      const titleText = document.getElementById('gatiLoadingTitleText');
+      const badge = document.getElementById('gatiLoadingBadge');
+      const subtitle = document.getElementById('gatiLoadingSubtitle');
+      const dot = document.getElementById('gatiLoadingPulseDot');
+      const fill = document.getElementById('gatiLoadingBarFill');
+      const counter = document.getElementById('gatiRetryCounter');
+      if (titleText) titleText.innerText = '⚡ GATI Physics & Conflict Engine';
+      if (badge) {
+        badge.innerText = 'Standard Tracking';
+        badge.style.color = '#94a3b8';
+        badge.style.background = 'rgba(148, 163, 184, 0.12)';
+        badge.style.borderColor = 'rgba(148, 163, 184, 0.2)';
+      }
+      if (dot) {
+        dot.style.background = '#64748b';
+        dot.style.boxShadow = 'none';
+      }
+      if (fill) fill.style.display = 'none';
+      if (subtitle) {
+        subtitle.innerText = `Track geometry is optimized for the Konkan corridor. Train #${liveData.trainNumber} runs on standard timetable tracking.`;
+      }
+      if (counter) counter.innerText = '';
+    }
+    return;
+  }
+
+  // Fallback: hide if not applicable
+  panel.style.display = 'none';
 }
 
 // Draw Track and Stations on Map
@@ -2273,7 +2426,38 @@ function openDrawerLoading(num) {
   document.getElementById('conflictPanel').style.display = 'none';
   document.getElementById('conflictUnavailable').style.display = 'none';
   const gatiComp = document.getElementById('drawerGatiEtaComparison');
-  if (gatiComp) gatiComp.style.display = 'none';
+  if (gatiComp) {
+    gatiComp.style.display = 'block';
+    const activeCont = document.getElementById('gatiEtaActiveContent');
+    const loadingCont = document.getElementById('gatiEtaLoadingContent');
+    if (activeCont) activeCont.style.display = 'none';
+    if (loadingCont) {
+      loadingCont.style.display = 'block';
+      const badge = document.getElementById('gatiLoadingBadge');
+      if (badge) {
+        badge.innerText = 'Calculating ETA…';
+        badge.style.color = '#7dd3fc';
+        badge.style.background = 'rgba(56, 189, 248, 0.15)';
+        badge.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+      }
+      const titleText = document.getElementById('gatiLoadingTitleText');
+      if (titleText) titleText.innerText = '⚡ GATI Physics & Conflict Engine';
+      const subtitle = document.getElementById('gatiLoadingSubtitle');
+      if (subtitle) subtitle.innerHTML = 'Connecting to corridor physics &amp; track geometry engine…';
+      const dot = document.getElementById('gatiLoadingPulseDot');
+      if (dot) {
+        dot.style.background = '#38bdf8';
+        dot.style.boxShadow = '0 0 8px #38bdf8';
+      }
+      const fill = document.getElementById('gatiLoadingBarFill');
+      if (fill) {
+        fill.style.display = 'block';
+        fill.className = 'gati-loading-bar-fill';
+      }
+      const counter = document.getElementById('gatiRetryCounter');
+      if (counter) counter.innerText = '';
+    }
+  }
   
   // Reset progress bar
   document.getElementById('drawerProgressFill').style.width = '0%';
@@ -2288,6 +2472,7 @@ function openDrawerLoading(num) {
 }
 
 function closeDrawer() {
+  clearModelWarmupRetry();
   document.getElementById('trainDrawer').classList.remove('open');
 }
 
@@ -2523,6 +2708,7 @@ function startTrainAutoRefresh(trainNumber) {
 
 /** Stop the train auto-refresh */
 function stopTrainAutoRefresh() {
+  clearModelWarmupRetry();
   if (trainRefreshInterval) {
     clearInterval(trainRefreshInterval);
     trainRefreshInterval = null;
