@@ -352,7 +352,7 @@ def health(train: str = eta_model.DEFAULT_TRAIN):
     }
 
 
-def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=False, quantile="mean", delay=0.0):
+def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=False, quantile="mean", delay=0.0, current_km=None, current_station=None):
     """
     Build the full ETA payload.  Shared by GET /eta and the WebSocket push so the two
     can never drift apart — a dashboard that renders one shape over REST and a different
@@ -457,9 +457,23 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=Fals
             except ValueError:
                 shift = timedelta(0)
         dep_dt = dep_dt + shift
-        arr_dt = dep_dt + timedelta(minutes=t["predicted_eta_min"])
         res["origin_departure"] = dep_dt.isoformat()
-        res["predicted_arrival"] = arr_dt.isoformat()
+
+        # If current_km is not provided, try resolving from current_station
+        if current_km is None and current_station:
+            for s in stations:
+                if s.get("stationCode") == current_station:
+                    current_km = s.get("distance")
+                    break
+
+        # Check if live delay anchoring applies (in-flight train with known live delay)
+        is_live_anchored = bool(delay and delay > 0)
+        passed_idx = 0
+        if is_live_anchored:
+            if current_km is not None and current_km > 0:
+                passed_idx = max([i for i, h in enumerate(halts) if (h.get("distance") or 0.0) <= current_km] or [0])
+            else:
+                passed_idx = 0
 
         # Build per-halt cumulative ETA and clock arrival for every intermediate station
         cum_min = 0.0
@@ -479,36 +493,98 @@ def _eta_payload(train_number, date, weather, mode, max_speed=None, hazards=Fals
             }
             if k + 1 < len(halts):
                 dest_halt = halts[k + 1]
-                h_arr_dt = dep_dt + timedelta(minutes=cum_min)
-                seg["predicted_arrival"] = h_arr_dt.isoformat()
-                halt_entry["predicted_arrival"] = h_arr_dt.isoformat()
                 sched_h_arr = dest_halt.get("scheduledArrival")
                 if sched_h_arr:
                     sched_h_arr_dt = datetime.fromisoformat(sched_h_arr) + shift
                     seg["scheduled_arrival"] = sched_h_arr_dt.isoformat()
                     halt_entry["scheduled_arrival"] = sched_h_arr_dt.isoformat()
-                    h_delay = round((h_arr_dt - sched_h_arr_dt).total_seconds() / 60.0, 1)
+
+                    if is_live_anchored and (k + 1) <= passed_idx:
+                        # Station already passed in real-life run
+                        halt_entry["passed"] = True
+                        h_delay = round(delay, 1)
+                        h_arr_dt = sched_h_arr_dt + timedelta(minutes=h_delay)
+                    else:
+                        h_arr_dt = dep_dt + timedelta(minutes=cum_min)
+                        h_delay = round((h_arr_dt - sched_h_arr_dt).total_seconds() / 60.0, 1)
+
+                    seg["predicted_arrival"] = h_arr_dt.isoformat()
+                    halt_entry["predicted_arrival"] = h_arr_dt.isoformat()
                     seg["predicted_delay_min"] = h_delay
                     halt_entry["predicted_delay_min"] = h_delay
+                else:
+                    h_arr_dt = dep_dt + timedelta(minutes=cum_min)
+                    seg["predicted_arrival"] = h_arr_dt.isoformat()
+                    halt_entry["predicted_arrival"] = h_arr_dt.isoformat()
             halts_eta[st_code] = halt_entry
 
-        # Same band, expressed on the clock. A judge reads "18:32–19:16" faster than
-        # "612.8 −23.4/+20.6", and it is the identical measured spread either way.
+        # If live anchored with delay > 0, project upcoming dynamic divergence forward from current point
+        sched_arr = halts[-1].get("scheduledArrival")
+        sched_arr_dt = datetime.fromisoformat(sched_arr) + shift if sched_arr else None
+
+        if is_live_anchored and sched_arr_dt:
+            # Calculate dynamic divergence on remaining segments:
+            # GATI model running time vs scheduled block duration on upcoming segments
+            cum_delta = 0.0
+            for k in range(passed_idx, len(halts) - 1):
+                h_from = halts[k]
+                h_to = halts[k + 1]
+                t_from_str = h_from.get("scheduledDeparture") or h_from.get("scheduledArrival")
+                t_to_str = h_to.get("scheduledArrival") or h_to.get("scheduledDeparture")
+                if t_from_str and t_to_str:
+                    t_from = datetime.fromisoformat(t_from_str) + shift
+                    t_to = datetime.fromisoformat(t_to_str) + shift
+                    sched_seg_min = max(1.0, (t_to - t_from).total_seconds() / 60.0)
+                else:
+                    sched_seg_min = res["segments"][k]["segment_eta_min"]
+
+                model_seg_min = res["segments"][k]["segment_eta_min"]
+                cum_delta += (model_seg_min - sched_seg_min)
+
+                st_code = h_to["stationCode"]
+                halt_pred_delay = round(delay + cum_delta, 1)
+                halt_sched_str = h_to.get("scheduledArrival")
+                if halt_sched_str:
+                    halt_sched_dt = datetime.fromisoformat(halt_sched_str) + shift
+                    halt_pred_arr = halt_sched_dt + timedelta(minutes=halt_pred_delay)
+                    if st_code in halts_eta:
+                        halts_eta[st_code]["predicted_delay_min"] = halt_pred_delay
+                        halts_eta[st_code]["predicted_arrival"] = halt_pred_arr.isoformat()
+                        halts_eta[st_code]["passed"] = False
+
+            pred_final_delay = round(delay + cum_delta, 1)
+            arr_dt = sched_arr_dt + timedelta(minutes=pred_final_delay)
+            res["predicted_arrival"] = arr_dt.isoformat()
+            res["arrival_delta_min"] = pred_final_delay
+            res["scheduled_arrival"] = sched_arr_dt.isoformat()
+            res["live_delay_anchored"] = True
+            res["live_anchor_delay_min"] = delay
+            res["live_anchor_km"] = current_km
+            res["live_remaining_dynamic_delta_min"] = round(cum_delta, 1)
+        else:
+            arr_dt = dep_dt + timedelta(minutes=t["predicted_eta_min"])
+            res["predicted_arrival"] = arr_dt.isoformat()
+            if sched_arr_dt:
+                res["scheduled_arrival"] = sched_arr_dt.isoformat()
+                res["arrival_delta_min"] = round(
+                    (arr_dt - sched_arr_dt).total_seconds() / 60, 1
+                )
+            else:
+                res["scheduled_arrival"] = sched_arr
+
+        # Same band, expressed on the clock.
         _band = res.get("observed_band") or {}
         if _band.get("available") and _band.get("band_low_min") is not None:
-            res["predicted_arrival_earliest"] = (
-                dep_dt + timedelta(minutes=_band["band_low_min"])).isoformat()
-            res["predicted_arrival_latest"] = (
-                dep_dt + timedelta(minutes=_band["band_high_min"])).isoformat()
-        sched_arr = halts[-1].get("scheduledArrival")
-        if sched_arr:
-            sched_arr_dt = datetime.fromisoformat(sched_arr) + shift
-            res["scheduled_arrival"] = sched_arr_dt.isoformat()
-            res["arrival_delta_min"] = round(
-                (arr_dt - sched_arr_dt).total_seconds() / 60, 1
-            )
-        else:
-            res["scheduled_arrival"] = sched_arr
+            if is_live_anchored and sched_arr_dt:
+                res["predicted_arrival_earliest"] = (
+                    arr_dt + timedelta(minutes=-15.0)).isoformat()
+                res["predicted_arrival_latest"] = (
+                    arr_dt + timedelta(minutes=20.0)).isoformat()
+            else:
+                res["predicted_arrival_earliest"] = (
+                    dep_dt + timedelta(minutes=_band["band_low_min"])).isoformat()
+                res["predicted_arrival_latest"] = (
+                    dep_dt + timedelta(minutes=_band["band_high_min"])).isoformat()
 
     res["halts_eta"] = halts_eta
     res["comparison"] = {
@@ -536,6 +612,8 @@ def get_eta(
     hazards: bool = Query(False, description="apply speed restrictions from HUMAN-CONFIRMED crowdsourced hazard reports (off by default; false reproduces the documented §4b numbers exactly)"),
     quantile: str = Query("mean", description="historical delay quantile: 'mean' (default expected), 'p50' / 'median', 'p80' (conservative buffer), 'p95' (stress/worst-case buffer)"),
     delay: float = Query(0.0, description="current live delay in minutes to seed single-line conflict loop holds"),
+    current_km: float = Query(None, description="current train distance from origin in km for live trajectory anchoring"),
+    current_station: str = Query(None, description="current train station code"),
 ):
     """Per-segment breakdown and total predicted ETA."""
     if date and isinstance(date, str):
@@ -560,6 +638,13 @@ def get_eta(
         delay = float(delay or 0.0)
     except (ValueError, TypeError):
         delay = 0.0
+    if current_km is not None:
+        try:
+            current_km = float(current_km)
+        except (ValueError, TypeError):
+            current_km = None
+    if current_station and not isinstance(current_station, str):
+        current_station = None
 
     valid_weather = list(curvature.WEATHER_SPEED_FACTOR) + ["live"]
     if weather not in valid_weather:
@@ -578,7 +663,18 @@ def get_eta(
         )
 
     try:
-        res = _eta_payload(train_number, date, weather, mode, max_speed, hazards, quantile=quantile, delay=delay)
+        res = _eta_payload(
+            train_number,
+            date,
+            weather,
+            mode,
+            max_speed,
+            hazards,
+            quantile=quantile,
+            delay=delay,
+            current_km=current_km,
+            current_station=current_station,
+        )
     except FileNotFoundError as e:
         raise HTTPException(
             404,

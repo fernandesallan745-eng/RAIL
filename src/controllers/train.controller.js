@@ -206,8 +206,9 @@ const hazardParam = (req) => (
 const modelLayerCache = new Map();
 const lastKnownGoodModels = new Map(); // trainNumber -> { curvatureEta, conflicts, runState, timestamp }
 
-const getModelCacheKey = (trainNumber, date, delayMin, weather, quantile, hazards) => {
-  return `${trainNumber}:${date}:${delayMin}:${weather}:${quantile}:${hazards ? '1' : '0'}`;
+const getModelCacheKey = (trainNumber, date, delayMin, weather, quantile, hazards, currentKm) => {
+  const kmKey = currentKm != null ? Math.round(Number(currentKm)) : 'none';
+  return `${trainNumber}:${date}:${delayMin}:${weather}:${quantile}:${hazards ? '1' : '0'}:${kmKey}`;
 };
 
 /**
@@ -218,6 +219,8 @@ async function attachModelLayers(trainNumber, liveData, req, isFallback = false)
   const curLoc = liveData.currentLocation || {};
   const curLat = Number(liveData.lat ?? curLoc.lat ?? curLoc.coordinates?.lat ?? liveData.previousHalt?.lat ?? 18.9);
   const curLng = Number(liveData.lng ?? curLoc.lng ?? curLoc.coordinates?.lng ?? liveData.previousHalt?.lng ?? 73.0);
+  const curKm = Number.isFinite(Number(curLoc.distanceFromOriginKm)) ? Number(curLoc.distanceFromOriginKm) : null;
+  const curStation = curLoc.stationCode || liveData.previousHalt?.stationCode || null;
 
   const startDate = liveData.startDate
     ? String(liveData.startDate).slice(0, 10)
@@ -238,7 +241,8 @@ async function attachModelLayers(trainNumber, liveData, req, isFallback = false)
     delayMin,
     weatherParam,
     quantileParam,
-    Boolean(hazardParams.hazards)
+    Boolean(hazardParams.hazards),
+    curKm
   );
 
   const cached = modelLayerCache.get(cacheKey);
@@ -271,14 +275,21 @@ async function attachModelLayers(trainNumber, liveData, req, isFallback = false)
   const etaPromise = (async () => {
     try {
       const fastApiUrl = `${config.modelApi.baseUrl}/eta/${trainNumber}`;
+      const etaParams = {
+        date: startDate,
+        weather: weatherParam,
+        quantile: quantileParam,
+        delay: delayMin,
+        ...hazardParams,
+      };
+      if (curKm != null && Number.isFinite(curKm)) {
+        etaParams.current_km = curKm;
+      }
+      if (curStation) {
+        etaParams.current_station = curStation;
+      }
       const fastApiRes = await axios.get(fastApiUrl, {
-        params: {
-          date: startDate,
-          weather: weatherParam,
-          quantile: quantileParam,
-          delay: delayMin,
-          ...hazardParams,
-        },
+        params: etaParams,
         timeout: timeoutMs,
       });
       if (fastApiRes.data) {
