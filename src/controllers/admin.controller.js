@@ -98,7 +98,10 @@ export const getModelRunState = async (req, res) => {
 export const getModelEta = async (req, res) => {
   try {
     const { trainNumber } = req.params;
-    const params = pickParams(req.query, ['date', 'weather', 'mode', 'max_speed', 'hazards', 'quantile']);
+    const params = pickParams(req.query, [
+      'date', 'weather', 'mode', 'max_speed', 'hazards', 'quantile',
+      'delay', 'current_km', 'current_station',
+    ]);
     const upstream = await axios.get(
       `${config.modelApi.baseUrl}/eta/${trainNumber}`,
       { params, timeout: 20000 }   // curvature integration over ~1,200 vertices

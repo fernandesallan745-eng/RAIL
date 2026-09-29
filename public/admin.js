@@ -309,13 +309,21 @@
     if (lastQuery.quantile && lastQuery.quantile !== 'mean') bits.push(lastQuery.quantile);
     if (lastQuery.weather && lastQuery.weather !== 'clear') bits.push(lastQuery.weather);
     if (lastQuery.date) bits.push(lastQuery.date);
+    if (lastQuery.delay != null && lastQuery.delay !== '' && Number(lastQuery.delay) !== 0) {
+      bits.push(`+${lastQuery.delay}m live`);
+    }
+    if (lastQuery.hazards) bits.push('hazards');
 
+    const curDelayStr = ($('qDelay')?.value || '').trim();
+    const lastDelayStr = lastQuery.delay != null ? String(lastQuery.delay) : '';
     const drifted =
       ($('qTrain')?.value || '').trim() !== lastQuery.train ||
       ($('qDate')?.value || '') !== lastQuery.date ||
       ($('qWeather')?.value || 'clear') !== lastQuery.weather ||
       ($('qMode')?.value || 'vertex') !== lastQuery.mode ||
-      ($('qQuantile')?.value || 'mean') !== (lastQuery.quantile || 'mean');
+      ($('qQuantile')?.value || 'mean') !== (lastQuery.quantile || 'mean') ||
+      (curDelayStr !== lastDelayStr && !(curDelayStr === '' && lastDelayStr === '0')) ||
+      Boolean($('qHazards')?.checked) !== Boolean(lastQuery.hazards);
 
     meta.textContent = `${bits.join(' · ')}${drifted ? ' · stale' : ''}`;
     meta.title = drifted
@@ -492,6 +500,7 @@
       d.quantile ? `quantile <strong>${esc(d.quantile)}</strong>` : null,
       d.geometry_basis ? `geometry <strong>${esc(d.geometry_basis)}</strong>` : null,
       `weather <strong>${esc(weather)}</strong>`,
+      d.live_delay_anchored ? `live anchored <strong>+${fmt(d.live_anchor_delay_min, 0)}m</strong>` : null,
       d.schedule_date_substituted ? `schedule from <strong>${esc(d.schedule_source_date)}</strong>` : null,
     ].filter(Boolean);
 
@@ -520,10 +529,20 @@
         </span>
       </div>
 
+      ${d.live_delay_anchored ? `
+      <div class="admin-kv" style="margin-top:6px;background:rgba(56,189,248,0.08);padding:6px 8px;border-radius:6px;border-left:3px solid #38bdf8">
+        <span class="admin-kv-key" style="color:#e2e8f0;font-weight:600">Live Delay Anchoring (${esc(d.current_station || '')} km ${fmt(d.live_anchor_km, 1)})</span>
+        <span class="admin-kv-val is-bad" style="font-weight:600">+${fmt(d.live_anchor_delay_min, 0)}m live (${signed(d.live_remaining_dynamic_delta_min, 1)}m dynamic ahead)</span>
+      </div>
+      <div class="admin-kv">
+        <span class="admin-kv-key">Destination Delay (vs timetable ${schedArr ? `arr ${esc(schedArr)}` : ''})</span>
+        <span class="admin-kv-val ${d.arrival_delta_min > 0 ? 'is-bad' : 'is-good'}" style="font-weight:700">${signed(d.arrival_delta_min, 1)} min</span>
+      </div>` : `
       <div class="admin-kv" style="margin-top:6px">
         <span class="admin-kv-key">vs timetable (${fmt(t.scheduled_duration_min, 0)} min${schedArr ? `, arr ${esc(schedArr)}` : ''})</span>
         <span class="admin-kv-val ${t.gap_vs_schedule_min < 0 ? 'is-good' : ''}">${signed(t.gap_vs_schedule_min)} min</span>
       </div>
+      `}
       ${typeof band.error_vs_observed_mean_min === 'number' ? `
       <div class="admin-kv">
         <span class="admin-kv-key">vs observed mean (n=${band.sample_count})</span>
@@ -597,9 +616,38 @@
         </div>
       </details>
 
+      ${d.halts_eta && Object.keys(d.halts_eta).length ? `
+      <details class="admin-caveat" ${d.live_delay_anchored ? 'open' : ''}>
+        <summary>Halts ETA — ${Object.keys(d.halts_eta).length} stations ${d.live_delay_anchored ? '(live trajectory anchored)' : ''} ▾</summary>
+        <div class="admin-caveat-body">
+          <div style="display:grid;grid-template-columns:55px 55px 75px 75px 1fr;gap:4px;font-size:10.5px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);color:var(--text-muted);font-weight:600">
+            <span>Station</span>
+            <span>Status</span>
+            <span>Sched</span>
+            <span>GATI ETA</span>
+            <span>Delay</span>
+          </div>
+          ${Object.entries(d.halts_eta).map(([code, h]) => `
+            <div style="display:grid;grid-template-columns:55px 55px 75px 75px 1fr;gap:4px;font-size:10.5px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03);align-items:center">
+              <span style="font-weight:600;color:var(--text-main)">${esc(code)}</span>
+              <span style="color:${h.passed ? 'var(--text-muted)' : '#38bdf8'}">${h.passed ? 'Passed' : 'Upcoming'}</span>
+              <span style="color:var(--text-muted)">${clockOf(h.scheduled_arrival || h.scheduled_departure) || '—'}</span>
+              <span style="font-weight:600;color:${h.passed ? 'var(--text-muted)' : 'var(--text-main)'}">${clockOf(h.predicted_arrival || h.predicted_departure) || '—'}</span>
+              <span class="${h.predicted_delay_min > 15 ? 'is-bad' : (h.predicted_delay_min < 0 ? 'is-good' : '')}">${h.predicted_delay_min != null ? signed(h.predicted_delay_min, 1) + 'm' : '—'}</span>
+            </div>
+          `).join('')}
+        </div>
+      </details>` : ''}
+
       <div class="admin-chips">${chips.map((c) => `<span class="admin-chip">${c}</span>`).join('')}</div>`;
 
-    if (meta) meta.textContent = `${esc(d.train)} · ${fmt(total)} min`;
+    if (meta) {
+      if (d.live_delay_anchored && arr) {
+        meta.textContent = `${esc(d.train)} · arr ${esc(arr)} (+${fmt(d.arrival_delta_min, 0)}m)`;
+      } else {
+        meta.textContent = `${esc(d.train)} · ${fmt(total)} min`;
+      }
+    }
   }
 
   async function loadEta(trainNumber, opts = {}) {
@@ -615,15 +663,49 @@
     const weather = opts.weather ?? ($('qWeather')?.value || 'live');
     const mode = opts.mode ?? ($('qMode')?.value || 'vertex');
     const quantile = opts.quantile ?? ($('qQuantile')?.value || 'mean');
+    const hazards = opts.hazards ?? ($('qHazards')?.checked || false);
+
+    // Live train anchoring resolution:
+    // Check opts, then qDelay input, then clientCache for the live train
+    let delay = opts.delay;
+    let currentKm = opts.current_km;
+    let currentStation = opts.current_station;
+
+    if (delay === undefined) {
+      const inputDelay = $('qDelay')?.value?.trim();
+      if (inputDelay !== '' && inputDelay !== undefined && !isNaN(Number(inputDelay))) {
+        delay = Number(inputDelay);
+      } else {
+        // Auto-read from app.js clientCache if available
+        try {
+          if (typeof clientCache !== 'undefined' && clientCache?.trainLive?.has(trainNumber)) {
+            const live = clientCache.trainLive.get(trainNumber);
+            if (live && live.delayMinutes != null) {
+              delay = Number(live.delayMinutes);
+              if ($('qDelay') && !$('qDelay').value) {
+                $('qDelay').value = delay;
+              }
+              const curLoc = live.currentLocation || {};
+              if (curLoc.distanceFromOriginKm != null) currentKm = Number(curLoc.distanceFromOriginKm);
+              if (curLoc.stationCode) currentStation = curLoc.stationCode;
+            }
+          }
+        } catch (_) { /* clientCache not in scope */ }
+      }
+    }
+
     if (date) params.set('date', date);
     if (weather) params.set('weather', weather);
     if (mode) params.set('mode', mode);
     if (quantile && quantile !== 'mean') params.set('quantile', quantile);
+    if (hazards) params.set('hazards', 'true');
+    if (delay != null && Number.isFinite(delay)) params.set('delay', delay);
+    if (currentKm != null && Number.isFinite(currentKm)) params.set('current_km', currentKm);
+    if (currentStation) params.set('current_station', currentStation);
 
     // Record what this run was actually computed WITH, so the ladder below can
-    // never be misread as belonging to different parameters — a 718.2 under
-    // heavy_rain and a 612.8 under clear are both correct and look alike.
-    lastQuery = { train: String(trainNumber), date, weather, mode, quantile };
+    // never be misread as belonging to different parameters
+    lastQuery = { train: String(trainNumber), date, weather, mode, quantile, delay, hazards: Boolean(hazards) };
     syncQueryMeta();
 
     try {
@@ -663,7 +745,7 @@
     syncWxWarn();
 
     // Any selector moving makes the on-screen ladder stale until Run is pressed.
-    ['qTrain', 'qDate', 'qWeather', 'qMode', 'qQuantile'].forEach((id) => {
+    ['qTrain', 'qDate', 'qWeather', 'qMode', 'qQuantile', 'qDelay', 'qHazards'].forEach((id) => {
       const el = $(id);
       if (!el) return;
       el.addEventListener('change', syncQueryMeta);
@@ -681,8 +763,10 @@
       loadEta(n);
     });
 
-    $('qTrain')?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') $('qRun')?.click();
+    ['qTrain', 'qDelay'].forEach((id) => {
+      $(id)?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') $('qRun')?.click();
+      });
     });
 
     // Corridor sweep — cache-only on the model side, zero upstream requests.
@@ -1297,6 +1381,7 @@
         seen = current;
         const input = $('qTrain');
         if (input) input.value = current;
+        if ($('qDelay')) $('qDelay').value = '';
         if (String(current) !== lastEtaTrain) loadEta(current);
       }
       syncMapLayerPanel();

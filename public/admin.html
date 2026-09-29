@@ -360,6 +360,16 @@
             <option value="p80">p80 (conservative buffer)</option>
             <option value="p95">p95 (worst-case stress)</option>
           </select>
+
+          <label for="qDelay">Delay (m)</label>
+          <input id="qDelay" class="admin-input" type="number" step="any"
+                 placeholder="0 (live or simulated delay)" autocomplete="off" />
+
+          <label for="qHazards">Hazards</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:normal;color:var(--text-main)">
+            <input id="qHazards" type="checkbox" style="cursor:pointer" />
+            <span style="font-size:11px">Apply verified speed restrictions</span>
+          </label>
         </div>
         <button id="qRun" class="admin-btn admin-btn-primary" type="button">
           Run model
